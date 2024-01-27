@@ -1,0 +1,8 @@
+# Electron-Forge
+out/
+
+# System
+.DS_Store
+
+# Dependency directories
+node_modules/
