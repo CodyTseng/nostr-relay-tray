@@ -8,8 +8,8 @@ const { WebSocketServer } = require("ws");
 const path = require("path");
 const { networkInterfaces } = require("os");
 
-// Don't show the app in the doc
-app.dock.hide();
+// Don't show the app in the dock (macOS)
+app.dock?.hide();
 
 app.whenReady().then(() => {
   createTray();
