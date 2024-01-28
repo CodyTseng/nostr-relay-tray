@@ -21,8 +21,22 @@ const createTray = () => {
   const tray = new Tray(
     nativeImage.createFromPath(path.join(assetsDirectory, "nostrTemplate.png"))
   );
+  let currentLocalIpAddress = getLocalIpAddress();
 
-  const menu = Menu.buildFromTemplate([
+  tray.setContextMenu(createMenu(currentLocalIpAddress));
+
+  setInterval(() => {
+    const newLocalIpAddress = getLocalIpAddress();
+    if (newLocalIpAddress !== currentLocalIpAddress) {
+      console.log("Local IP address changed to", newLocalIpAddress);
+      currentLocalIpAddress = newLocalIpAddress;
+      tray.setContextMenu(createMenu(currentLocalIpAddress));
+    }
+  }, 10000)
+};
+
+const createMenu = (localIpAddress) => {
+  return Menu.buildFromTemplate([
     {
       label: "About",
       type: "normal",
@@ -41,7 +55,7 @@ const createTray = () => {
       enabled: false,
     },
     {
-      label: `ws://${getLocalIpAddress()}:4869`,
+      label: `ws://${localIpAddress}:4869`,
       type: "normal",
       enabled: false,
     },
@@ -51,9 +65,7 @@ const createTray = () => {
       role: "quit",
     },
   ]);
-
-  tray.setContextMenu(menu);
-};
+}
 
 const createServer = () => {
   const userPath = app.getPath("userData");
