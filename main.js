@@ -63,17 +63,6 @@ const createMenu = (localIpAddress) => {
     },
     { type: "separator" },
     {
-      label: `ws://localhost:4869`,
-      type: "normal",
-      enabled: false,
-    },
-    {
-      label: `ws://${localIpAddress}:4869`,
-      type: "normal",
-      enabled: false,
-    },
-    { type: "separator" },
-    {
       label: "Export",
       type: "normal",
       click: exportEvents,
@@ -82,6 +71,17 @@ const createMenu = (localIpAddress) => {
       label: "Import",
       type: "normal",
       click: importEvents,
+    },
+    { type: "separator" },
+    {
+      label: `ws://localhost:4869`,
+      type: "normal",
+      enabled: false,
+    },
+    {
+      label: `ws://${localIpAddress}:4869`,
+      type: "normal",
+      enabled: false,
     },
     { type: "separator" },
     {
@@ -135,7 +135,7 @@ const exportEvents = async () => {
   // Show save dialog
   const { filePath } = await dialog.showSaveDialog({
     title: "Export Events",
-    message: "Export Events",
+    filters: [{ name: "jsonl", extensions: ["jsonl"] }],
     defaultPath: "events.jsonl",
   });
 
@@ -145,19 +145,18 @@ const exportEvents = async () => {
 
     let filter = { limit: 1000 };
     let count = 0;
-    let test = 0;
-    while (test++ < 5) {
+    while (true) {
       const events = await eventRepository.find(filter);
-      if (events.length === 0) break;
 
       events.forEach((event) => {
         stream.write(JSON.stringify(event) + "\n");
-        count++;
       });
 
-      tray.setTitle(`Exported ${count}`);
+      count += events.length;
+      tray.setTitle(`${count}`);
 
-      filter = { limit: 1000, until: events[events.length - 1].created_at - 1 };
+      if (events.length < 1000) break;
+      filter.until = events[events.length - 1].created_at - 1;
     }
 
     stream.end();
@@ -165,7 +164,7 @@ const exportEvents = async () => {
     setTimeout(() => {
       tray.setTitle("");
       new Notification({
-        title: "Export Success!",
+        title: "Export Complete",
         body: `Total events exported: ${count}.`,
       }).show();
     }, 1000);
@@ -176,7 +175,7 @@ const importEvents = async () => {
   // Show open dialog
   const { filePaths } = await dialog.showOpenDialog({
     title: "Import Data",
-    message: "Import Data",
+    filters: [{ name: "jsonl", extensions: ["jsonl"] }],
     properties: ["openFile"],
   });
 
@@ -187,21 +186,27 @@ const importEvents = async () => {
       input: readStream,
       crlfDelay: Infinity,
     });
-    let count = 0;
+    let count = 0,
+      errorCount = 0,
+      newEventCount = 0;
 
     rl.on("line", async (line) => {
-      tray.setTitle(`Imported ${count}`);
-      const event = await validator.validateEvent(JSON.parse(line));
-      await eventRepository.upsert(event);
-      count++;
+      tray.setTitle(`${++count}`);
+      try {
+        const event = await validator.validateEvent(JSON.parse(line));
+        const { isDuplicate } = await eventRepository.upsert(event);
+        if (!isDuplicate) newEventCount++;
+      } catch {
+        errorCount++;
+      }
     });
 
     rl.on("close", () => {
       setTimeout(() => {
         tray.setTitle("");
         new Notification({
-          title: "Import Success!",
-          body: `Total events imported: ${count}.`,
+          title: "Import Complete",
+          body: `Total: ${count}, New: ${newEventCount}, Error: ${errorCount}.`,
         }).show();
       }, 1000);
     });
