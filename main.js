@@ -142,21 +142,24 @@ const exportEvents = async () => {
   // If the user doesn't cancel the dialog
   if (filePath) {
     const stream = fs.createWriteStream(filePath);
+    const db = eventRepository.getDatabase();
+    const stmt = db.prepare("SELECT * FROM events ORDER BY created_at DESC");
 
-    let filter = { limit: 1000 };
     let count = 0;
-    while (true) {
-      const events = await eventRepository.find(filter);
-
-      events.forEach((event) => {
-        stream.write(JSON.stringify(event) + "\n");
-      });
-
-      count += events.length;
+    for (const row of stmt.iterate()) {
+      stream.write(
+        JSON.stringify({
+          id: row.id,
+          kind: row.kind,
+          pubkey: row.pubkey,
+          content: row.content,
+          sig: row.sig,
+          created_at: row.created_at,
+          tags: JSON.parse(row.tags),
+        }) + "\n"
+      );
+      count++;
       tray.setTitle(`${count}`);
-
-      if (events.length < 1000) break;
-      filter.until = events[events.length - 1].created_at - 1;
     }
 
     stream.end();
