@@ -1,6 +1,6 @@
 # nostr-relay-tray
 
-a simple nostr relay tray.
+A simple nostr relay tray.
 
 Powered by [nostr-relay](https://github.com/CodyTseng/nostr-relay).
 
