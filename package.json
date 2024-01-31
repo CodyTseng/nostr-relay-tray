@@ -24,9 +24,9 @@
     "electron-rebuild": "^3.2.9"
   },
   "dependencies": {
-    "@nostr-relay/core": "^0.0.12",
-    "@nostr-relay/event-repository-sqlite": "^0.0.12",
-    "@nostr-relay/validator": "^0.0.12",
+    "@nostr-relay/core": "^0.0.13",
+    "@nostr-relay/event-repository-sqlite": "^0.0.13",
+    "@nostr-relay/validator": "^0.0.13",
     "electron-squirrel-startup": "^1.0.0",
     "ws": "^8.16.0"
   }
