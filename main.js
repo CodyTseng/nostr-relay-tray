@@ -19,8 +19,10 @@ const readline = require("readline");
 
 let tray;
 let eventRepository;
+let db;
 let relay;
 let validator;
+let eventCount = 0;
 
 // Don't show the app in the dock (macOS)
 app.dock?.hide();
@@ -28,6 +30,8 @@ app.dock?.hide();
 app.whenReady().then(() => {
   createTray();
   createServer();
+  resetEventCount();
+  setInterval(resetEventCount, 3600000); // 1 hour
 });
 
 const createTray = () => {
@@ -38,6 +42,7 @@ const createTray = () => {
   let currentLocalIpAddress = getLocalIpAddress();
 
   tray.setContextMenu(createMenu(currentLocalIpAddress));
+  tray.setTitle("--");
 
   setInterval(() => {
     const newLocalIpAddress = getLocalIpAddress();
@@ -96,8 +101,21 @@ const createServer = () => {
 
   const wss = new WebSocketServer({ port: 4869 });
   eventRepository = new EventRepositorySqlite(path.join(userPath, "nostr.db"));
+  db = eventRepository.getDatabase();
   relay = new NostrRelay(eventRepository);
   validator = new Validator();
+
+  relay.register({
+    afterEventHandle: (_ctx, _event, handleResult) => {
+      if (
+        handleResult.success &&
+        !handleResult.message &&
+        !handleResult.noReplyNeeded
+      ) {
+        incrEventCount();
+      }
+    },
+  });
 
   wss.on("connection", (ws) => {
     relay.handleConnection(ws);
@@ -142,7 +160,6 @@ const exportEvents = async () => {
   // If the user doesn't cancel the dialog
   if (filePath) {
     const stream = fs.createWriteStream(filePath);
-    const db = eventRepository.getDatabase();
     const stmt = db.prepare("SELECT * FROM events ORDER BY created_at DESC");
 
     let count = 0;
@@ -159,13 +176,11 @@ const exportEvents = async () => {
         }) + "\n"
       );
       count++;
-      tray.setTitle(`${count}`);
     }
 
     stream.end();
 
     setTimeout(() => {
-      tray.setTitle("");
       new Notification({
         title: "Export Complete",
         body: `Total events exported: ${count}.`,
@@ -194,11 +209,13 @@ const importEvents = async () => {
       newEventCount = 0;
 
     rl.on("line", async (line) => {
-      tray.setTitle(`${++count}`);
       try {
         const event = await validator.validateEvent(JSON.parse(line));
         const { isDuplicate } = await eventRepository.upsert(event);
-        if (!isDuplicate) newEventCount++;
+        if (!isDuplicate) {
+          newEventCount++;
+          incrEventCount();
+        }
       } catch {
         errorCount++;
       }
@@ -206,7 +223,6 @@ const importEvents = async () => {
 
     rl.on("close", () => {
       setTimeout(() => {
-        tray.setTitle("");
         new Notification({
           title: "Import Complete",
           body: `Total: ${count}, New: ${newEventCount}, Error: ${errorCount}.`,
@@ -215,3 +231,22 @@ const importEvents = async () => {
     });
   }
 };
+
+function incrEventCount(increment = 1) {
+  eventCount += increment;
+  tray.setTitle(formatCount(eventCount));
+}
+
+function resetEventCount() {
+  eventCount = db.prepare("SELECT COUNT(*) FROM events").get()["COUNT(*)"];
+  tray.setTitle(formatCount(eventCount));
+}
+
+function formatCount(count) {
+  if (count < 10000) return `${count}`; // 9999
+  if (count < 100000) return `${Math.floor(count / 100) / 10}k`; // 99.9k
+  if (count < 1000000) return `${Math.floor(count / 1000)}k`; // 999k
+  if (count < 10000000) return `${Math.floor(count / 10000) / 100}m`; // 9.99m
+  if (count < 100000000) return `${Math.floor(count / 100000) / 10}m`; // 99.9m
+  return `${Math.floor(count / 1000000)}m`; // 999m
+}
