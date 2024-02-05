@@ -243,10 +243,11 @@ function resetEventCount() {
 }
 
 function formatCount(count) {
-  if (count < 10000) return `${count}`; // 9999
-  if (count < 100000) return `${Math.floor(count / 100) / 10}k`; // 99.9k
-  if (count < 1000000) return `${Math.floor(count / 1000)}k`; // 999k
-  if (count < 10000000) return `${Math.floor(count / 10000) / 100}m`; // 9.99m
-  if (count < 100000000) return `${Math.floor(count / 100000) / 10}m`; // 99.9m
-  return `${Math.floor(count / 1000000)}m`; // 999m
+  if (count < 1000) return `${count}`; // 999
+  if (count < 10000) return `${(count / 1000).toFixed(2)}k`; // 9.99k
+  if (count < 100000) return `${(count / 1000).toFixed(1)}k`; // 99.9k
+  if (count < 1000000) return `${(count / 1000).toFixed(0)}k`; // 999k
+  if (count < 10000000) return `${(count / 1000000).toFixed(2)}m`; // 9.99m
+  if (count < 100000000) return `${(count / 1000000).toFixed(1)}m`; // 99.9m
+  return `${(count / 1000000).toFixed(0)}m`; // 999m
 }
