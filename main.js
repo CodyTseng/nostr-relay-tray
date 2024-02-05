@@ -1,4 +1,7 @@
-const { NostrRelay } = require("@nostr-relay/core");
+const {
+  NostrRelay,
+  createOutgoingNoticeMessage,
+} = require("@nostr-relay/core");
 const {
   EventRepositorySqlite,
 } = require("@nostr-relay/event-repository-sqlite");
@@ -124,8 +127,12 @@ const createServer = () => {
     relay.handleConnection(ws);
 
     ws.on("message", async (data) => {
-      const message = await validator.validateIncomingMessage(data);
-      await relay.handleMessage(ws, message);
+      try {
+        const message = await validator.validateIncomingMessage(data);
+        await relay.handleMessage(ws, message);
+      } catch (error) {
+        ws.send(JSON.stringify(createOutgoingNoticeMessage(error.message)));
+      }
     });
 
     ws.on("close", () => {
