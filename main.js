@@ -10,6 +10,7 @@ const {
   Menu,
   dialog,
   Notification,
+  clipboard,
 } = require("electron");
 const { WebSocketServer } = require("ws");
 const path = require("path");
@@ -79,14 +80,14 @@ const createMenu = (localIpAddress) => {
     },
     { type: "separator" },
     {
-      label: `ws://localhost:4869`,
+      label: `ws://localhost:4869 - Copy`,
       type: "normal",
-      enabled: false,
+      click: () => clipboard.writeText(`ws://localhost:4869`),
     },
     {
-      label: `ws://${localIpAddress}:4869`,
+      label: `ws://${localIpAddress}:4869 - Copy`,
       type: "normal",
-      enabled: false,
+      click: () => clipboard.writeText(`ws://${localIpAddress}:4869`),
     },
     { type: "separator" },
     {
