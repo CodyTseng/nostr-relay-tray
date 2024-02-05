@@ -103,7 +103,9 @@ const createServer = () => {
   eventRepository = new EventRepositorySqlite(path.join(userPath, "nostr.db"));
   db = eventRepository.getDatabase();
   relay = new NostrRelay(eventRepository);
-  validator = new Validator();
+  validator = new Validator({
+    maxFilterGenericTagsLength: 512,
+  });
 
   relay.register({
     afterEventHandle: (_ctx, _event, handleResult) => {
