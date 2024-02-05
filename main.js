@@ -62,7 +62,7 @@ const createMenu = (localIpAddress) => {
         dialog.showMessageBox({
           type: "info",
           message: "Your Nostr Relay is running!",
-          detail: `Powed by nostr-relay (https://github.com/CodyTseng/nostr-relay)`,
+          detail: `Powered by nostr-relay (https://github.com/CodyTseng/nostr-relay)`,
         });
       },
     },
