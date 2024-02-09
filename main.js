@@ -41,6 +41,10 @@ app.whenReady().then(async () => {
   setInterval(resetEventCount, 3600000); // 1 hour
 });
 
+app.on("before-quit", () => {
+  eventRepository.close();
+});
+
 const createTray = () => {
   const assetsDirectory = path.join(__dirname, "assets");
   tray = new Tray(
