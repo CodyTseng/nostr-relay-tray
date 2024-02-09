@@ -33,6 +33,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run publish
 
+  publish_on_mac_arm:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@master
+        with:
+          node-version: 20
+      - name: install dependencies
+        run: npm install
+      - name: publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run publish
+
   publish_on_win:
     runs-on: windows-latest
     steps:

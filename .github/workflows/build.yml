@@ -1,5 +1,5 @@
 name: Build
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   build_on_linux:
@@ -16,6 +16,18 @@ jobs:
 
   build_on_mac:
     runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@master
+        with:
+          node-version: 20
+      - name: install dependencies
+        run: npm install
+      - name: build
+        run: npm run make
+
+  build_on_mac_arm:
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@master
