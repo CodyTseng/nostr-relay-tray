@@ -14,12 +14,15 @@ const {
   dialog,
   Notification,
   clipboard,
+  showDialog,
 } = require("electron");
 const { WebSocketServer } = require("ws");
 const path = require("path");
 const { networkInterfaces } = require("os");
 const fs = require("fs");
 const readline = require("readline");
+const fastify = require("fastify")({ logger: false });
+const packageJson = require("./package.json");
 
 let tray;
 let eventRepository;
@@ -31,9 +34,9 @@ let eventCount = 0;
 // Don't show the app in the dock (macOS)
 app.dock?.hide();
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   createTray();
-  createServer();
+  await createServer();
   resetEventCount();
   setInterval(resetEventCount, 3600000); // 1 hour
 });
@@ -100,10 +103,40 @@ const createMenu = (localIpAddress) => {
   ]);
 };
 
-const createServer = () => {
+const createServer = async () => {
   const userPath = app.getPath("userData");
 
-  const wss = new WebSocketServer({ port: 4869 });
+  await fastify.register(require("@fastify/cors"), {
+    origin: "*",
+  });
+
+  fastify.get("/", function (_, reply) {
+    reply.send({
+      name: packageJson.name,
+      version: packageJson.version,
+      description: packageJson.description,
+      software: packageJson.repository.url,
+      supported_nips: [1, 11],
+      limitation: {
+        max_message_length: 128 * 1024, // 128 KB
+        max_subscriptions: 20,
+        max_limit: 1000,
+        max_subid_length: 128,
+        max_event_tags: 2000,
+        max_content_length: 102400,
+        min_pow_difficulty: 0,
+        auth_required: false,
+        payment_required: false,
+        restricted_writes: false,
+      },
+      retention: [{ time: null }],
+    });
+  });
+
+  const wss = new WebSocketServer({
+    server: fastify.server,
+    maxPayload: 128 * 1024,
+  });
   eventRepository = new EventRepositorySqlite(path.join(userPath, "nostr.db"));
   db = eventRepository.getDatabase();
   relay = new NostrRelay(eventRepository);
@@ -138,6 +171,13 @@ const createServer = () => {
     ws.on("close", () => {
       relay.handleDisconnect(ws);
     });
+  });
+
+  fastify.listen({ port: 4869 }, function (err) {
+    if (err) {
+      showDialog("Error", "Failed to start server.", err.message);
+      process.exit(1);
+    }
   });
 };
 
