@@ -24,6 +24,8 @@ const readline = require("readline");
 const fastify = require("fastify")({ logger: false });
 const packageJson = require("./package.json");
 
+const assetsDirectory = path.join(__dirname, "assets");
+
 let tray;
 let eventRepository;
 let db;
@@ -46,7 +48,6 @@ app.on("before-quit", () => {
 });
 
 const createTray = () => {
-  const assetsDirectory = path.join(__dirname, "assets");
   tray = new Tray(
     nativeImage.createFromPath(path.join(assetsDirectory, "nostrTemplate.png"))
   );
@@ -175,6 +176,14 @@ const createServer = async () => {
     ws.on("close", () => {
       relay.handleDisconnect(ws);
     });
+  });
+
+  const favicon = fs.readFileSync(path.join(assetsDirectory, "favicon.ico"));
+  fastify.get("/favicon.ico", function (_, reply) {
+    reply
+      .header("cache-control", "max-age=604800")
+      .type("image/x-icon")
+      .send(favicon);
   });
 
   fastify.listen({ port: 4869 }, function (err) {
