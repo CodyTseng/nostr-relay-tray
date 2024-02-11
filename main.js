@@ -186,7 +186,7 @@ const createServer = async () => {
       .send(favicon);
   });
 
-  fastify.listen({ port: 4869 }, function (err) {
+  fastify.listen({ port: 4869, host: "0.0.0.0" }, function (err) {
     if (err) {
       showDialog("Error", "Failed to start server.", err.message);
       process.exit(1);
