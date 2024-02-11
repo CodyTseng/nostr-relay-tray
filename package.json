@@ -1,6 +1,6 @@
 {
   "name": "nostr-relay-tray",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "a simple nostr relay tray",
   "main": "main.js",
   "scripts": {
