@@ -29,9 +29,9 @@
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
-    "@nostr-relay/core": "^0.0.14",
-    "@nostr-relay/event-repository-sqlite": "^0.0.14",
-    "@nostr-relay/validator": "^0.0.14",
+    "@nostr-relay/core": "^0.0.16",
+    "@nostr-relay/event-repository-sqlite": "^0.0.16",
+    "@nostr-relay/validator": "^0.0.16",
     "electron-squirrel-startup": "^1.0.0",
     "fastify": "^4.26.0",
     "ws": "^8.16.0"
