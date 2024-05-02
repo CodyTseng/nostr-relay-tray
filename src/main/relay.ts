@@ -9,8 +9,10 @@ import { createReadStream, createWriteStream, readFileSync, statSync } from 'fs'
 import path from 'path'
 import { createInterface } from 'readline'
 import { WebSocketServer } from 'ws'
+import { z } from 'zod'
 import favicon from '../../resources/favicon.ico?asset'
 import { KIND_DESCRIPTION_MAP } from './constants'
+import { CountMessageHandler } from './count-message-handler'
 
 export class Relay {
   private readonly db: BetterSqlite3.Database
@@ -37,14 +39,32 @@ export class Relay {
     })
 
     const relay = new NostrRelay(this.eventRepository)
+    const countMessageHandler = new CountMessageHandler(this.db)
 
     wss.on('connection', (ws) => {
       relay.handleConnection(ws)
 
       ws.on('message', async (data) => {
         try {
-          const message = await this.validator.validateIncomingMessage(data)
-          await relay.handleMessage(ws, message)
+          const json = JSON.parse(data.toString())
+          if (json && Array.isArray(json) && json[0] === 'COUNT') {
+            const subscriptionId = await z
+              .string({ invalid_type_error: 'must be a string' })
+              .min(1, { message: 'must be at least 1 character' })
+              .max(128, {
+                message: 'must be less than or equal to 128 characters'
+              })
+              .parseAsync(json[1])
+
+            const filters = await Promise.all(
+              json.slice(2).map((filter) => this.validator.validateFilter(filter))
+            )
+
+            await countMessageHandler.handleCountMessage(ws, subscriptionId, filters)
+          } else {
+            const message = await this.validator.validateIncomingMessage(data)
+            await relay.handleMessage(ws, message)
+          }
         } catch (error) {
           ws.send(JSON.stringify(createOutgoingNoticeMessage((error as Error).message)))
         }
