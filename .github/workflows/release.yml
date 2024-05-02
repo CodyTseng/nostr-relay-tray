@@ -1,48 +1,56 @@
-name: Release
+name: Build/release
+
 on:
   push:
     tags:
-      - "v*"
+      - v*.*.*
 
 jobs:
-  publish_on_linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@master
-        with:
-          node-version: 20
-      - name: install dependencies
-        run: npm install
-      - name: publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
+  release:
+    runs-on: ${{ matrix.os }}
 
-  publish_on_mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@master
-        with:
-          node-version: 20
-      - name: install dependencies
-        run: npm install
-      - name: publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
-  publish_on_win:
-    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@master
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: 20
-      - name: install dependencies
+
+      - name: Install Dependencies
         run: npm install
-      - name: publish
+
+      - name: build-linux
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run build:linux
+
+      - name: build-mac
+        if: matrix.os == 'macos-latest'
+        run: npm run build:mac
+
+      - name: build-win
+        if: matrix.os == 'windows-latest'
+        run: npm run build:win
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: |
+            dist/*.exe
+            dist/*.zip
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.snap
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+            dist/*.yml
+            dist/*.blockmap
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
