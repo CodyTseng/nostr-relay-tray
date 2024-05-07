@@ -32,7 +32,9 @@ cd nostr-relay-tray
 npm install
 
 # Build the app
-npm run make
+npm run build:mac
+# or npm run build:win
+# or npm run build:linux
 ```
 
 The executable file will be in the `out` folder.
