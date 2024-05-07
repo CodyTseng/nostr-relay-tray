@@ -37,7 +37,7 @@ npm run build:mac
 # or npm run build:linux
 ```
 
-The executable file will be in the `out` folder.
+The executable file will be in the `dist` folder.
 
 ## Screenshot
 
