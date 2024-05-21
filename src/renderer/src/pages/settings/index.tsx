@@ -4,13 +4,18 @@ import { useEffect, useState } from 'react'
 
 export default function Settings(): JSX.Element {
   const [isAutoLaunchEnabled, setIsAutoLaunchEnabled] = useState(false)
+  const [isSetAutoLaunchFailed, setIsSetAutoLaunchFailed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleAutoLaunchToggle() {
     setIsLoading(true)
-    const newEnabled = await window.api.setAutoLaunchEnabled(!isAutoLaunchEnabled)
+    const newEnabled = !isAutoLaunchEnabled
+    const success = await window.api.setAutoLaunchEnabled(!isAutoLaunchEnabled)
     setIsLoading(false)
-    setIsAutoLaunchEnabled(newEnabled)
+    setIsSetAutoLaunchFailed(!success)
+    if (success) {
+      setIsAutoLaunchEnabled(newEnabled)
+    }
   }
 
   async function init() {
@@ -23,14 +28,21 @@ export default function Settings(): JSX.Element {
 
   return (
     <div className="p-2 space-y-4">
-      <div className="items-center flex space-x-2">
+      <div className="items-top flex space-x-2">
         <Checkbox
           id="auto-launch-checkbox"
           checked={isAutoLaunchEnabled}
           onClick={handleAutoLaunchToggle}
           disabled={isLoading}
         />
-        <Label htmlFor="auto-launch-checkbox">Start at login</Label>
+        <div className="grid gap-1.5 leading-none">
+          <Label htmlFor="auto-launch-checkbox">Start at login</Label>
+          {isSetAutoLaunchFailed ? (
+            <p className="text-sm text-red-500">No permission</p>
+          ) : (
+            <p className="text-sm text-gray-500">Automatically start on system startup</p>
+          )}
+        </div>
       </div>
     </div>
   )

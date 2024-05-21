@@ -18,7 +18,7 @@ import { getLocalIpAddress } from './utils'
 import AutoLaunch from 'auto-launch'
 
 const relay = new Relay()
-const autoLauncher = new AutoLaunch({ name: 'nostr-relay-tray' })
+const autoLauncher = new AutoLaunch({ name: 'nostr-relay-tray', isHidden: true })
 
 let mainWindow: BrowserWindow | null = null
 let isAutoLaunchEnabled = false
@@ -146,23 +146,29 @@ app.whenReady().then(async () => {
   })
   ipcMain.handle('isAutoLaunchEnabled', () => isAutoLaunchEnabled)
   ipcMain.handle('setAutoLaunchEnabled', async (_, enabled: boolean) => {
-    if (enabled === isAutoLaunchEnabled) return isAutoLaunchEnabled
+    if (enabled === isAutoLaunchEnabled) return true
 
-    if (enabled) {
-      await autoLauncher.enable()
-    } else {
-      await autoLauncher.disable()
+    try {
+      if (enabled) {
+        await autoLauncher.enable()
+      } else {
+        await autoLauncher.disable()
+      }
+
+      isAutoLaunchEnabled = await autoLauncher.isEnabled()
+      return true
+    } catch {
+      isAutoLaunchEnabled = false
+      return false
     }
-
-    isAutoLaunchEnabled = await autoLauncher.isEnabled()
-    return isAutoLaunchEnabled
   })
 
   createTray()
 
-  autoLauncher.isEnabled().then((isEnabled) => {
-    isAutoLaunchEnabled = isEnabled
-  })
+  autoLauncher
+    .isEnabled()
+    .then((isEnabled) => (isAutoLaunchEnabled = isEnabled))
+    .catch(() => {})
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
