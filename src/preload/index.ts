@@ -22,7 +22,9 @@ const api = {
     const startSuccess = await ipcRenderer.invoke('importEvents')
     ipcRenderer.removeAllListeners('importEvents:progress')
     return startSuccess
-  }
+  },
+  isAutoLaunchEnabled: () => ipcRenderer.invoke('isAutoLaunchEnabled'),
+  setAutoLaunchEnabled: (enabled: boolean) => ipcRenderer.invoke('setAutoLaunchEnabled', enabled)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

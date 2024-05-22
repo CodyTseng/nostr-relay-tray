@@ -15,9 +15,13 @@ import icon from '../../build/icon.png?asset'
 import nostrTemplate from '../../resources/nostrTemplate.png?asset'
 import { Relay } from './relay'
 import { getLocalIpAddress } from './utils'
+import AutoLaunch from 'auto-launch'
 
 const relay = new Relay()
+const autoLauncher = new AutoLaunch({ name: 'nostr-relay-tray', isHidden: true })
+
 let mainWindow: BrowserWindow | null = null
+let isAutoLaunchEnabled = false
 
 function createWindow(): void {
   if (BrowserWindow.getAllWindows().length > 0) {
@@ -37,6 +41,11 @@ function createWindow(): void {
       sandbox: false
     }
   })
+
+  // Open the DevTools.
+  if (is.dev) {
+    mainWindow.webContents.openDevTools()
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow!.setTitle('Nostr Relay Tray')
@@ -135,8 +144,31 @@ app.whenReady().then(async () => {
     })
     return true
   })
+  ipcMain.handle('isAutoLaunchEnabled', () => isAutoLaunchEnabled)
+  ipcMain.handle('setAutoLaunchEnabled', async (_, enabled: boolean) => {
+    if (enabled === isAutoLaunchEnabled) return true
+
+    try {
+      if (enabled) {
+        await autoLauncher.enable()
+      } else {
+        await autoLauncher.disable()
+      }
+
+      isAutoLaunchEnabled = await autoLauncher.isEnabled()
+      return true
+    } catch {
+      isAutoLaunchEnabled = false
+      return false
+    }
+  })
 
   createTray()
+
+  autoLauncher
+    .isEnabled()
+    .then((isEnabled) => (isAutoLaunchEnabled = isEnabled))
+    .catch(() => {})
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
