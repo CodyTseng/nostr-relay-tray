@@ -41,6 +41,7 @@ function createWindow(): void {
       sandbox: false
     }
   })
+  mainWindow.webContents.openDevTools()
 
   // Open the DevTools.
   if (is.dev) {

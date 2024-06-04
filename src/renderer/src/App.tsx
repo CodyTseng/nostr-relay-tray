@@ -12,6 +12,10 @@ const navItems = [
     href: '#/data'
   },
   {
+    title: 'Restrictions',
+    href: '#/restrictions'
+  },
+  {
     title: 'Settings',
     href: '#/settings'
   }
