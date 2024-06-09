@@ -19,6 +19,10 @@ declare global {
         delete: (id: number) => Promise<void>
         create: (rule: TNewRule) => Promise<void>
       }
+      config: {
+        get: (key: string) => Promise<string | null>
+        set: (key: string, value: string) => Promise<void>
+      }
     }
   }
 }

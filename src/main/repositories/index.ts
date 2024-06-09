@@ -2,6 +2,7 @@ import SQLite from 'better-sqlite3'
 import { Kysely, Migrator, SqliteDialect, MigrationProvider, Migration } from 'kysely'
 import { IDatabase } from './common'
 import { RuleRepository } from './rule.repository'
+import { ConfigRepository } from './config.repository'
 
 export * from './common'
 
@@ -36,7 +37,8 @@ export async function initRepositories() {
   }
 
   return {
-    rule: new RuleRepository(db)
+    rule: new RuleRepository(db),
+    config: new ConfigRepository(db)
   }
 }
 
@@ -56,6 +58,18 @@ const migrations: Record<string, Migration> = {
     },
     down: async (db) => {
       await db.schema.dropTable('rule').execute()
+    }
+  },
+  '002-create-config-table': {
+    up: async (db: Kysely<any>) => {
+      await db.schema
+        .createTable('config')
+        .addColumn('key', 'text', (col) => col.primaryKey())
+        .addColumn('value', 'text')
+        .execute()
+    },
+    down: async (db) => {
+      await db.schema.dropTable('config').execute()
     }
   }
 }

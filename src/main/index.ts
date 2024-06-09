@@ -174,6 +174,11 @@ app.whenReady().then(async () => {
   ipcMain.handle('rule.delete', (_, id: number) => repositories.rule.delete(id))
   ipcMain.handle('rule.create', (_, rule: any) => repositories.rule.create(rule))
 
+  ipcMain.handle('config.get', (_, key: string) => repositories.config.get(key))
+  ipcMain.handle('config.set', (_, key: string, value: string) =>
+    repositories.config.set(key, value)
+  )
+
   createTray()
 
   autoLauncher

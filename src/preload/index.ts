@@ -33,6 +33,10 @@ const api = {
     update: (id: number, rule: TRuleUpdate) => ipcRenderer.invoke('rule.update', id, rule),
     delete: (id: number) => ipcRenderer.invoke('rule.delete', id),
     create: (rule: TNewRule) => ipcRenderer.invoke('rule.create', rule)
+  },
+  config: {
+    get: (key: string) => ipcRenderer.invoke('config.get', key),
+    set: (key: string, value: string) => ipcRenderer.invoke('config.set', key, value)
   }
 }
 

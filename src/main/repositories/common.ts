@@ -3,6 +3,7 @@ import { TRuleAction } from '../../common/rule'
 
 export interface IDatabase {
   rule: IRuleTable
+  config: IConfigTable
 }
 
 export interface IRuleTable {
@@ -15,3 +16,9 @@ export interface IRuleTable {
   conditions: string
 }
 export type TRuleRow = Selectable<IRuleTable>
+
+export interface IConfigTable {
+  key: string
+  value: string
+}
+export type TConfigRow = Selectable<IConfigTable>
