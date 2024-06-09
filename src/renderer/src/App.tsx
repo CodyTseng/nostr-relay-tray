@@ -1,32 +1,43 @@
-import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
 import { Separator } from '@renderer/components/ui/separator'
+import { useEffect, useState } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 
 const navItems = [
   {
     title: 'Home',
-    href: '#/'
+    href: '/'
   },
   {
     title: 'Data',
-    href: '#/data'
+    href: '/data'
   },
   {
     title: 'Restrictions',
-    href: '#/restrictions'
+    href: '/restrictions'
   },
   {
     title: 'Settings',
-    href: '#/settings'
+    href: '/settings'
   }
 ]
 
 function App(): JSX.Element {
   const [active, setActive] = useState('Home')
 
+  let location = useLocation()
+  useEffect(() => {
+    const title =
+      location.pathname === '/'
+        ? 'Home'
+        : navItems.find((item) =>
+            item.href === '/' ? false : location.pathname.startsWith(item.href)
+          )?.title ?? 'Home'
+    setActive(title)
+  }, [location])
+
   const navList = navItems.map(({ title, href }) => {
     return (
-      <a href={href} onClick={() => setActive(title)}>
+      <a key={href} href={`#${href}`}>
         <div
           className={`py-1 ${title === active ? 'text-black font-bold' : 'text-gray-400'} hover:underline`}
         >

@@ -1,3 +1,4 @@
+import { RULE_ACTION, RULE_CONDITION_FIELD_NAME, TRuleCondition, TRuleFilter } from '@common/rule'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@renderer/components/ui/button'
 import {
@@ -17,33 +18,92 @@ import {
   SelectValue
 } from '@renderer/components/ui/select'
 import { Switch } from '@renderer/components/ui/switch'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
+import { nip19 } from 'nostr-tools'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import Rules, { TRule } from './rules'
-import { useState } from 'react'
+import RuleConditions from './rule-conditions'
+import { useParams } from 'react-router-dom'
 
 const formSchema = z.object({
-  name: z.string().min(1),
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .regex(/^[a-zA-Z0-9-]+$/, 'Only alphanumeric characters and hyphens are allowed'),
   description: z.string().optional(),
   action: z.enum(['block', 'allow']),
   enabled: z.boolean()
 })
 type TFormSchema = z.infer<typeof formSchema>
 
-export default function RestrictionEditor(): JSX.Element {
-  const [rules, setRules] = useState<TRule[]>([{ values: [] }])
+export default function RuleEditor(): JSX.Element {
+  const { id } = useParams<{ id?: string }>()
+  const [ruleId, setRuleId] = useState<number | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [ruleConditions, setRuleConditions] = useState<TRuleCondition[]>([{ values: [] }])
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      action: 'block',
+      description: '',
+      action: RULE_ACTION.BLOCK,
       enabled: false
     }
   })
 
+  const init = async () => {
+    if (!id) return
+
+    const idNumber = parseInt(id)
+    if (isNaN(idNumber)) return
+
+    const rule = await window.api.rule.findById(idNumber)
+    if (!rule) return
+
+    setRuleId(idNumber)
+    form.reset({
+      name: rule.name,
+      description: rule.description ?? '',
+      action: rule.action,
+      enabled: rule.enabled
+    })
+    setRuleConditions(rule.conditions)
+  }
+
+  useEffect(() => {
+    init()
+  }, [])
+
   const onSubmit = form.handleSubmit(async (data) => {
-    console.log(data, rules)
+    setSaving(true)
+    const filter: TRuleFilter = {}
+    ruleConditions.forEach((condition) => {
+      if (condition.fieldName) {
+        filter[condition.fieldName] =
+          condition.fieldName === RULE_CONDITION_FIELD_NAME.AUTHOR
+            ? condition.values.map((value) => {
+                const { data } = nip19.decode(value as string)
+                return data as string
+              })
+            : condition.values
+      }
+    })
+
+    if (ruleId) {
+      await window.api.rule.update(ruleId, {
+        ...data,
+        filter,
+        conditions: ruleConditions
+      })
+    } else {
+      await window.api.rule.create({
+        ...data,
+        filter,
+        conditions: ruleConditions
+      })
+    }
+    window.location.href = '#/restrictions'
   })
 
   return (
@@ -96,8 +156,8 @@ export default function RestrictionEditor(): JSX.Element {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="block">Block</SelectItem>
-                      <SelectItem value="allow">Allow</SelectItem>
+                      <SelectItem value={RULE_ACTION.BLOCK}>Block</SelectItem>
+                      <SelectItem value={RULE_ACTION.ALLOW}>Allow</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -105,8 +165,8 @@ export default function RestrictionEditor(): JSX.Element {
               )}
             />
             <FormItem>
-              <FormLabel>Rules</FormLabel>
-              <Rules rules={rules} setRules={setRules} />
+              <FormLabel>Conditions</FormLabel>
+              <RuleConditions conditions={ruleConditions} setConditions={setRuleConditions} />
             </FormItem>
             <div className="flex justify-between items-center">
               <FormField
@@ -124,7 +184,9 @@ export default function RestrictionEditor(): JSX.Element {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Save</Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Save
+              </Button>
             </div>
           </form>
         </Form>

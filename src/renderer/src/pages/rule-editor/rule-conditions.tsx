@@ -1,3 +1,10 @@
+import {
+  MAX_RULE_CONDITIONS,
+  RULE_CONDITION_FIELD_NAME,
+  RULE_CONDITION_FIELD_NAMES,
+  TRuleCondition,
+  TRuleConditionFieldName
+} from '@common/rule'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
@@ -12,30 +19,27 @@ import { X } from 'lucide-react'
 import { ChangeEvent, Dispatch, SetStateAction, useState } from 'react'
 import { z } from 'zod'
 
-const FIELD_NAMES = ['author', 'kind', 'tag'] as const
-type TFieldName = (typeof FIELD_NAMES)[number]
-
-export type TRule = {
-  fieldName?: TFieldName
-  values: string[]
-}
-
-export default function Rules({
-  rules,
-  setRules
+export default function RuleConditions({
+  conditions,
+  setConditions
 }: {
-  rules: TRule[]
-  setRules: Dispatch<SetStateAction<TRule[]>>
+  conditions: TRuleCondition[]
+  setConditions: Dispatch<SetStateAction<TRuleCondition[]>>
 }): JSX.Element {
   return (
     <div className="space-y-2">
-      {rules.map((_, index) => (
-        <Rule index={index} rules={rules} setRules={setRules} />
+      {conditions.map((_, index) => (
+        <RuleCondition
+          key={index}
+          index={index}
+          conditions={conditions}
+          setConditions={setConditions}
+        />
       ))}
-      {rules.length < FIELD_NAMES.length ? (
+      {conditions.length < MAX_RULE_CONDITIONS ? (
         <Button
           variant="outline"
-          onClick={() => setRules([...rules, { values: [] }])}
+          onClick={() => setConditions([...conditions, { values: [] }])}
           type="button"
         >
           And
@@ -45,23 +49,23 @@ export default function Rules({
   )
 }
 
-export function Rule({
+export function RuleCondition({
   index,
-  rules,
-  setRules
+  conditions,
+  setConditions
 }: {
   index: number
-  rules: TRule[]
-  setRules: Dispatch<SetStateAction<TRule[]>>
+  conditions: TRuleCondition[]
+  setConditions: Dispatch<SetStateAction<TRuleCondition[]>>
 }): JSX.Element {
-  const currentRule = rules[index]
-  const selectedFieldNames = rules.map((rule) => rule.fieldName).filter(Boolean)
+  const currentRule = conditions[index]
+  const selectedFieldNames = conditions.map((rule) => rule.fieldName).filter(Boolean)
   const valuePlaceholder =
-    currentRule.fieldName === 'author'
+    currentRule.fieldName === RULE_CONDITION_FIELD_NAME.AUTHOR
       ? 'npub'
-      : currentRule.fieldName === 'kind'
+      : currentRule.fieldName === RULE_CONDITION_FIELD_NAME.KIND
         ? 'kind number'
-        : currentRule.fieldName === 'tag'
+        : currentRule.fieldName === RULE_CONDITION_FIELD_NAME.TAG
           ? 'tagName:tagValue'
           : ''
   const valueValidator = getValidator(currentRule.fieldName)
@@ -70,10 +74,10 @@ export function Rule({
   const [isInputValid, setIsInputValid] = useState(true)
   const [valueError, setValueError] = useState<string | null>(null)
 
-  const onFieldNameChange = (fieldName: TFieldName) => {
-    const newRules = [...rules]
+  const onFieldNameChange = (fieldName: TRuleConditionFieldName) => {
+    const newRules = [...conditions]
     newRules[index] = { fieldName, values: [] }
-    setRules(newRules)
+    setConditions(newRules)
   }
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -101,33 +105,33 @@ export function Rule({
     }
 
     setInputValue('')
-    const newRules = [...rules]
+    const newRules = [...conditions]
     newRules[index] = { ...currentRule, values: [...currentRule.values, value] }
-    setRules(newRules)
+    setConditions(newRules)
   }
 
   const deleteValue = (value) => {
-    const newRules = [...rules]
+    const newRules = [...conditions]
     newRules[index] = {
       ...currentRule,
       values: currentRule.values.filter((v) => v !== value)
     }
-    setRules(newRules)
+    setConditions(newRules)
   }
 
   return (
     <div className="space-y-2">
       <div className="flex items-center space-x-2">
         <Select
-          onValueChange={(value: TFieldName) => onFieldNameChange(value)}
+          onValueChange={(value: TRuleConditionFieldName) => onFieldNameChange(value)}
           value={currentRule.fieldName}
         >
           <SelectTrigger className="w-32 min-w-32">
             <SelectValue placeholder="Select..." />
           </SelectTrigger>
           <SelectContent>
-            {FIELD_NAMES.map((name) => (
-              <SelectItem value={name} disabled={selectedFieldNames.includes(name)}>
+            {RULE_CONDITION_FIELD_NAMES.map((name) => (
+              <SelectItem key={name} value={name} disabled={selectedFieldNames.includes(name)}>
                 {name}
               </SelectItem>
             ))}
@@ -149,11 +153,11 @@ export function Rule({
         >
           Add
         </Button>
-        {rules.length > 1 ? (
+        {conditions.length > 1 ? (
           <Button
             className="p-0"
             variant="link"
-            onClick={() => setRules(rules.filter((_, i) => i !== index))}
+            onClick={() => setConditions(conditions.filter((_, i) => i !== index))}
             type="button"
           >
             <X size={16} />
@@ -162,8 +166,8 @@ export function Rule({
       </div>
       {!!valueError ? <p className="text-red-500 pl-40">{valueError}</p> : null}
       <div className="flex flex-wrap pl-40">
-        {currentRule.values?.map((value) => (
-          <Badge className="flex m-1" variant="secondary">
+        {currentRule.values?.map((value, index) => (
+          <Badge key={index} className="flex m-1" variant="secondary">
             {truncateValue(value)}
             <Button
               className="p-0 m-0"
@@ -180,22 +184,22 @@ export function Rule({
   )
 }
 
-function truncateValue(value: string): string {
-  if (value.startsWith('npub')) {
+function truncateValue(value: string | number): string | number {
+  if (typeof value === 'string' && value.startsWith('npub')) {
     return `${value.slice(0, 8)}...${value.slice(-4)}`
   }
   return value
 }
 
-function getValidator(fieldName?: TFieldName) {
+function getValidator(fieldName?: TRuleConditionFieldName) {
   switch (fieldName) {
-    case 'author':
+    case RULE_CONDITION_FIELD_NAME.AUTHOR:
       return z
         .string({
           message: 'Please enter a npub format public key'
         })
         .regex(/^npub[0-9a-zA-Z]{59}$/, 'Please enter a npub format public key')
-    case 'kind':
+    case RULE_CONDITION_FIELD_NAME.KIND:
       return z.preprocess(
         (value) => {
           if (typeof value === 'string') {
@@ -208,7 +212,7 @@ function getValidator(fieldName?: TFieldName) {
           .min(0, 'Kind number must be greater than or equal to 0')
           .max(40000, 'Kind number must be less than or equal to 40000')
       )
-    case 'tag':
+    case RULE_CONDITION_FIELD_NAME.TAG:
       return z
         .string({
           message: 'Please enter a tag name and value in the format: tagName:tagValue'

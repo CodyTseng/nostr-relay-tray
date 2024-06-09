@@ -1,3 +1,4 @@
+import { TRuleAction } from '@common/rule'
 import { Button } from '@renderer/components/ui/button'
 import {
   DropdownMenu,
@@ -10,14 +11,15 @@ import { ColumnDef } from '@tanstack/react-table'
 import { MoreVertical } from 'lucide-react'
 import { useState } from 'react'
 
-export type Rule = {
+export type TRow = {
+  id: number
   name: string
-  description: string
-  action: 'block' | 'allow'
+  description?: string
+  action: TRuleAction
   enabled: boolean
 }
 
-export const columns: ColumnDef<Rule>[] = [
+export const columns: ColumnDef<TRow>[] = [
   {
     accessorKey: 'name',
     header: 'Name'
@@ -28,16 +30,21 @@ export const columns: ColumnDef<Rule>[] = [
   },
   {
     accessorKey: 'description',
-    header: 'Description'
+    header: 'Description',
+    cell: ({ row }) => {
+      return row.original.description && row.original.description.length > 35
+        ? row.original.description.slice(0, 35) + '...'
+        : row.original.description
+    }
   },
   {
     accessorKey: 'enabled',
     header: 'Enabled',
     cell: ({ row }) => {
       const [enabled, setEnabled] = useState(row.original.enabled)
-      const handleSwitch = () => {
+      const handleSwitch = async () => {
+        await window.api.rule.update(row.original.id, { enabled: !enabled })
         setEnabled(!enabled)
-        row
       }
 
       return <Switch checked={enabled} onClick={handleSwitch} />
@@ -55,10 +62,19 @@ export const columns: ColumnDef<Rule>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => alert(`Edit payment ID ${row.id}`)}>
+            <DropdownMenuItem
+              onClick={() => {
+                window.location.href = `#/restrictions/rule-editor/${row.original.id}`
+              }}
+            >
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => alert(`Delete payment ID ${row.id}`)}>
+            <DropdownMenuItem
+              onClick={() => {
+                window.api.rule.delete(row.original.id)
+                window.location.reload()
+              }}
+            >
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -35,6 +35,8 @@
     "auto-launch": "^5.0.6",
     "better-sqlite3": "^9.5.0",
     "fastify": "^4.26.2",
+    "kysely": "^0.27.3",
+    "nostr-tools": "^2.7.0",
     "ws": "^8.16.0"
   },
   "devDependencies": {

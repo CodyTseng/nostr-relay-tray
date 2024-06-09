@@ -16,6 +16,7 @@ import nostrTemplate from '../../resources/nostrTemplate.png?asset'
 import { Relay } from './relay'
 import { getLocalIpAddress } from './utils'
 import AutoLaunch from 'auto-launch'
+import { initRepositories } from './repositories'
 
 const relay = new Relay()
 const autoLauncher = new AutoLaunch({ name: 'nostr-relay-tray', isHidden: true })
@@ -31,7 +32,7 @@ function createWindow(): void {
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 900,
+    width: is.dev ? 1300 : 800,
     height: 670,
     show: false,
     autoHideMenuBar: true,
@@ -116,6 +117,7 @@ app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.nostr-relay-tray.app')
 
   await relay.init()
+  const repositories = await initRepositories()
 
   ipcMain.handle('getTotalEventCount', () => relay.getTotalEventCount())
   ipcMain.handle('getEventStatistics', () => relay.getEventStatistics())
@@ -163,6 +165,14 @@ app.whenReady().then(async () => {
       return false
     }
   })
+
+  ipcMain.handle('rule.find', (_, page: number, limit: number) =>
+    repositories.rule.find(page, limit)
+  )
+  ipcMain.handle('rule.findById', (_, id: number) => repositories.rule.findById(id))
+  ipcMain.handle('rule.update', (_, id: number, rule: any) => repositories.rule.update(id, rule))
+  ipcMain.handle('rule.delete', (_, id: number) => repositories.rule.delete(id))
+  ipcMain.handle('rule.create', (_, rule: any) => repositories.rule.create(rule))
 
   createTray()
 
