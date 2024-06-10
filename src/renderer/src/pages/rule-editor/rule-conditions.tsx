@@ -60,14 +60,13 @@ export function RuleCondition({
 }): JSX.Element {
   const currentRule = conditions[index]
   const selectedFieldNames = conditions.map((rule) => rule.fieldName).filter(Boolean)
-  const valuePlaceholder =
-    currentRule.fieldName === RULE_CONDITION_FIELD_NAME.AUTHOR
+  const valuePlaceholder = currentRule.fieldName
+    ? currentRule.fieldName === RULE_CONDITION_FIELD_NAME.AUTHOR
       ? 'npub'
       : currentRule.fieldName === RULE_CONDITION_FIELD_NAME.KIND
         ? 'kind number'
-        : currentRule.fieldName === RULE_CONDITION_FIELD_NAME.TAG
-          ? 'tagName:tagValue'
-          : ''
+        : 'tag value'
+    : ''
   const valueValidator = getValidator(currentRule.fieldName)
 
   const [inputValue, setInputValue] = useState('')
@@ -92,16 +91,14 @@ export function RuleCondition({
       return
     }
 
-    if (valueValidator) {
-      try {
-        valueValidator.parse(value)
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          setValueError(error.format()._errors[0])
-        }
-        setIsInputValid(false)
-        return
+    try {
+      valueValidator.parse(value)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setValueError(error.format()._errors[0])
       }
+      setIsInputValid(false)
+      return
     }
 
     setInputValue('')
@@ -212,16 +209,9 @@ function getValidator(fieldName?: TRuleConditionFieldName) {
           .min(0, 'Kind number must be greater than or equal to 0')
           .max(40000, 'Kind number must be less than or equal to 40000')
       )
-    case RULE_CONDITION_FIELD_NAME.TAG:
-      return z
-        .string({
-          message: 'Please enter a tag name and value in the format: tagName:tagValue'
-        })
-        .regex(
-          /^[a-zA-Z0-9]+:[a-zA-Z0-9]+$/,
-          'Please enter a tag name and value in the format: tagName:tagValue'
-        )
     default:
-      return undefined
+      return z.string({
+        message: 'Please enter a valid tag value'
+      })
   }
 }
