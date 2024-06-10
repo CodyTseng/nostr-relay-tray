@@ -1,5 +1,4 @@
 import {
-  MAX_RULE_CONDITIONS,
   RULE_CONDITION_FIELD_NAME,
   RULE_CONDITION_FIELD_NAMES,
   TRuleCondition,
@@ -36,15 +35,13 @@ export default function RuleConditions({
           setConditions={setConditions}
         />
       ))}
-      {conditions.length < MAX_RULE_CONDITIONS ? (
-        <Button
-          variant="outline"
-          onClick={() => setConditions([...conditions, { values: [] }])}
-          type="button"
-        >
-          And
-        </Button>
-      ) : null}
+      <Button
+        variant="outline"
+        onClick={() => setConditions([...conditions, { values: [] }])}
+        type="button"
+      >
+        And
+      </Button>
     </div>
   )
 }
@@ -65,7 +62,7 @@ export function RuleCondition({
       ? 'npub'
       : currentRule.fieldName === RULE_CONDITION_FIELD_NAME.KIND
         ? 'kind number'
-        : 'tag value'
+        : 'TagName:TagValue'
     : ''
   const valueValidator = getValidator(currentRule.fieldName)
 
@@ -128,7 +125,13 @@ export function RuleCondition({
           </SelectTrigger>
           <SelectContent>
             {RULE_CONDITION_FIELD_NAMES.map((name) => (
-              <SelectItem key={name} value={name} disabled={selectedFieldNames.includes(name)}>
+              <SelectItem
+                key={name}
+                value={name}
+                disabled={
+                  name === RULE_CONDITION_FIELD_NAME.TAG ? false : selectedFieldNames.includes(name)
+                }
+              >
                 {name}
               </SelectItem>
             ))}
@@ -210,8 +213,11 @@ function getValidator(fieldName?: TRuleConditionFieldName) {
           .max(40000, 'Kind number must be less than or equal to 40000')
       )
     default:
-      return z.string({
-        message: 'Please enter a valid tag value'
-      })
+      return z
+        .string({
+          message: 'Please enter a string in the format TagName:TagValue'
+        })
+        .regex(/^.+:.+$/, 'Please enter a string in the format TagName:TagValue')
+        .trim()
   }
 }
