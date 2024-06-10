@@ -1,4 +1,5 @@
 import { electronApp, is } from '@electron-toolkit/utils'
+import AutoLaunch from 'auto-launch'
 import {
   app,
   BrowserWindow,
@@ -13,9 +14,12 @@ import {
 import { join } from 'path'
 import icon from '../../build/icon.png?asset'
 import nostrTemplate from '../../resources/nostrTemplate.png?asset'
+import { CONFIG_KEY } from '../common/config'
+import { RULE_ACTION, TRule, TRuleAction } from '../common/rule'
+import { RestrictionPlugin } from './plugins/restriction.plugin'
 import { Relay } from './relay'
+import { initRepositories } from './repositories'
 import { getLocalIpAddress } from './utils'
-import AutoLaunch from 'auto-launch'
 
 const relay = new Relay()
 const autoLauncher = new AutoLaunch({ name: 'nostr-relay-tray', isHidden: true })
@@ -31,7 +35,7 @@ function createWindow(): void {
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 900,
+    width: is.dev ? 1300 : 800,
     height: 670,
     show: false,
     autoHideMenuBar: true,
@@ -114,7 +118,23 @@ app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.nostr-relay-tray.app')
 
-  await relay.init()
+  const repositories = await initRepositories()
+  const restrictionPlugin = new RestrictionPlugin()
+
+  const updateRestriction = async () => {
+    const defaultEventAction =
+      (await repositories.config.get(CONFIG_KEY.DEFAULT_EVENT_ACTION)) ?? RULE_ACTION.ALLOW
+    restrictionPlugin.updateDefaultAction(defaultEventAction as TRuleAction)
+
+    const rules = await repositories.rule.findAll({
+      action: defaultEventAction === RULE_ACTION.ALLOW ? RULE_ACTION.BLOCK : RULE_ACTION.ALLOW,
+      enabled: true
+    })
+    restrictionPlugin.updateFiltersByRules(rules)
+  }
+
+  await updateRestriction()
+  await relay.init([restrictionPlugin])
 
   ipcMain.handle('getTotalEventCount', () => relay.getTotalEventCount())
   ipcMain.handle('getEventStatistics', () => relay.getEventStatistics())
@@ -160,6 +180,31 @@ app.whenReady().then(async () => {
     } catch {
       isAutoLaunchEnabled = false
       return false
+    }
+  })
+
+  ipcMain.handle('rule.find', (_, page: number, limit: number) =>
+    repositories.rule.find(page, limit)
+  )
+  ipcMain.handle('rule.findById', (_, id: number) => repositories.rule.findById(id))
+  ipcMain.handle('rule.update', async (_, id: number, rule: any) => {
+    await repositories.rule.update(id, rule)
+    await updateRestriction()
+  })
+  ipcMain.handle('rule.delete', async (_, id: number) => {
+    await repositories.rule.delete(id)
+    await updateRestriction()
+  })
+  ipcMain.handle('rule.create', async (_, rule: TRule) => {
+    await repositories.rule.create(rule)
+    await updateRestriction()
+  })
+
+  ipcMain.handle('config.get', (_, key: string) => repositories.config.get(key))
+  ipcMain.handle('config.set', async (_, key: string, value: string) => {
+    await repositories.config.set(key, value)
+    if (key === CONFIG_KEY.DEFAULT_EVENT_ACTION) {
+      await updateRestriction()
     }
   })
 

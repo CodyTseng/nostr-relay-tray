@@ -1,4 +1,5 @@
 import cors from '@fastify/cors'
+import { NostrRelayPlugin } from '@nostr-relay/common'
 import { createOutgoingNoticeMessage, NostrRelay } from '@nostr-relay/core'
 import { EventRepositorySqlite } from '@nostr-relay/event-repository-sqlite'
 import { Validator } from '@nostr-relay/validator'
@@ -25,7 +26,7 @@ export class Relay {
     this.eventRepository = new EventRepositorySqlite(this.db)
   }
 
-  async init() {
+  async init(plugins: NostrRelayPlugin[] = []) {
     const server = fastify()
     await server.register(cors, {
       origin: '*'
@@ -37,6 +38,10 @@ export class Relay {
     })
 
     const relay = new NostrRelay(this.eventRepository)
+
+    for (const plugin of plugins) {
+      relay.register(plugin)
+    }
 
     wss.on('connection', (ws) => {
       relay.handleConnection(ws)
