@@ -1,4 +1,4 @@
-import { RULE_ACTION, RULE_CONDITION_FIELD_NAME, TRuleCondition, TRuleFilter } from '@common/rule'
+import { RULE_ACTION, TRuleCondition } from '@common/rule'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@renderer/components/ui/button'
 import {
@@ -19,12 +19,11 @@ import {
 } from '@renderer/components/ui/select'
 import { Switch } from '@renderer/components/ui/switch'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-import { nip19 } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useParams } from 'react-router-dom'
 import { z } from 'zod'
 import RuleConditions from './rule-conditions'
-import { useParams } from 'react-router-dom'
 
 const formSchema = z.object({
   name: z
@@ -77,29 +76,15 @@ export default function RuleEditor(): JSX.Element {
 
   const onSubmit = form.handleSubmit(async (data) => {
     setSaving(true)
-    const filter: TRuleFilter = {}
-    ruleConditions.forEach((condition) => {
-      if (condition.fieldName) {
-        filter[condition.fieldName] =
-          condition.fieldName === RULE_CONDITION_FIELD_NAME.AUTHOR
-            ? condition.values.map((value) => {
-                const { data } = nip19.decode(value as string)
-                return data as string
-              })
-            : condition.values
-      }
-    })
 
     if (ruleId) {
       await window.api.rule.update(ruleId, {
         ...data,
-        filter,
         conditions: ruleConditions
       })
     } else {
       await window.api.rule.create({
         ...data,
-        filter,
         conditions: ruleConditions
       })
     }
@@ -149,7 +134,7 @@ export default function RuleEditor(): JSX.Element {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Action</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />

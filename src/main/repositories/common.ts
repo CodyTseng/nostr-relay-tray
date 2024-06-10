@@ -12,7 +12,6 @@ export interface IRuleTable {
   description?: string
   action: TRuleAction
   enabled: number
-  filter: string
   conditions: string
 }
 export type TRuleRow = Selectable<IRuleTable>

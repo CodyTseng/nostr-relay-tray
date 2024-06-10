@@ -1,3 +1,4 @@
+import { CONFIG_KEY } from '@common/config'
 import { RULE_ACTION, TRuleAction } from '@common/rule'
 import { Button } from '@renderer/components/ui/button'
 import { Label } from '@renderer/components/ui/label'
@@ -18,7 +19,7 @@ export default function Restrictions() {
 
   const init = async () => {
     await fetchAndSetData()
-    const defaultAction = await window.api.config.get('default-event-action')
+    const defaultAction = await window.api.config.get(CONFIG_KEY.DEFAULT_EVENT_ACTION)
     if (defaultAction) {
       setDefaultAction(defaultAction as TRuleAction)
     }
@@ -34,7 +35,7 @@ export default function Restrictions() {
 
   const handleRatioChange = async (value: string) => {
     const defaultAction = value === RULE_ACTION.ALLOW ? RULE_ACTION.ALLOW : RULE_ACTION.BLOCK
-    await window.api.config.set('default-event-action', defaultAction)
+    await window.api.config.set(CONFIG_KEY.DEFAULT_EVENT_ACTION, defaultAction)
     setDefaultAction(defaultAction)
   }
 
@@ -46,7 +47,6 @@ export default function Restrictions() {
         </a>
         <RadioGroup
           className="flex"
-          defaultValue={defaultAction}
           value={defaultAction}
           onValueChange={(value) => handleRatioChange(value)}
         >

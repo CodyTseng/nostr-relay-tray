@@ -80,7 +80,6 @@ export type TRule = {
   description?: string
   action: TRuleAction
   enabled: boolean
-  filter: TRuleFilter
   conditions: TRuleCondition[]
 }
 export type TNewRule = Omit<TRule, 'id'>

@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely'
-import { TNewRule, TRule, TRuleCondition, TRuleFilter, TRuleUpdate } from '../../common/rule'
+import { TNewRule, TRule, TRuleAction, TRuleCondition, TRuleUpdate } from '../../common/rule'
 import { IDatabase, TRuleRow } from './common'
 
 export class RuleRepository {
@@ -13,7 +13,6 @@ export class RuleRepository {
         description: restriction.description,
         action: restriction.action,
         enabled: restriction.enabled ? 1 : 0,
-        filter: JSON.stringify(restriction.filter),
         conditions: JSON.stringify(restriction.conditions)
       })
       .execute()
@@ -35,6 +34,21 @@ export class RuleRepository {
     return row ? this.toRule(row) : null
   }
 
+  async findAll(filter: { action?: TRuleAction; enabled?: boolean } = {}) {
+    let query = this.db.selectFrom('rule').selectAll()
+
+    if (filter.action) {
+      query = query.where('action', '=', filter.action)
+    }
+
+    if (filter.enabled !== undefined) {
+      query = query.where('enabled', '=', filter.enabled ? 1 : 0)
+    }
+
+    const rows = await query.execute()
+    return rows.map((row) => this.toRule(row))
+  }
+
   async update(id: number, restriction: TRuleUpdate) {
     await this.db
       .updateTable('rule')
@@ -43,7 +57,6 @@ export class RuleRepository {
         description: restriction.description,
         action: restriction.action,
         enabled: restriction.enabled ? 1 : 0,
-        filter: restriction.filter ? JSON.stringify(restriction.filter) : undefined,
         conditions: restriction.conditions ? JSON.stringify(restriction.conditions) : undefined
       })
       .where('id', '=', id)
@@ -61,7 +74,6 @@ export class RuleRepository {
       description: row.description,
       action: row.action,
       enabled: row.enabled === 1 ? true : false,
-      filter: JSON.parse(row.filter) as TRuleFilter,
       conditions: JSON.parse(row.conditions) as TRuleCondition[]
     }
   }

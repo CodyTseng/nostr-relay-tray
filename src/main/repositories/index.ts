@@ -52,7 +52,6 @@ const migrations: Record<string, Migration> = {
         .addColumn('description', 'text')
         .addColumn('action', 'text', (col) => col.notNull())
         .addColumn('enabled', 'boolean', (col) => col.notNull())
-        .addColumn('filter', 'text', (col) => col.notNull())
         .addColumn('conditions', 'text', (col) => col.notNull())
         .execute()
     },
