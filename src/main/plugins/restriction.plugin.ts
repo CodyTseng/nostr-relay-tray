@@ -52,7 +52,7 @@ export class RestrictionPlugin implements HandleMessagePlugin {
     this.filters = rules.map((rule) => {
       const filter: TRuleFilter = {}
       rule.conditions.forEach((condition) => {
-        if (!condition.fieldName) return
+        if (!condition.fieldName || condition.values.length <= 0) return
         if (condition.fieldName !== RULE_CONDITION_FIELD_NAME.AUTHOR) {
           filter[condition.fieldName] = condition.values
         }

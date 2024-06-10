@@ -3,12 +3,15 @@ import { Kysely, Migrator, SqliteDialect, MigrationProvider, Migration } from 'k
 import { IDatabase } from './common'
 import { RuleRepository } from './rule.repository'
 import { ConfigRepository } from './config.repository'
+import { app } from 'electron'
+import path from 'path'
 
 export * from './common'
 
 export async function initRepositories() {
+  const userPath = app.getPath('userData')
   const dialect = new SqliteDialect({
-    database: new SQLite(':memory:')
+    database: new SQLite(path.join(userPath, 'app.db'))
   })
 
   const db = new Kysely<IDatabase>({
