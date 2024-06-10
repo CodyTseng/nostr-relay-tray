@@ -29,6 +29,7 @@
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
     "@fastify/cors": "^9.0.1",
+    "@nostr-relay/common": "^0.0.20",
     "@nostr-relay/core": "^0.0.20",
     "@nostr-relay/event-repository-sqlite": "^0.0.20",
     "@nostr-relay/validator": "^0.0.20",
