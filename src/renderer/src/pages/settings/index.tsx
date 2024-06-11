@@ -27,7 +27,7 @@ export default function Settings(): JSX.Element {
   }, [])
 
   return (
-    <div className="p-2 space-y-4">
+    <div className="space-y-4">
       <div className="items-top flex space-x-2">
         <Checkbox
           id="auto-launch-checkbox"

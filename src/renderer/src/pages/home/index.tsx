@@ -25,33 +25,31 @@ export default function Home(): JSX.Element {
   }, [])
 
   return (
-    <>
-      <div className="p-2 space-y-4">
-        <Card className="flex flex-col flex-1 p-4 justify-center">
-          <div className="flex justify-between">
-            <p className="text-slate-500">Total Events</p>
-          </div>
-          <div className="text-4xl font-bold">{totalEventCount}</div>
-        </Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>kind</TableHead>
-              <TableHead>description</TableHead>
-              <TableHead>count</TableHead>
+    <div className="space-y-4">
+      <Card className="flex flex-col flex-1 p-4 justify-center">
+        <div className="flex justify-between">
+          <p className="text-slate-500">Total Events</p>
+        </div>
+        <div className="text-4xl font-bold">{totalEventCount}</div>
+      </Card>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>kind</TableHead>
+            <TableHead>description</TableHead>
+            <TableHead>count</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {eventStatistics.map(({ kind, count, description }) => (
+            <TableRow key={kind}>
+              <TableCell>{kind}</TableCell>
+              <TableCell>{description}</TableCell>
+              <TableCell>{count}</TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {eventStatistics.map(({ kind, count, description }) => (
-              <TableRow key={kind}>
-                <TableCell>{kind}</TableCell>
-                <TableCell>{description}</TableCell>
-                <TableCell>{count}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

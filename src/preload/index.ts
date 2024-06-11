@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { contextBridge, ipcRenderer } from 'electron'
 import { TNewRule, TRuleUpdate } from '../common/rule'
 
 // Custom APIs for renderer

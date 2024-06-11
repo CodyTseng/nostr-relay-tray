@@ -40,7 +40,7 @@ export default function Restrictions() {
   }
 
   return (
-    <div className="container mx-auto p-2 space-y-4">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
         <a href="#/restrictions/rule-editor">
           <Button>Create rule</Button>

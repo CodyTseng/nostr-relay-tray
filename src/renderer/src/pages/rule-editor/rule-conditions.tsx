@@ -36,6 +36,7 @@ export default function RuleConditions({
         />
       ))}
       <Button
+        className="w-full"
         variant="outline"
         onClick={() => setConditions([...conditions, { values: [] }])}
         type="button"
@@ -170,7 +171,7 @@ export function RuleCondition({
           <Badge key={index} className="flex m-1" variant="secondary">
             {truncateValue(value)}
             <Button
-              className="p-0 m-0"
+              className="p-0 m-0 h-min"
               type="button"
               variant="link"
               onClick={() => deleteValue(value)}
