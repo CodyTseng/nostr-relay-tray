@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <img src="assets/icon.png" alt="nostr-relay-tray" width="210">
+  <img src="resources/icon.png" alt="nostr-relay-tray" width="210">
   <br>
   nostr-relay-tray
   <br>
@@ -10,6 +10,13 @@
 <h4 align="center">A simple nostr relay tray. For Mac, Windows, and Linux. </h4>
 
 <p align="center">powered by <a href="https://github.com/CodyTseng/nostr-relay">nostr-relay</a></p>
+
+## Features
+
+- **Comprehensive**: A fully featured Nostr relay.
+- **User-Friendly**: Start the relay with a single click.
+- **Granular Control**: Manage which events to accept or reject with precision.
+- **Cross-Platform**: Available for macOS, Windows, and Linux.
 
 ## Download
 
@@ -41,7 +48,11 @@ The executable file will be in the `dist` folder.
 
 ## Screenshot
 
-![screenshot](./screenshots/screenshot.png)
+![screenshot](./screenshots/screenshot-1.png)
+
+![screenshot](./screenshots/screenshot-2.png)
+
+![screenshot](./screenshots/screenshot-3.png)
 
 ## Donate
 
