@@ -35,8 +35,8 @@ function createWindow(): void {
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: is.dev ? 1300 : 800,
-    height: 670,
+    width: 840,
+    height: 630,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),

@@ -1,4 +1,3 @@
-import { Separator } from '@renderer/components/ui/separator'
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 
@@ -47,15 +46,12 @@ function App(): JSX.Element {
     )
   })
   return (
-    <>
-      <div className="flex h-screen">
-        <div className="flex-shrink-0 w-40 pt-8 pl-8">{navList}</div>
-        <Separator orientation="vertical" />
-        <div className="flex-1 p-4">
-          <Outlet />
-        </div>
+    <div className="flex">
+      <div className="flex-shrink-0 w-36 pt-7 pl-6">{navList}</div>
+      <div className="flex-1 pt-4 pr-6">
+        <Outlet />
       </div>
-    </>
+    </div>
   )
 }
 
