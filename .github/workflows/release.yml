@@ -1,7 +1,6 @@
 name: Build/release
 
 on:
-  pull_request:
   push:
     tags:
       - v*.*.*
