@@ -20,7 +20,7 @@
 
 ## Download
 
-You can download the latest version from the [release page](https://github.com/CodyTseng/nostr-relay-tray/releases).
+You can download the latest version from the [release page](https://github.com/CodyTseng/nostr-relay-tray/releases). If you want to use Apple Silicon version, you need to build it from the source code.
 
 Because the app is not signed, you may need to allow it to run in the system settings.
 
