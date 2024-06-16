@@ -21,9 +21,9 @@ import { Switch } from '@renderer/components/ui/switch'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
-import RuleConditions from './rule-conditions'
+import RuleConditions from './components/rule-conditions'
 
 const formSchema = z.object({
   name: z
@@ -36,7 +36,7 @@ const formSchema = z.object({
 })
 type TFormSchema = z.infer<typeof formSchema>
 
-export default function RuleEditor(): JSX.Element {
+export default function EditRule(): JSX.Element {
   const { id } = useParams<{ id?: string }>()
   const [ruleId, setRuleId] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
@@ -88,17 +88,17 @@ export default function RuleEditor(): JSX.Element {
         conditions: ruleConditions
       })
     }
-    window.location.href = '#/restrictions'
+    window.location.href = '#/rules'
   })
 
   return (
     <div className="space-y-4">
-      <a href="#/restrictions">
+      <Link to="/rules">
         <Button variant="link" className="p-0">
           <ArrowLeft size={16} className="mr-1" />
           Back
         </Button>
-      </a>
+      </Link>
       <Form {...form}>
         <form onSubmit={onSubmit} className="space-y-2">
           <FormField

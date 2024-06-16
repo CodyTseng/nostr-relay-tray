@@ -4,10 +4,11 @@ import { Button } from '@renderer/components/ui/button'
 import { Label } from '@renderer/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@renderer/components/ui/radio-group'
 import { useEffect, useState } from 'react'
-import { TRow, columns } from './columns'
-import { DataTable } from './data-table'
+import { Link } from 'react-router-dom'
+import { TRow, columns } from './components/columns'
+import { DataTable } from './components/data-table'
 
-export default function Restrictions() {
+export default function Rules() {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 6 })
   const [data, setData] = useState<TRow[]>([])
   const [defaultAction, setDefaultAction] = useState<TRuleAction>(RULE_ACTION.ALLOW)
@@ -42,9 +43,9 @@ export default function Restrictions() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <a href="#/restrictions/rule-editor">
+        <Link to="/rules/create">
           <Button>Create rule</Button>
-        </a>
+        </Link>
         <RadioGroup
           className="flex"
           value={defaultAction}

@@ -10,6 +10,7 @@ import { Switch } from '@renderer/components/ui/switch'
 import { ColumnDef } from '@tanstack/react-table'
 import { MoreVertical } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 export type TRow = {
   id: number
@@ -62,13 +63,9 @@ export const columns: ColumnDef<TRow>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => {
-                window.location.href = `#/restrictions/rule-editor/${row.original.id}`
-              }}
-            >
-              Edit
-            </DropdownMenuItem>
+            <Link to={`/rules/${row.original.id}/edit`}>
+              <DropdownMenuItem>Edit</DropdownMenuItem>
+            </Link>
             <DropdownMenuItem
               onClick={() => {
                 window.api.rule.delete(row.original.id)

@@ -5,15 +5,15 @@ import { IDatabase, TRuleRow } from './common'
 export class RuleRepository {
   constructor(private readonly db: Kysely<IDatabase>) {}
 
-  async create(restriction: TNewRule) {
+  async create(rule: TNewRule) {
     await this.db
       .insertInto('rule')
       .values({
-        name: restriction.name,
-        description: restriction.description,
-        action: restriction.action,
-        enabled: restriction.enabled ? 1 : 0,
-        conditions: JSON.stringify(restriction.conditions)
+        name: rule.name,
+        description: rule.description,
+        action: rule.action,
+        enabled: rule.enabled ? 1 : 0,
+        conditions: JSON.stringify(rule.conditions)
       })
       .execute()
   }
@@ -49,15 +49,15 @@ export class RuleRepository {
     return rows.map((row) => this.toRule(row))
   }
 
-  async update(id: number, restriction: TRuleUpdate) {
+  async update(id: number, rule: TRuleUpdate) {
     await this.db
       .updateTable('rule')
       .set({
-        name: restriction.name,
-        description: restriction.description,
-        action: restriction.action,
-        enabled: restriction.enabled ? 1 : 0,
-        conditions: restriction.conditions ? JSON.stringify(restriction.conditions) : undefined
+        name: rule.name,
+        description: rule.description,
+        action: rule.action,
+        enabled: rule.enabled ? 1 : 0,
+        conditions: rule.conditions ? JSON.stringify(rule.conditions) : undefined
       })
       .where('id', '=', id)
       .execute()

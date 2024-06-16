@@ -3,8 +3,8 @@ import './assets/main.css'
 import App from '@renderer/App'
 import Data from '@renderer/pages/data'
 import Home from '@renderer/pages/home'
-import Restrictions from '@renderer/pages/restrictions'
-import RuleEditor from '@renderer/pages/rule-editor'
+import Rules from '@renderer/pages/rules'
+import EditRule from '@renderer/pages/rules/edit'
 import Settings from '@renderer/pages/settings'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -17,9 +17,9 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <Home /> },
       { path: '/data', element: <Data /> },
-      { path: '/restrictions', element: <Restrictions /> },
-      { path: '/restrictions/rule-editor', element: <RuleEditor /> },
-      { path: '/restrictions/rule-editor/:id', element: <RuleEditor /> },
+      { path: '/rules', element: <Rules /> },
+      { path: '/rules/create', element: <EditRule /> },
+      { path: '/rules/:id/edit', element: <EditRule /> },
       { path: '/settings', element: <Settings /> }
     ]
   }
