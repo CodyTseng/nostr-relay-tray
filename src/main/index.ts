@@ -86,7 +86,10 @@ function createTray() {
     }
   }, 10000)
 
-  nativeTheme.on('updated', () => tray.setImage(getTrayImage()))
+  // macOS will automatically switch between light and dark mode
+  if (process.platform !== 'darwin') {
+    nativeTheme.on('updated', () => tray.setImage(getTrayImage()))
+  }
 }
 
 function createMenu(localIpAddress?: string) {
