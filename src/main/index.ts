@@ -8,12 +8,14 @@ import {
   ipcMain,
   Menu,
   nativeImage,
+  nativeTheme,
   shell,
   Tray
 } from 'electron'
 import { join } from 'path'
 import icon from '../../build/icon.png?asset'
 import nostrTemplate from '../../resources/nostrTemplate.png?asset'
+import nostrTemplateDark from '../../resources/nostrTemplateDark.png?asset'
 import { CONFIG_KEY } from '../common/config'
 import { RULE_ACTION, TRule, TRuleAction } from '../common/rule'
 import { RestrictionPlugin } from './plugins/restriction.plugin'
@@ -71,7 +73,7 @@ function createWindow(): void {
 }
 
 function createTray() {
-  const tray = new Tray(nativeImage.createFromPath(nostrTemplate))
+  const tray = new Tray(getTrayImage())
 
   let currentLocalIpAddress = getLocalIpAddress()
   tray.setContextMenu(createMenu(currentLocalIpAddress))
@@ -83,6 +85,8 @@ function createTray() {
       tray.setContextMenu(createMenu(currentLocalIpAddress))
     }
   }, 10000)
+
+  nativeTheme.on('updated', () => tray.setImage(getTrayImage()))
 }
 
 function createMenu(localIpAddress?: string) {
@@ -229,3 +233,13 @@ app.on('window-all-closed', (event) => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+function getTrayImage() {
+  // macOS will automatically switch between light and dark mode
+  if (process.platform === 'darwin') {
+    return nativeImage.createFromPath(nostrTemplate)
+  }
+  return nativeTheme.shouldUseDarkColors
+    ? nativeImage.createFromPath(nostrTemplateDark)
+    : nativeImage.createFromPath(nostrTemplate)
+}
