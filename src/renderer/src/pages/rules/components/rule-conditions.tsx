@@ -83,6 +83,18 @@ export function RuleCondition({
     setValueError(null)
   }
 
+  const handleInputBlur = () => {
+    if (!inputValue) return
+    addValue(inputValue)
+  }
+
+  const handleInputOnKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      addValue(inputValue)
+    }
+  }
+
   const addValue = (value) => {
     if (currentRule.values.includes(value)) {
       setInputValue('')
@@ -145,6 +157,8 @@ export function RuleCondition({
           disabled={!currentRule.fieldName}
           value={inputValue}
           onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          onKeyDown={handleInputOnKeyDown}
         />
         <Button
           type="button"
