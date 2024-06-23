@@ -22,7 +22,7 @@ const navItems = [
 function App(): JSX.Element {
   return (
     <>
-      <div className="titlebar h-9" />
+      {window.electron.process.platform === 'darwin' ? <Titlebar /> : null}
       <div className="flex">
         <nav className="flex-shrink-0 w-36 pt-4 pl-6">
           <ul className="space-y-1">
@@ -49,3 +49,7 @@ function App(): JSX.Element {
 }
 
 export default App
+
+function Titlebar(): JSX.Element {
+  return <div className="titlebar h-9" />
+}

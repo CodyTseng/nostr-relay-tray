@@ -44,8 +44,7 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     },
-    titleBarStyle: 'hiddenInset',
-    titleBarOverlay: true
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : undefined
   })
 
   // Open the DevTools.
