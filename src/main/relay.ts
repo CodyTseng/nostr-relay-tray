@@ -5,13 +5,21 @@ import { EventRepositorySqlite } from '@nostr-relay/event-repository-sqlite'
 import { Validator } from '@nostr-relay/validator'
 import BetterSqlite3 from 'better-sqlite3'
 import { app, dialog } from 'electron'
-import fastify from 'fastify'
+import fastify, { FastifyInstance } from 'fastify'
 import { createReadStream, createWriteStream, readFileSync, statSync } from 'fs'
 import path from 'path'
 import { createInterface } from 'readline'
 import { WebSocketServer } from 'ws'
 import favicon from '../../resources/favicon.ico?asset'
 import { KIND_DESCRIPTION_MAP } from './constants'
+
+type RelayOptions = {
+  /**
+   * Maximum payload size in kilobytes.
+   */
+  maxPayload: number
+  plugins?: NostrRelayPlugin[]
+}
 
 export class Relay {
   private readonly db: BetterSqlite3.Database
@@ -20,29 +28,69 @@ export class Relay {
     maxFilterGenericTagsLength: 512
   })
 
-  constructor() {
+  private wss: WebSocketServer | null = null
+  private server: FastifyInstance | null = null
+  private relay: NostrRelay | null = null
+
+  constructor(private readonly options: RelayOptions) {
     const userPath = app.getPath('userData')
     this.db = new BetterSqlite3(path.join(userPath, 'nostr.db'))
     this.eventRepository = new EventRepositorySqlite(this.db)
   }
 
-  async init(plugins: NostrRelayPlugin[] = []) {
-    const server = fastify()
-    await server.register(cors, {
+  async startServer() {
+    this.server = fastify()
+    await this.server.register(cors, {
       origin: '*'
     })
 
-    const wss = new WebSocketServer({
-      server: server.server,
-      maxPayload: 128 * 1024
+    if (!this.server) {
+      throw new Error('Server is not initialized.')
+    }
+    this.wss = new WebSocketServer({
+      server: this.server.server,
+      maxPayload: this.options.maxPayload * 1024
     })
 
-    const relay = new NostrRelay(this.eventRepository)
+    this.relay = new NostrRelay(this.eventRepository)
 
-    for (const plugin of plugins) {
-      relay.register(plugin)
+    for (const plugin of this.options.plugins ?? []) {
+      this.relay.register(plugin)
     }
 
+    this.handleWssEvent(this.wss, this.relay)
+
+    const faviconFile = readFileSync(favicon)
+    this.server.get('/favicon.ico', function (_, reply) {
+      reply.header('cache-control', 'max-age=604800').type('image/x-icon').send(faviconFile)
+    })
+
+    this.server.listen({ port: 4869, host: '0.0.0.0' }, function (err) {
+      if (err) {
+        dialog.showErrorBox('Failed to start server.', err.message)
+        app.quit()
+      }
+    })
+  }
+
+  private async stopServer() {
+    if (this.server) {
+      await this.server.close()
+    }
+    if (this.wss) {
+      this.wss.close()
+    }
+    if (this.relay) {
+      await this.relay.destroy()
+    }
+  }
+
+  private async restartServer() {
+    await this.stopServer()
+    await this.startServer()
+  }
+
+  private handleWssEvent(wss: WebSocketServer, relay: NostrRelay) {
     wss.on('connection', (ws) => {
       relay.handleConnection(ws)
 
@@ -58,19 +106,17 @@ export class Relay {
       ws.on('close', () => {
         relay.handleDisconnect(ws)
       })
-    })
 
-    const faviconFile = readFileSync(favicon)
-    server.get('/favicon.ico', function (_, reply) {
-      reply.header('cache-control', 'max-age=604800').type('image/x-icon').send(faviconFile)
+      ws.on('error', (error) => {
+        if (error.message === 'Max payload size exceeded') return
+        throw error
+      })
     })
+  }
 
-    server.listen({ port: 4869, host: '0.0.0.0' }, function (err) {
-      if (err) {
-        dialog.showErrorBox('Failed to start server.', err.message)
-        app.quit()
-      }
-    })
+  async updateMaxPayload(maxPayload: number) {
+    this.options.maxPayload = maxPayload
+    await this.restartServer()
   }
 
   getTotalEventCount(): number {
