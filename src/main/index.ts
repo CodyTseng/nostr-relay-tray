@@ -14,14 +14,14 @@ import {
 import { join } from 'path'
 import icon from '../../build/icon.png?asset'
 import nostrTemplate from '../../resources/nostrTemplate.png?asset'
-import { CONFIG_KEY } from '../common/config'
+import { CONFIG_KEY, DEFAULT_WSS_MAX_PAYLOAD } from '../common/config'
 import { RULE_ACTION, TRule, TRuleAction } from '../common/rule'
 import { RestrictionPlugin } from './plugins/restriction.plugin'
 import { Relay } from './relay'
 import { initRepositories } from './repositories'
 import { getLocalIpAddress } from './utils'
 
-const relay = new Relay()
+let relay: Relay
 const autoLauncher = new AutoLaunch({ name: 'nostr-relay-tray', isHidden: true })
 
 let mainWindow: BrowserWindow | null = null
@@ -136,7 +136,13 @@ app.whenReady().then(async () => {
   }
 
   await updateRestriction()
-  await relay.init([restrictionPlugin])
+
+  const wssMaxPayloadStr = await repositories.config.get(CONFIG_KEY.WSS_MAX_PAYLOAD)
+  relay = new Relay({
+    maxPayload: wssMaxPayloadStr ? parseInt(wssMaxPayloadStr) : DEFAULT_WSS_MAX_PAYLOAD,
+    plugins: [restrictionPlugin]
+  })
+  await relay.startServer()
 
   ipcMain.handle('getTotalEventCount', () => relay.getTotalEventCount())
   ipcMain.handle('getEventStatistics', () => relay.getEventStatistics())
@@ -207,6 +213,9 @@ app.whenReady().then(async () => {
     await repositories.config.set(key, value)
     if (key === CONFIG_KEY.DEFAULT_EVENT_ACTION) {
       await updateRestriction()
+    }
+    if (key === CONFIG_KEY.WSS_MAX_PAYLOAD) {
+      await relay.updateMaxPayload(parseInt(value))
     }
   })
 
