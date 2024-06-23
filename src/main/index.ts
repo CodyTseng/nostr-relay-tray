@@ -43,7 +43,8 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
-    }
+    },
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : undefined
   })
 
   // Open the DevTools.
