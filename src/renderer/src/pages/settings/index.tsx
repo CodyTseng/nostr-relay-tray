@@ -1,6 +1,8 @@
 import { CONFIG_KEY, DEFAULT_WSS_MAX_PAYLOAD } from '@common/config'
+import { TRAY_IMAGE_COLOR } from '@common/constants'
 import { Input } from '@renderer/components/ui/input'
 import { Switch } from '@renderer/components/ui/switch'
+import { Tabs, TabsList, TabsTrigger } from '@renderer/components/ui/tabs'
 import { useEffect, useState } from 'react'
 
 export default function Settings(): JSX.Element {
@@ -8,7 +10,8 @@ export default function Settings(): JSX.Element {
   const [isSetAutoLaunchFailed, setIsSetAutoLaunchFailed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [maxPayload, setMaxPayload] = useState(0)
-  const [maxPayloadInputValueError, setMaxPayloadInputValueError] = useState<string | null>(null)
+  const [maxPayloadInputValueError, setMaxPayloadInputValueError] = useState<boolean>(false)
+  const [trayImageColor, setTrayImageColor] = useState<TRAY_IMAGE_COLOR>(TRAY_IMAGE_COLOR.BLACK)
 
   async function handleAutoLaunchToggle() {
     setIsLoading(true)
@@ -24,7 +27,7 @@ export default function Settings(): JSX.Element {
   function handleMaxPayloadInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const newValue = event.target.value
     if (/^\d*$/.test(newValue)) {
-      setMaxPayloadInputValueError(null)
+      setMaxPayloadInputValueError(false)
       const num = parseInt(newValue)
       setMaxPayload(isNaN(num) ? 0 : num)
     }
@@ -32,10 +35,15 @@ export default function Settings(): JSX.Element {
 
   async function handleMaxPayloadInputBlur() {
     if (maxPayload < 1) {
-      setMaxPayloadInputValueError('Value must be greater than 0')
+      setMaxPayloadInputValueError(true)
       return
     }
     await window.api.config.set(CONFIG_KEY.WSS_MAX_PAYLOAD, maxPayload.toString())
+  }
+
+  async function handleTrayImageColorChange(value: TRAY_IMAGE_COLOR) {
+    await window.api.config.set(CONFIG_KEY.TRAY_IMAGE_COLOR, value)
+    setTrayImageColor(value)
   }
 
   async function init() {
@@ -70,20 +78,33 @@ export default function Settings(): JSX.Element {
       <div className="flex justify-between items-center">
         <div>Max Payload</div>
         <div className="flex items-center gap-2">
-          <div className="h-10">
-            <Input
-              className={`w-56 text-right ${!maxPayloadInputValueError ? '' : 'border-red-500'}`}
-              value={`${maxPayload}`}
-              onChange={handleMaxPayloadInputChange}
-              onBlur={handleMaxPayloadInputBlur}
-            />
-            {!!maxPayloadInputValueError ? (
-              <p className="text-red-500">{maxPayloadInputValueError}</p>
-            ) : null}
-          </div>
+          <Input
+            className={`w-48 text-right ${!maxPayloadInputValueError ? '' : 'border-red-500'}`}
+            value={`${maxPayload}`}
+            onChange={handleMaxPayloadInputChange}
+            onBlur={handleMaxPayloadInputBlur}
+          />
           <div>KB</div>
         </div>
       </div>
+      {window.electron.process.platform !== 'darwin' ? (
+        <div className="flex justify-between items-center">
+          <div>Tray icon color</div>
+          <Tabs value={trayImageColor}>
+            <TabsList>
+              {Object.values(TRAY_IMAGE_COLOR).map((color) => (
+                <TabsTrigger
+                  key={color}
+                  value={color}
+                  onClick={() => handleTrayImageColorChange(color)}
+                >
+                  {color}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      ) : null}
     </div>
   )
 }
