@@ -14,16 +14,21 @@ import {
 import { join } from 'path'
 import icon from '../../build/icon.png?asset'
 import nostrTemplate from '../../resources/nostrTemplate.png?asset'
+import nostrTemplateDark from '../../resources/nostrTemplateDark.png?asset'
+import nostrTemplatePurple from '../../resources/nostrTemplatePurple.png?asset'
 import { CONFIG_KEY, DEFAULT_WSS_MAX_PAYLOAD } from '../common/config'
 import { RULE_ACTION, TRule, TRuleAction } from '../common/rule'
+import { TRAY_IMAGE_COLOR } from '../common/constants'
 import { RestrictionPlugin } from './plugins/restriction.plugin'
 import { Relay } from './relay'
 import { initRepositories } from './repositories'
+import { ConfigRepository } from './repositories/config.repository'
 import { getLocalIpAddress } from './utils'
 
 let relay: Relay
 const autoLauncher = new AutoLaunch({ name: 'nostr-relay-tray', isHidden: true })
 
+let tray: Tray
 let mainWindow: BrowserWindow | null = null
 let isAutoLaunchEnabled = false
 
@@ -71,8 +76,8 @@ function createWindow(): void {
   }
 }
 
-function createTray() {
-  const tray = new Tray(nativeImage.createFromPath(nostrTemplate))
+function createTray({ trayImage }: { trayImage: Electron.NativeImage }) {
+  tray = new Tray(trayImage)
 
   let currentLocalIpAddress = getLocalIpAddress()
   tray.setContextMenu(createMenu(currentLocalIpAddress))
@@ -212,13 +217,15 @@ app.whenReady().then(async () => {
     await repositories.config.set(key, value)
     if (key === CONFIG_KEY.DEFAULT_EVENT_ACTION) {
       await updateRestriction()
-    }
-    if (key === CONFIG_KEY.WSS_MAX_PAYLOAD) {
+    } else if (key === CONFIG_KEY.WSS_MAX_PAYLOAD) {
       await relay.updateMaxPayload(parseInt(value))
+    } else if (key === CONFIG_KEY.TRAY_IMAGE_COLOR) {
+      tray.setImage(getTrayImage(value as TRAY_IMAGE_COLOR))
     }
   })
 
-  createTray()
+  const trayImageColor = await getTrayImageColor(repositories.config)
+  createTray({ trayImage: getTrayImage(trayImageColor) })
 
   autoLauncher
     .isEnabled()
@@ -237,5 +244,26 @@ app.on('window-all-closed', (event) => {
   event.preventDefault()
 })
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
+const TRAY_IMAGE_MAP = {
+  [TRAY_IMAGE_COLOR.PURPLE]: nostrTemplatePurple,
+  [TRAY_IMAGE_COLOR.BLACK]: nostrTemplate,
+  [TRAY_IMAGE_COLOR.WHITE]: nostrTemplateDark
+}
+
+function getTrayImage(color: TRAY_IMAGE_COLOR) {
+  return nativeImage.createFromPath(TRAY_IMAGE_MAP[color])
+}
+
+async function getTrayImageColor(configRepository: ConfigRepository) {
+  // macOS will automatically switch between light and dark mode
+  if (process.platform === 'darwin') {
+    return TRAY_IMAGE_COLOR.BLACK
+  }
+
+  const trayImageColor = await configRepository.get(CONFIG_KEY.TRAY_IMAGE_COLOR)
+  if (!trayImageColor) {
+    await configRepository.set(CONFIG_KEY.TRAY_IMAGE_COLOR, TRAY_IMAGE_COLOR.PURPLE)
+    return TRAY_IMAGE_COLOR.PURPLE
+  }
+  return trayImageColor
+}
