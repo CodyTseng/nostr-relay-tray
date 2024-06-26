@@ -18,10 +18,12 @@ export default function Home(): JSX.Element {
   const init = async () => {
     const cache = window.localStorage.getItem('home')
     if (cache) {
-      const { eventStatistics, totalEventCount } = JSON.parse(cache)
-      setEventStatistics(eventStatistics)
-      setTotalEventCount(totalEventCount)
-      return
+      const { eventStatistics, totalEventCount, expireTimestamp } = JSON.parse(cache)
+      if (!!expireTimestamp && expireTimestamp > Date.now()) {
+        setEventStatistics(eventStatistics)
+        setTotalEventCount(totalEventCount)
+        return
+      }
     }
     const [eventStatistics, totalEventCount] = await Promise.all([
       window.api.getEventStatistics(),
@@ -31,8 +33,10 @@ export default function Home(): JSX.Element {
     setEventStatistics(eventStatistics)
     setTotalEventCount(totalEventCount)
 
-    window.localStorage.setItem('home', JSON.stringify({ eventStatistics, totalEventCount }))
-    setTimeout(() => window.localStorage.removeItem('home'), 1000 * 60)
+    window.localStorage.setItem(
+      'home',
+      JSON.stringify({ eventStatistics, totalEventCount, expireTimestamp: Date.now() + 1000 * 60 })
+    )
   }
 
   useEffect(() => {

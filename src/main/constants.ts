@@ -10,5 +10,6 @@ export const KIND_DESCRIPTION_MAP = {
   '16': 'Generic Repost',
   '9735': 'Zap',
   '30000': 'Follow sets',
-  '31990': 'Handler information	'
+  '30023': 'Long-form Content',
+  '31990': 'Handler information'
 }
