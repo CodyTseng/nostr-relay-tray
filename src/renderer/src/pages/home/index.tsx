@@ -15,13 +15,28 @@ export default function Home(): JSX.Element {
   >([])
   const [totalEventCount, setTotalEventCount] = useState(0)
 
+  const init = async () => {
+    const cache = window.localStorage.getItem('home')
+    if (cache) {
+      const { eventStatistics, totalEventCount } = JSON.parse(cache)
+      setEventStatistics(eventStatistics)
+      setTotalEventCount(totalEventCount)
+      return
+    }
+    const [eventStatistics, totalEventCount] = await Promise.all([
+      window.api.getEventStatistics(),
+      window.api.getTotalEventCount()
+    ])
+
+    setEventStatistics(eventStatistics)
+    setTotalEventCount(totalEventCount)
+
+    window.localStorage.setItem('home', JSON.stringify({ eventStatistics, totalEventCount }))
+    setTimeout(() => window.localStorage.removeItem('home'), 1000 * 60)
+  }
+
   useEffect(() => {
-    window.api.getTotalEventCount().then((count) => {
-      setTotalEventCount(count)
-    })
-    window.api.getEventStatistics().then((statistics) => {
-      setEventStatistics(statistics)
-    })
+    init()
   }, [])
 
   return (
