@@ -19,9 +19,9 @@ export default function Home(): JSX.Element {
     const cache = window.localStorage.getItem('home')
     if (cache) {
       const { eventStatistics, totalEventCount, expireTimestamp } = JSON.parse(cache)
+      setEventStatistics(eventStatistics)
+      setTotalEventCount(totalEventCount)
       if (!!expireTimestamp && expireTimestamp > Date.now()) {
-        setEventStatistics(eventStatistics)
-        setTotalEventCount(totalEventCount)
         return
       }
     }
