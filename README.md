@@ -48,11 +48,11 @@ The executable file will be in the `dist` folder.
 
 ## Screenshot
 
-![screenshot](./screenshots/screenshot-1.png)
+![screenshot](./screenshots/screenshot-1.jpg)
 
-![screenshot](./screenshots/screenshot-2.png)
+![screenshot](./screenshots/screenshot-2.jpg)
 
-![screenshot](./screenshots/screenshot-3.png)
+![screenshot](./screenshots/screenshot-3.jpg)
 
 ## Donate
 
