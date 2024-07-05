@@ -24,6 +24,7 @@ const api = {
     ipcRenderer.removeAllListeners('importEvents:progress')
     return startSuccess
   },
+  clearEvents: () => ipcRenderer.invoke('clearEvents'),
   isAutoLaunchEnabled: () => ipcRenderer.invoke('isAutoLaunchEnabled'),
   setAutoLaunchEnabled: (enabled: boolean) => ipcRenderer.invoke('setAutoLaunchEnabled', enabled),
 

@@ -201,4 +201,9 @@ export class Relay {
       })
     })
   }
+
+  clearEvents() {
+    const { changes } = this.db.prepare('DELETE FROM events').run()
+    return changes
+  }
 }
