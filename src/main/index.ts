@@ -176,6 +176,7 @@ app.whenReady().then(async () => {
     })
     return true
   })
+  ipcMain.handle('clearEvents', () => relay.clearEvents())
   ipcMain.handle('isAutoLaunchEnabled', () => isAutoLaunchEnabled)
   ipcMain.handle('setAutoLaunchEnabled', async (_, enabled: boolean) => {
     if (enabled === isAutoLaunchEnabled) return true
