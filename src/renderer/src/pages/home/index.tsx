@@ -47,7 +47,7 @@ export default function Home(): JSX.Element {
     <div className="space-y-4">
       <Card className="flex flex-col flex-1 p-4 justify-center">
         <div className="flex justify-between">
-          <p className="text-slate-500">Total Events</p>
+          <p className="text-mute">Total Events</p>
         </div>
         <div className="text-4xl font-bold">{totalEventCount}</div>
       </Card>

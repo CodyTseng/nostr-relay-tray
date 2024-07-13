@@ -29,15 +29,23 @@ const api = {
   setAutoLaunchEnabled: (enabled: boolean) => ipcRenderer.invoke('setAutoLaunchEnabled', enabled),
 
   rule: {
-    find: (page: number, limit: number) => ipcRenderer.invoke('rule.find', page, limit),
-    findById: (id: number) => ipcRenderer.invoke('rule.findById', id),
-    update: (id: number, rule: TRuleUpdate) => ipcRenderer.invoke('rule.update', id, rule),
-    delete: (id: number) => ipcRenderer.invoke('rule.delete', id),
-    create: (rule: TNewRule) => ipcRenderer.invoke('rule.create', rule)
+    find: (page: number, limit: number) => ipcRenderer.invoke('rule:find', page, limit),
+    findById: (id: number) => ipcRenderer.invoke('rule:findById', id),
+    update: (id: number, rule: TRuleUpdate) => ipcRenderer.invoke('rule:update', id, rule),
+    delete: (id: number) => ipcRenderer.invoke('rule:delete', id),
+    create: (rule: TNewRule) => ipcRenderer.invoke('rule:create', rule)
   },
   config: {
-    get: (key: string) => ipcRenderer.invoke('config.get', key),
-    set: (key: string, value: string) => ipcRenderer.invoke('config.set', key, value)
+    get: (key: string) => ipcRenderer.invoke('config:get', key),
+    set: (key: string, value: string) => ipcRenderer.invoke('config:set', key, value)
+  },
+  theme: {
+    onChange: (cb: (theme: 'dark' | 'light') => void) => {
+      ipcRenderer.on('theme:change', (_, theme) => {
+        cb(theme)
+      })
+    },
+    current: () => ipcRenderer.invoke('theme:current')
   }
 }
 

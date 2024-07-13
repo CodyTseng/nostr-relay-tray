@@ -8,6 +8,7 @@ import {
   ipcMain,
   Menu,
   nativeImage,
+  nativeTheme,
   shell,
   Tray
 } from 'electron'
@@ -16,9 +17,9 @@ import icon from '../../build/icon.png?asset'
 import nostrTemplate from '../../resources/nostrTemplate.png?asset'
 import nostrTemplateDark from '../../resources/nostrTemplateDark.png?asset'
 import nostrTemplatePurple from '../../resources/nostrTemplatePurple.png?asset'
-import { CONFIG_KEY, DEFAULT_WSS_MAX_PAYLOAD } from '../common/config'
+import { CONFIG_KEY, TConfig, TConfigKey } from '../common/config'
+import { THEME, TRAY_IMAGE_COLOR, TTrayImageColor } from '../common/constants'
 import { RULE_ACTION, TRule, TRuleAction } from '../common/rule'
-import { TRAY_IMAGE_COLOR } from '../common/constants'
 import { RestrictionPlugin } from './plugins/restriction.plugin'
 import { Relay } from './relay'
 import { initRepositories } from './repositories'
@@ -31,6 +32,7 @@ const autoLauncher = new AutoLaunch({ name: 'nostr-relay-tray', isHidden: true }
 let tray: Tray
 let mainWindow: BrowserWindow | null = null
 let isAutoLaunchEnabled = false
+let config: TConfig
 
 function createWindow(): void {
   if (BrowserWindow.getAllWindows().length > 0) {
@@ -50,6 +52,9 @@ function createWindow(): void {
       sandbox: false
     },
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : undefined
+  })
+  mainWindow.on('closed', () => {
+    mainWindow = null
   })
 
   // Open the DevTools.
@@ -127,10 +132,22 @@ app.whenReady().then(async () => {
   const repositories = await initRepositories()
   const restrictionPlugin = new RestrictionPlugin()
 
+  config = await repositories.config.getAll()
+
+  const getCurrentTheme = () => {
+    if (config[CONFIG_KEY.THEME] === THEME.SYSTEM) {
+      return nativeTheme.shouldUseDarkColors ? THEME.DARK : THEME.LIGHT
+    }
+    return config[CONFIG_KEY.THEME]
+  }
+
+  const updateTheme = () => {
+    mainWindow?.webContents.send('theme:change', getCurrentTheme())
+  }
+
   const updateRestriction = async () => {
-    const defaultEventAction =
-      (await repositories.config.get(CONFIG_KEY.DEFAULT_EVENT_ACTION)) ?? RULE_ACTION.ALLOW
-    restrictionPlugin.updateDefaultAction(defaultEventAction as TRuleAction)
+    const defaultEventAction = config[CONFIG_KEY.DEFAULT_EVENT_ACTION]
+    restrictionPlugin.updateDefaultAction(defaultEventAction)
 
     const rules = await repositories.rule.findAll({
       action: defaultEventAction === RULE_ACTION.ALLOW ? RULE_ACTION.BLOCK : RULE_ACTION.ALLOW,
@@ -141,9 +158,8 @@ app.whenReady().then(async () => {
 
   await updateRestriction()
 
-  const wssMaxPayloadStr = await repositories.config.get(CONFIG_KEY.WSS_MAX_PAYLOAD)
   relay = new Relay({
-    maxPayload: wssMaxPayloadStr ? parseInt(wssMaxPayloadStr) : DEFAULT_WSS_MAX_PAYLOAD,
+    maxPayload: config[CONFIG_KEY.WSS_MAX_PAYLOAD],
     plugins: [restrictionPlugin]
   })
   await relay.startServer()
@@ -196,33 +212,47 @@ app.whenReady().then(async () => {
     }
   })
 
-  ipcMain.handle('rule.find', (_, page: number, limit: number) =>
+  ipcMain.handle('rule:find', (_, page: number, limit: number) =>
     repositories.rule.find(page, limit)
   )
-  ipcMain.handle('rule.findById', (_, id: number) => repositories.rule.findById(id))
-  ipcMain.handle('rule.update', async (_, id: number, rule: any) => {
+  ipcMain.handle('rule:findById', (_, id: number) => repositories.rule.findById(id))
+  ipcMain.handle('rule:update', async (_, id: number, rule: any) => {
     await repositories.rule.update(id, rule)
     await updateRestriction()
   })
-  ipcMain.handle('rule.delete', async (_, id: number) => {
+  ipcMain.handle('rule:delete', async (_, id: number) => {
     await repositories.rule.delete(id)
     await updateRestriction()
   })
-  ipcMain.handle('rule.create', async (_, rule: TRule) => {
+  ipcMain.handle('rule:create', async (_, rule: TRule) => {
     await repositories.rule.create(rule)
     await updateRestriction()
   })
 
-  ipcMain.handle('config.get', (_, key: string) => repositories.config.get(key))
-  ipcMain.handle('config.set', async (_, key: string, value: string) => {
+  ipcMain.handle('config:get', (_, key: TConfigKey) => config[key])
+  ipcMain.handle('config:set', async (_, key: TConfigKey, value: string) => {
     await repositories.config.set(key, value)
     if (key === CONFIG_KEY.DEFAULT_EVENT_ACTION) {
+      config[CONFIG_KEY.DEFAULT_EVENT_ACTION] = value as TRuleAction
       await updateRestriction()
     } else if (key === CONFIG_KEY.WSS_MAX_PAYLOAD) {
-      await relay.updateMaxPayload(parseInt(value))
+      const maxPayload = parseInt(value)
+      config[CONFIG_KEY.WSS_MAX_PAYLOAD] = maxPayload
+      await relay.updateMaxPayload(maxPayload)
     } else if (key === CONFIG_KEY.TRAY_IMAGE_COLOR) {
-      tray.setImage(getTrayImage(value as TRAY_IMAGE_COLOR))
+      config[CONFIG_KEY.TRAY_IMAGE_COLOR] = value
+      tray.setImage(getTrayImage(value as TTrayImageColor))
+    } else if (key === CONFIG_KEY.THEME) {
+      config[CONFIG_KEY.THEME] = value
+      updateTheme()
     }
+  })
+
+  ipcMain.handle('theme:current', () => getCurrentTheme())
+
+  nativeTheme.on('updated', () => {
+    if (config[CONFIG_KEY.THEME] !== THEME.SYSTEM) return
+    updateTheme()
   })
 
   const trayImageColor = await getTrayImageColor(repositories.config)
@@ -251,7 +281,7 @@ const TRAY_IMAGE_MAP = {
   [TRAY_IMAGE_COLOR.WHITE]: nostrTemplateDark
 }
 
-function getTrayImage(color: TRAY_IMAGE_COLOR) {
+function getTrayImage(color: TTrayImageColor) {
   return nativeImage.createFromPath(TRAY_IMAGE_MAP[color])
 }
 
