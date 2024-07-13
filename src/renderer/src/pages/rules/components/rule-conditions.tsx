@@ -152,7 +152,7 @@ export function RuleCondition({
         </Select>
         <p>IN</p>
         <Input
-          className={isInputValid ? '' : 'border-red-500'}
+          className={isInputValid ? '' : 'border-destructive'}
           placeholder={valuePlaceholder}
           disabled={!currentRule.fieldName}
           value={inputValue}
@@ -179,7 +179,7 @@ export function RuleCondition({
           </Button>
         ) : null}
       </div>
-      {!!valueError ? <p className="text-red-500 pl-40">{valueError}</p> : null}
+      {valueError ? <p className="text-destructive pl-40">{valueError}</p> : null}
       <div className="flex flex-wrap pl-40">
         {currentRule.values?.map((value, index) => (
           <Badge key={index} className="flex m-1" variant="secondary">

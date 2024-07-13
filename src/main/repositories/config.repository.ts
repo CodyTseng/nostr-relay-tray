@@ -1,5 +1,8 @@
 import { Kysely } from 'kysely'
 import { IDatabase } from './common'
+import { CONFIG_KEY, DEFAULT_WSS_MAX_PAYLOAD, TConfig } from '../../common/config'
+import { RULE_ACTION } from '../../common/rule'
+import { THEME, TRAY_IMAGE_COLOR } from '../../common/constants'
 
 export class ConfigRepository {
   constructor(private readonly db: Kysely<IDatabase>) {}
@@ -11,6 +14,24 @@ export class ConfigRepository {
       .where('key', '=', key)
       .executeTakeFirst()
     return row ? row.value : null
+  }
+
+  async getAll(): Promise<TConfig> {
+    const rows = await this.db.selectFrom('config').selectAll().execute()
+    const rawConfig = rows.reduce((acc, row) => {
+      acc[row.key] = row.value
+      return acc
+    })
+    return {
+      [CONFIG_KEY.DEFAULT_EVENT_ACTION]:
+        rawConfig[CONFIG_KEY.DEFAULT_EVENT_ACTION] ?? RULE_ACTION.ALLOW,
+      [CONFIG_KEY.WSS_MAX_PAYLOAD]: rawConfig[CONFIG_KEY.WSS_MAX_PAYLOAD]
+        ? parseInt(rawConfig[CONFIG_KEY.WSS_MAX_PAYLOAD])
+        : DEFAULT_WSS_MAX_PAYLOAD,
+      [CONFIG_KEY.TRAY_IMAGE_COLOR]:
+        rawConfig[CONFIG_KEY.TRAY_IMAGE_COLOR] ?? TRAY_IMAGE_COLOR.BLACK,
+      [CONFIG_KEY.THEME]: rawConfig[CONFIG_KEY.THEME] ?? THEME.SYSTEM
+    }
   }
 
   async set(key: string, value: string) {

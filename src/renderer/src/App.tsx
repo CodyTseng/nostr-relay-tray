@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { ThemeProvider } from './components/theme-provider'
 
 const navItems = [
   {
@@ -22,28 +23,31 @@ const navItems = [
 function App(): JSX.Element {
   return (
     <>
-      <Titlebar />
-      <div className="flex">
-        <nav className="flex-shrink-0 w-36 pt-4 pl-6">
-          <ul className="space-y-1">
-            {navItems.map(({ title, href }) => (
-              <li key={href}>
-                <NavLink
-                  to={href}
-                  className={({ isActive }) =>
-                    (isActive ? 'text-black font-bold' : 'text-gray-400') + ' hover:underline'
-                  }
-                >
-                  {title}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <div className="flex-1 pr-7">
-          <Outlet />
+      <ThemeProvider>
+        <Titlebar />
+        <div className="flex">
+          <nav className="flex-shrink-0 w-36 pt-4 pl-6">
+            <ul className="space-y-1">
+              {navItems.map(({ title, href }) => (
+                <li key={href}>
+                  <NavLink
+                    to={href}
+                    className={({ isActive }) =>
+                      (isActive ? 'text-foreground font-bold' : 'text-muted-foreground') +
+                      ' hover:underline'
+                    }
+                  >
+                    {title}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="flex-1 pr-7">
+            <Outlet />
+          </div>
         </div>
-      </div>
+      </ThemeProvider>
     </>
   )
 }

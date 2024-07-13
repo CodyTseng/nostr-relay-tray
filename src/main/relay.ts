@@ -192,7 +192,9 @@ export class Relay {
           const event = await this.validator.validateEvent(JSON.parse(line))
           await this.eventRepository.upsert(event)
           fn(Math.floor((processedBytes / totalBytes) * 100))
-        } catch {}
+        } catch {
+          // Skip invalid event
+        }
       })
 
       rl.on('close', () => {

@@ -1,3 +1,4 @@
+import { TConfig } from '@common/config'
 import { TNewRule, TRule, TRuleUpdate } from '@common/rule'
 import { ElectronAPI } from '@electron-toolkit/preload'
 
@@ -21,8 +22,12 @@ declare global {
         create: (rule: TNewRule) => Promise<void>
       }
       config: {
-        get: (key: string) => Promise<string | null>
+        get: <K extends KConfigKey>(key: K) => Promise<TConfig[K]>
         set: (key: string, value: string) => Promise<void>
+      }
+      theme: {
+        onChange: (cb: (theme: 'dark' | 'light') => void) => void
+        current: () => Promise<'dark' | 'light'>
       }
     }
   }
