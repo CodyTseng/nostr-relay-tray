@@ -11,3 +11,13 @@ export const THEME = {
   SYSTEM: 'system'
 }
 export type TTheme = (typeof THEME)[keyof typeof THEME]
+
+export const HUB_CONNECTION_STATUS = {
+  CONNECTING: 'connecting',
+  CONNECTED: 'connected',
+  DISCONNECTED: 'disconnected'
+} as const
+export type THubConnectionStatus =
+  (typeof HUB_CONNECTION_STATUS)[keyof typeof HUB_CONNECTION_STATUS]
+
+export const DEFAULT_HUB_URL = 'wss://hub.nostr-relay.app/join'

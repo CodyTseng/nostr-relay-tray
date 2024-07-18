@@ -1,5 +1,5 @@
 import cors from '@fastify/cors'
-import { NostrRelayPlugin } from '@nostr-relay/common'
+import { Client as NostrClient, NostrRelayPlugin } from '@nostr-relay/common'
 import { createOutgoingNoticeMessage, NostrRelay } from '@nostr-relay/core'
 import { EventRepositorySqlite } from '@nostr-relay/event-repository-sqlite'
 import { Validator } from '@nostr-relay/validator'
@@ -9,7 +9,7 @@ import fastify, { FastifyInstance } from 'fastify'
 import { createReadStream, createWriteStream, readFileSync, statSync } from 'fs'
 import path from 'path'
 import { createInterface } from 'readline'
-import { WebSocketServer } from 'ws'
+import { RawData, WebSocketServer } from 'ws'
 import favicon from '../../resources/favicon.ico?asset'
 import { KIND_DESCRIPTION_MAP } from './constants'
 
@@ -73,6 +73,19 @@ export class Relay {
     })
   }
 
+  async handleIncomingMessage(client: NostrClient, data: RawData) {
+    if (!this.relay) {
+      return
+    }
+
+    try {
+      const message = await this.validator.validateIncomingMessage(data)
+      await this.relay.handleMessage(client, message)
+    } catch (error) {
+      client.send(JSON.stringify(createOutgoingNoticeMessage((error as Error).message)))
+    }
+  }
+
   private async stopServer() {
     if (this.server) {
       await this.server.close()
@@ -95,12 +108,7 @@ export class Relay {
       relay.handleConnection(ws)
 
       ws.on('message', async (data) => {
-        try {
-          const message = await this.validator.validateIncomingMessage(data)
-          await relay.handleMessage(ws, message)
-        } catch (error) {
-          ws.send(JSON.stringify(createOutgoingNoticeMessage((error as Error).message)))
-        }
+        await this.handleIncomingMessage(ws, data)
       })
 
       ws.on('close', () => {

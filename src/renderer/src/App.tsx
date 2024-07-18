@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { ThemeProvider } from './components/theme-provider'
+import { Toaster } from './components/ui/toaster'
 
 const navItems = [
   {
@@ -47,6 +48,7 @@ function App(): JSX.Element {
             <Outlet />
           </div>
         </div>
+        <Toaster />
       </ThemeProvider>
     </>
   )

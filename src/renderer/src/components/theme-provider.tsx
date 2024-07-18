@@ -24,15 +24,15 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     (localStorage.getItem('theme') as Theme) ?? 'light'
   )
 
-  window.api.theme.onChange((theme) => {
-    localStorage.setItem('theme', theme)
-    setTheme(theme)
-  })
-
   const init = async () => {
     const theme = await window.api.theme.current()
     localStorage.setItem('theme', theme)
     setTheme(theme)
+
+    window.api.theme.onChange((theme) => {
+      localStorage.setItem('theme', theme)
+      setTheme(theme)
+    })
   }
 
   useEffect(() => {

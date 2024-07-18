@@ -18,8 +18,14 @@ import nostrTemplate from '../../resources/nostrTemplate.png?asset'
 import nostrTemplateDark from '../../resources/nostrTemplateDark.png?asset'
 import nostrTemplatePurple from '../../resources/nostrTemplatePurple.png?asset'
 import { CONFIG_KEY, TConfig, TConfigKey } from '../common/config'
-import { THEME, TRAY_IMAGE_COLOR, TTrayImageColor } from '../common/constants'
+import {
+  HUB_CONNECTION_STATUS,
+  THEME,
+  TRAY_IMAGE_COLOR,
+  TTrayImageColor
+} from '../common/constants'
 import { RULE_ACTION, TRule, TRuleAction } from '../common/rule'
+import { HubConnector } from './hub-connector'
 import { RestrictionPlugin } from './plugins/restriction.plugin'
 import { Relay } from './relay'
 import { initRepositories } from './repositories'
@@ -27,6 +33,7 @@ import { ConfigRepository } from './repositories/config.repository'
 import { getLocalIpAddress } from './utils'
 
 let relay: Relay
+let hubConnector: HubConnector
 const autoLauncher = new AutoLaunch({ name: 'nostr-relay-tray', isHidden: true })
 
 let tray: Tray
@@ -164,6 +171,23 @@ app.whenReady().then(async () => {
   })
   await relay.startServer()
 
+  hubConnector = new HubConnector(relay)
+
+  hubConnector.on('status', (status) => {
+    mainWindow?.webContents.send('hub:statusChange', status)
+    if (status === HUB_CONNECTION_STATUS.DISCONNECTED) {
+      if (!config[CONFIG_KEY.HUB_ENABLED]) {
+        return
+      }
+
+      repositories.config.set(CONFIG_KEY.HUB_ENABLED, 'false')
+    }
+  })
+
+  if (config[CONFIG_KEY.HUB_ENABLED] && config[CONFIG_KEY.HUB_URL]) {
+    hubConnector.connectToHub(config[CONFIG_KEY.HUB_URL])
+  }
+
   ipcMain.handle('getTotalEventCount', () => relay.getTotalEventCount())
   ipcMain.handle('getEventStatistics', () => relay.getEventStatistics())
   ipcMain.handle('exportEvents', async () => {
@@ -245,10 +269,36 @@ app.whenReady().then(async () => {
     } else if (key === CONFIG_KEY.THEME) {
       config[CONFIG_KEY.THEME] = value
       updateTheme()
+    } else if (key === CONFIG_KEY.HUB_URL) {
+      config[CONFIG_KEY.HUB_URL] = value
     }
   })
 
   ipcMain.handle('theme:current', () => getCurrentTheme())
+
+  const connectToHub = async (url: string) => {
+    if (hubConnector.getHubConnectionStatus() !== HUB_CONNECTION_STATUS.DISCONNECTED) {
+      return true
+    }
+    const result = await hubConnector.connectToHub(url)
+    config[CONFIG_KEY.HUB_ENABLED] = result.success
+    await repositories.config.set(CONFIG_KEY.HUB_ENABLED, `${result.success}`)
+
+    return result
+  }
+
+  const disconnectFromHub = async () => {
+    if (hubConnector.getHubConnectionStatus() === HUB_CONNECTION_STATUS.DISCONNECTED) {
+      return
+    }
+    hubConnector.disconnectFromHub()
+    config[CONFIG_KEY.HUB_ENABLED] = false
+    await repositories.config.set(CONFIG_KEY.HUB_ENABLED, 'false')
+  }
+
+  ipcMain.handle('hub:currentStatus', () => hubConnector.getHubConnectionStatus())
+  ipcMain.handle('hub:connect', (_, url: string) => connectToHub(url))
+  ipcMain.handle('hub:disconnect', () => disconnectFromHub())
 
   nativeTheme.on('updated', () => {
     if (config[CONFIG_KEY.THEME] !== THEME.SYSTEM) return

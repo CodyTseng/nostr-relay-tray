@@ -2,7 +2,7 @@ import { Kysely } from 'kysely'
 import { IDatabase } from './common'
 import { CONFIG_KEY, DEFAULT_WSS_MAX_PAYLOAD, TConfig } from '../../common/config'
 import { RULE_ACTION } from '../../common/rule'
-import { THEME, TRAY_IMAGE_COLOR } from '../../common/constants'
+import { DEFAULT_HUB_URL, THEME, TRAY_IMAGE_COLOR } from '../../common/constants'
 
 export class ConfigRepository {
   constructor(private readonly db: Kysely<IDatabase>) {}
@@ -30,7 +30,9 @@ export class ConfigRepository {
         : DEFAULT_WSS_MAX_PAYLOAD,
       [CONFIG_KEY.TRAY_IMAGE_COLOR]:
         rawConfig[CONFIG_KEY.TRAY_IMAGE_COLOR] ?? TRAY_IMAGE_COLOR.BLACK,
-      [CONFIG_KEY.THEME]: rawConfig[CONFIG_KEY.THEME] ?? THEME.SYSTEM
+      [CONFIG_KEY.THEME]: rawConfig[CONFIG_KEY.THEME] ?? THEME.SYSTEM,
+      [CONFIG_KEY.HUB_ENABLED]: rawConfig[CONFIG_KEY.HUB_ENABLED] === 'true',
+      [CONFIG_KEY.HUB_URL]: rawConfig[CONFIG_KEY.HUB_URL] ?? DEFAULT_HUB_URL
     }
   }
 
