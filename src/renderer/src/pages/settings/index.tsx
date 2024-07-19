@@ -8,6 +8,7 @@ import {
   TTheme,
   TTrayImageColor
 } from '@common/constants'
+import { Badge } from '@renderer/components/ui/badge'
 import { Input } from '@renderer/components/ui/input'
 import {
   Select,
@@ -203,7 +204,8 @@ export default function Settings(): JSX.Element {
       <div className="flex justify-between items-center">
         <div>
           <div className="flex items-center gap-2">
-            <div>Join tray hub (Beta)</div>
+            <Badge>Beta</Badge>
+            <div>Join tray hub</div>
             <div className="flex gap-1 items-center">
               <span
                 className={`ml-2 mr-1 rounded-full w-2 h-2 ${
