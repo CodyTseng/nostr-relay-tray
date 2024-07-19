@@ -220,7 +220,7 @@ export default function Settings(): JSX.Element {
             </div>
           </div>
           <div className="text-sm text-muted-foreground">
-            Join the tray hub to contribute your data
+            Join the tray hub to share your events
           </div>
         </div>
         <div className="flex gap-2 items-center">
