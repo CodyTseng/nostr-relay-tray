@@ -132,7 +132,7 @@ export default function Settings(): JSX.Element {
   }, [])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <div>Start at login</div>
@@ -201,8 +201,8 @@ export default function Settings(): JSX.Element {
           </Select>
         </div>
       ) : null}
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Badge>Beta</Badge>
             <div>Join tray hub</div>
@@ -219,18 +219,17 @@ export default function Settings(): JSX.Element {
               <div className="text-sm text-muted-foreground">{trayHubConnectionStatus}</div>
             </div>
           </div>
-          <div className="text-sm text-muted-foreground">
-            Join the tray hub to share your events
-          </div>
+          <Switch checked={isJoinTrayHubEnabled} onClick={handleJoinTrayHubToggle} />
         </div>
         <div className="flex gap-2 items-center">
           <Input
-            className="w-60"
             disabled={isJoinTrayHubEnabled}
             value={trayHubUrl}
             onChange={handleTrayHubUrlInputChange}
           />
-          <Switch checked={isJoinTrayHubEnabled} onClick={handleJoinTrayHubToggle} />
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Join the tray hub to share your events. (The URL is NOT a regular relay URL)
         </div>
       </div>
     </div>
