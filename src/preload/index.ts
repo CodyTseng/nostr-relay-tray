@@ -1,5 +1,6 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
+import { THubConnectionStatus } from '../common/constants'
 import { TNewRule, TRuleUpdate } from '../common/rule'
 
 // Custom APIs for renderer
@@ -46,6 +47,16 @@ const api = {
       })
     },
     current: () => ipcRenderer.invoke('theme:current')
+  },
+  hub: {
+    onStatusChange: (cb: (status: THubConnectionStatus) => void) => {
+      ipcRenderer.on('hub:statusChange', (_, status) => {
+        cb(status)
+      })
+    },
+    currentStatus: () => ipcRenderer.invoke('hub:currentStatus'),
+    connect: (url: string) => ipcRenderer.invoke('hub:connect', url),
+    disconnect: () => ipcRenderer.invoke('hub:disconnect')
   }
 }
 

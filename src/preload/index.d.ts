@@ -1,4 +1,5 @@
 import { TConfig } from '@common/config'
+import { THubConnectionStatus } from '@common/constants'
 import { TNewRule, TRule, TRuleUpdate } from '@common/rule'
 import { ElectronAPI } from '@electron-toolkit/preload'
 
@@ -28,6 +29,15 @@ declare global {
       theme: {
         onChange: (cb: (theme: 'dark' | 'light') => void) => void
         current: () => Promise<'dark' | 'light'>
+      }
+      hub: {
+        onStatusChange: (cb: (status: THubConnectionStatus) => void) => void
+        currentStatus: () => Promise<THubConnectionStatus>
+        connect: (url: string) => Promise<{
+          success: boolean
+          errorMessage?: string
+        }>
+        disconnect: () => Promise<void>
       }
     }
   }
