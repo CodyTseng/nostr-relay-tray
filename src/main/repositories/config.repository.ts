@@ -21,7 +21,7 @@ export class ConfigRepository {
     const rawConfig = rows.reduce((acc, row) => {
       acc[row.key] = row.value
       return acc
-    })
+    }, {})
     return {
       [CONFIG_KEY.DEFAULT_EVENT_ACTION]:
         rawConfig[CONFIG_KEY.DEFAULT_EVENT_ACTION] ?? RULE_ACTION.ALLOW,
