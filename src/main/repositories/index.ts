@@ -1,10 +1,11 @@
 import SQLite from 'better-sqlite3'
-import { Kysely, Migrator, SqliteDialect, MigrationProvider, Migration } from 'kysely'
-import { IDatabase } from './common'
-import { RuleRepository } from './rule.repository'
-import { ConfigRepository } from './config.repository'
 import { app } from 'electron'
+import { Kysely, Migration, MigrationProvider, Migrator, SqliteDialect } from 'kysely'
 import path from 'path'
+import { RULE_CONDITION_FIELD_NAME, TRuleCondition } from '../../common/rule'
+import { IDatabase } from './common'
+import { ConfigRepository } from './config.repository'
+import { RuleRepository } from './rule.repository'
 
 export * from './common'
 
@@ -72,6 +73,62 @@ const migrations: Record<string, Migration> = {
     },
     down: async (db) => {
       await db.schema.dropTable('config').execute()
+    }
+  },
+  '003-fix-rule-condition': {
+    up: async (db: Kysely<IDatabase>) => {
+      const rules = await db.selectFrom('rule').select(['id', 'conditions']).execute()
+      for (const rule of rules) {
+        const conditions = JSON.parse(rule.conditions) as TRuleCondition[]
+        let needUpdate = false
+        const newConditions = conditions.map((condition) => {
+          if (condition.fieldName === RULE_CONDITION_FIELD_NAME.KIND) {
+            needUpdate = true
+            return {
+              fieldName: RULE_CONDITION_FIELD_NAME.KIND,
+              values: condition.values.map((v) => parseInt(v as string))
+            }
+          } else {
+            return condition
+          }
+        })
+        if (needUpdate) {
+          await db
+            .updateTable('rule')
+            .set({
+              conditions: JSON.stringify(newConditions)
+            })
+            .where('id', '=', rule.id)
+            .execute()
+        }
+      }
+    },
+    down: async (db: Kysely<IDatabase>) => {
+      const rules = await db.selectFrom('rule').select(['id', 'conditions']).execute()
+      for (const rule of rules) {
+        const conditions = JSON.parse(rule.conditions) as TRuleCondition[]
+        let needUpdate = false
+        const newConditions = conditions.map((condition) => {
+          if (condition.fieldName === RULE_CONDITION_FIELD_NAME.KIND) {
+            needUpdate = true
+            return {
+              fieldName: RULE_CONDITION_FIELD_NAME.KIND,
+              values: condition.values.map((v) => v.toString())
+            }
+          } else {
+            return condition
+          }
+        })
+        if (needUpdate) {
+          await db
+            .updateTable('rule')
+            .set({
+              conditions: JSON.stringify(newConditions)
+            })
+            .where('id', '=', rule.id)
+            .execute()
+        }
+      }
     }
   }
 }

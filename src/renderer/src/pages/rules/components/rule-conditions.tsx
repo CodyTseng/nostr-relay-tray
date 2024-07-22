@@ -95,19 +95,20 @@ export function RuleCondition({
     }
   }
 
-  const addValue = (value) => {
-    if (currentRule.values.includes(value)) {
-      setInputValue('')
-      return
-    }
-
+  const addValue = (rawValue) => {
+    let value = rawValue.trim()
     try {
-      valueValidator.parse(value)
+      value = valueValidator.parse(value)
     } catch (error) {
       if (error instanceof z.ZodError) {
         setValueError(error.format()._errors[0])
       }
       setIsInputValid(false)
+      return
+    }
+
+    if (currentRule.values.includes(value)) {
+      setInputValue('')
       return
     }
 
