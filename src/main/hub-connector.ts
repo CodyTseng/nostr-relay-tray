@@ -24,10 +24,11 @@ export class HubConnector extends EventEmitter {
       relay: app.getName(),
       version: app.getVersion()
     }
+    let closeTimer: NodeJS.Timeout | undefined
     return new Promise((resolve) => {
       const ws = new WebSocket(hubUrl)
       this.updateStatus(HUB_CONNECTION_STATUS.CONNECTING)
-      const timeout = setTimeout(() => {
+      const timeoutTimer = setTimeout(() => {
         if (this.status === HUB_CONNECTION_STATUS.CONNECTED) {
           return
         }
@@ -37,6 +38,21 @@ export class HubConnector extends EventEmitter {
           errorMessage: 'Connection timeout.'
         })
       }, 5000)
+
+      closeTimer = setTimeout(() => {
+        ws.close()
+      }, 30000)
+
+      const pingTimer = setInterval(() => {
+        ws.ping()
+      }, 10000)
+
+      ws.on('pong', () => {
+        clearTimeout(closeTimer)
+        closeTimer = setTimeout(() => {
+          ws.close()
+        }, 30000)
+      })
 
       const client: NostrClient = {
         readyState: 1,
@@ -63,7 +79,7 @@ export class HubConnector extends EventEmitter {
         const type = message[0]
         if (type === 'JOINED') {
           this.updateStatus(HUB_CONNECTION_STATUS.CONNECTED)
-          clearTimeout(timeout)
+          clearTimeout(timeoutTimer)
           this.reconnectCount = 0
           this.canReconnect = true
           this.hubWs = ws
@@ -78,10 +94,13 @@ export class HubConnector extends EventEmitter {
 
       ws.on('close', () => {
         this.hubWs = null
-        // 120 * 5s = 10 minutes
-        if (!this.canReconnect || this.reconnectCount >= 120) {
+        console.log('Hub connection closed.')
+        // 60 * 5s = 5 minutes
+        if (!this.canReconnect || this.reconnectCount >= 60) {
           this.updateStatus(HUB_CONNECTION_STATUS.DISCONNECTED)
-          clearTimeout(timeout)
+          clearTimeout(timeoutTimer)
+          clearTimeout(closeTimer)
+          clearInterval(pingTimer)
           this.reconnectCount = 0
           return resolve({
             success: false,
