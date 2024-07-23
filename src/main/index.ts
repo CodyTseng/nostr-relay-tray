@@ -173,19 +173,15 @@ app.whenReady().then(async () => {
 
   hubConnector = new HubConnector(relay)
 
-  hubConnector.on('status', (status) => {
+  hubConnector.on('status', async (status) => {
     mainWindow?.webContents.send('hub:statusChange', status)
-    if (status === HUB_CONNECTION_STATUS.DISCONNECTED) {
-      if (!config[CONFIG_KEY.HUB_ENABLED]) {
-        return
-      }
-
-      repositories.config.set(CONFIG_KEY.HUB_ENABLED, 'false')
-    }
+    const hubEnabled = status !== HUB_CONNECTION_STATUS.DISCONNECTED
+    config[CONFIG_KEY.HUB_ENABLED] = hubEnabled
+    await repositories.config.set(CONFIG_KEY.HUB_ENABLED, `${hubEnabled}`)
   })
 
   if (config[CONFIG_KEY.HUB_ENABLED] && config[CONFIG_KEY.HUB_URL]) {
-    hubConnector.connectToHub(config[CONFIG_KEY.HUB_URL])
+    await hubConnector.connectToHub(config[CONFIG_KEY.HUB_URL])
   }
 
   ipcMain.handle('getTotalEventCount', () => relay.getTotalEventCount())
@@ -278,7 +274,9 @@ app.whenReady().then(async () => {
 
   const connectToHub = async (url: string) => {
     if (hubConnector.getHubConnectionStatus() !== HUB_CONNECTION_STATUS.DISCONNECTED) {
-      return true
+      return {
+        success: true
+      }
     }
     const result = await hubConnector.connectToHub(url)
     config[CONFIG_KEY.HUB_ENABLED] = result.success

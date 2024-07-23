@@ -35,6 +35,7 @@ export default function Settings(): JSX.Element {
   const [trayHubConnectionStatus, setTrayHubConnectionStatus] = useState<THubConnectionStatus>(
     HUB_CONNECTION_STATUS.DISCONNECTED
   )
+  const [isJoinHubSwitchLoading, setIsJoinHubSwitchLoading] = useState(false)
 
   async function handleThemeChange(newTheme: TTheme) {
     await window.api.config.set(CONFIG_KEY.THEME, newTheme)
@@ -75,6 +76,7 @@ export default function Settings(): JSX.Element {
   }
 
   async function handleJoinTrayHubToggle() {
+    setIsJoinHubSwitchLoading(true)
     const newEnabled = !isJoinTrayHubEnabled
     setIsJoinTrayHubEnabled(newEnabled)
     if (newEnabled) {
@@ -90,6 +92,7 @@ export default function Settings(): JSX.Element {
     } else {
       await window.api.hub.disconnect()
     }
+    setIsJoinHubSwitchLoading(false)
   }
 
   async function handleTrayHubUrlInputChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -99,22 +102,21 @@ export default function Settings(): JSX.Element {
   }
 
   async function init() {
-    const [enabled, maxPayload, theme, hubEnabled, hubUrl, hubConnectionStatus] = await Promise.all(
-      [
-        window.api.isAutoLaunchEnabled(),
-        window.api.config.get(CONFIG_KEY.WSS_MAX_PAYLOAD),
-        window.api.config.get(CONFIG_KEY.THEME),
-        window.api.config.get(CONFIG_KEY.HUB_ENABLED),
-        window.api.config.get(CONFIG_KEY.HUB_URL),
-        window.api.hub.currentStatus()
-      ]
-    )
+    const [enabled, maxPayload, theme, hubUrl, hubConnectionStatus] = await Promise.all([
+      window.api.isAutoLaunchEnabled(),
+      window.api.config.get(CONFIG_KEY.WSS_MAX_PAYLOAD),
+      window.api.config.get(CONFIG_KEY.THEME),
+      window.api.config.get(CONFIG_KEY.HUB_URL),
+      window.api.hub.currentStatus()
+    ])
 
     setIsAutoLaunchEnabled(enabled)
     setMaxPayload(maxPayload)
     setTheme(theme ?? THEME.SYSTEM)
-    setIsJoinTrayHubEnabled(hubEnabled)
     setTrayHubUrl(hubUrl)
+
+    const currentHubEnabled = hubConnectionStatus !== HUB_CONNECTION_STATUS.DISCONNECTED
+    setIsJoinTrayHubEnabled(currentHubEnabled)
     setTrayHubConnectionStatus(hubConnectionStatus)
 
     window.api.hub.onStatusChange((status) => {
@@ -219,7 +221,11 @@ export default function Settings(): JSX.Element {
               <div className="text-sm text-muted-foreground">{trayHubConnectionStatus}</div>
             </div>
           </div>
-          <Switch checked={isJoinTrayHubEnabled} onClick={handleJoinTrayHubToggle} />
+          <Switch
+            checked={isJoinTrayHubEnabled}
+            onClick={handleJoinTrayHubToggle}
+            disabled={isJoinHubSwitchLoading}
+          />
         </div>
         <div className="flex gap-2 items-center">
           <Input
