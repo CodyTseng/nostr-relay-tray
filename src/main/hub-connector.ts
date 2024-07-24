@@ -44,7 +44,9 @@ export class HubConnector extends EventEmitter {
       }, 30000)
 
       const pingTimer = setInterval(() => {
-        ws.ping()
+        if (ws.readyState === 1) {
+          ws.ping()
+        }
       }, 10000)
 
       ws.on('pong', () => {
