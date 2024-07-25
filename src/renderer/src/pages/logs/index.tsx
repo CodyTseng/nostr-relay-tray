@@ -57,7 +57,7 @@ export default function Logs() {
   }
 
   return (
-    <ScrollArea ref={scrollRef} className="font-mono h-[90vh] px-2 border-solid border rounded-md">
+    <ScrollArea ref={scrollRef} className="h-[90vh] px-2 border-solid border rounded-md">
       <div className="w-full">
         <div ref={topRef} />
         {logs.map((log, index) => (
