@@ -2,6 +2,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
 import { THubConnectionStatus } from '../common/constants'
 import { TNewRule, TRuleUpdate } from '../common/rule'
+import { TLog } from '../common/types'
 
 // Custom APIs for renderer
 const api = {
@@ -28,6 +29,11 @@ const api = {
   clearEvents: () => ipcRenderer.invoke('clearEvents'),
   isAutoLaunchEnabled: () => ipcRenderer.invoke('isAutoLaunchEnabled'),
   setAutoLaunchEnabled: (enabled: boolean) => ipcRenderer.invoke('setAutoLaunchEnabled', enabled),
+  onLog: (cb: (log: TLog) => void) => {
+    ipcRenderer.on('log', (_, log) => {
+      cb(log)
+    })
+  },
 
   rule: {
     find: (page: number, limit: number) => ipcRenderer.invoke('rule:find', page, limit),

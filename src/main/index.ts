@@ -12,6 +12,7 @@ import {
   shell,
   Tray
 } from 'electron'
+import EventEmitter from 'events'
 import { join } from 'path'
 import icon from '../../build/icon.png?asset'
 import nostrTemplate from '../../resources/nostrTemplate.png?asset'
@@ -25,7 +26,9 @@ import {
   TTrayImageColor
 } from '../common/constants'
 import { RULE_ACTION, TRule, TRuleAction } from '../common/rule'
+import { TLog } from '../common/types'
 import { HubConnector } from './hub-connector'
+import { RequestLoggerPlugin } from './plugins/request-logger.plugin'
 import { RestrictionPlugin } from './plugins/restriction.plugin'
 import { Relay } from './relay'
 import { initRepositories } from './repositories'
@@ -165,9 +168,15 @@ app.whenReady().then(async () => {
 
   await updateRestriction()
 
+  const logEmitter = new EventEmitter()
+  logEmitter.on('log', (log: TLog) => {
+    mainWindow?.webContents.send('log', log)
+  })
+  const requestLoggerPlugin = new RequestLoggerPlugin(logEmitter)
+
   relay = new Relay({
     maxPayload: config[CONFIG_KEY.WSS_MAX_PAYLOAD],
-    plugins: [restrictionPlugin]
+    plugins: [requestLoggerPlugin, restrictionPlugin]
   })
   await relay.startServer()
 

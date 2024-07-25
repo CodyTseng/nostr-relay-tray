@@ -14,6 +14,7 @@ declare global {
       clearEvents: () => Promise<number>
       isAutoLaunchEnabled: () => Promise<boolean>
       setAutoLaunchEnabled: (enabled: boolean) => Promise<boolean>
+      onLog: (cb: (log: TLog) => void) => void
 
       rule: {
         find: (page: number, limit: number) => Promise<TRule[]>
