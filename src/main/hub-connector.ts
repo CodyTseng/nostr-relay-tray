@@ -1,9 +1,9 @@
 import { Client as NostrClient } from '@nostr-relay/common'
+import { app } from 'electron'
 import EventEmitter from 'events'
 import { WebSocket } from 'ws'
 import { HUB_CONNECTION_STATUS, THubConnectionStatus } from '../common/constants'
 import { Relay } from './relay'
-import { app } from 'electron'
 
 export class HubConnector extends EventEmitter {
   private hubWs: WebSocket | null = null
@@ -24,7 +24,6 @@ export class HubConnector extends EventEmitter {
       relay: app.getName(),
       version: app.getVersion()
     }
-    let closeTimer: NodeJS.Timeout | undefined
     return new Promise((resolve) => {
       const ws = new WebSocket(hubUrl)
       this.updateStatus(HUB_CONNECTION_STATUS.CONNECTING)
@@ -39,7 +38,7 @@ export class HubConnector extends EventEmitter {
         })
       }, 5000)
 
-      closeTimer = setTimeout(() => {
+      let closeTimer = setTimeout(() => {
         ws.close()
       }, 30000)
 
@@ -96,13 +95,13 @@ export class HubConnector extends EventEmitter {
 
       ws.on('close', () => {
         this.hubWs = null
-        console.log('Hub connection closed.')
+        clearInterval(pingTimer)
+        clearTimeout(closeTimer)
+        clearTimeout(timeoutTimer)
+
         // 60 * 5s = 5 minutes
         if (!this.canReconnect || this.reconnectCount >= 60) {
           this.updateStatus(HUB_CONNECTION_STATUS.DISCONNECTED)
-          clearTimeout(timeoutTimer)
-          clearTimeout(closeTimer)
-          clearInterval(pingTimer)
           this.reconnectCount = 0
           return resolve({
             success: false,
@@ -110,8 +109,8 @@ export class HubConnector extends EventEmitter {
           })
         }
 
-        this.reconnectCount++
         this.updateStatus(HUB_CONNECTION_STATUS.CONNECTING)
+        this.reconnectCount++
         this.reconnectTimeout = setTimeout(async () => {
           await this.connectToHub(hubUrl)
         }, 5000)
