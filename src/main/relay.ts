@@ -18,6 +18,7 @@ type RelayOptions = {
    * Maximum payload size in kilobytes.
    */
   maxPayload: number
+  defaultFilterLimit: number
   plugins?: NostrRelayPlugin[]
 }
 
@@ -35,7 +36,7 @@ export class Relay {
   constructor(private readonly options: RelayOptions) {
     const userPath = app.getPath('userData')
     this.db = new BetterSqlite3(path.join(userPath, 'nostr.db'))
-    this.eventRepository = new EventRepositorySqlite(this.db)
+    this.eventRepository = new EventRepositorySqlite(this.db) // TODO: set default filter limit
   }
 
   async startServer() {
@@ -125,6 +126,11 @@ export class Relay {
   async updateMaxPayload(maxPayload: number) {
     this.options.maxPayload = maxPayload
     await this.restartServer()
+  }
+
+  setDefaultFilterLimit(defaultFilterLimit: number) {
+    // TODO: Implement this
+    console.log('setDefaultFilterLimit to', defaultFilterLimit)
   }
 
   getTotalEventCount(): number {

@@ -175,6 +175,7 @@ app.whenReady().then(async () => {
   const requestLoggerPlugin = new RequestLoggerPlugin(logEmitter)
 
   relay = new Relay({
+    defaultFilterLimit: config[CONFIG_KEY.DEFAULT_FILTER_LIMIT],
     maxPayload: config[CONFIG_KEY.WSS_MAX_PAYLOAD],
     plugins: [requestLoggerPlugin, restrictionPlugin]
   })
@@ -268,6 +269,10 @@ app.whenReady().then(async () => {
       const maxPayload = parseInt(value)
       config[CONFIG_KEY.WSS_MAX_PAYLOAD] = maxPayload
       await relay.updateMaxPayload(maxPayload)
+    } else if (key === CONFIG_KEY.DEFAULT_FILTER_LIMIT) {
+      const defaultFilterLimit = parseInt(value)
+      config[CONFIG_KEY.DEFAULT_FILTER_LIMIT] = defaultFilterLimit
+      relay.setDefaultFilterLimit(defaultFilterLimit)
     } else if (key === CONFIG_KEY.TRAY_IMAGE_COLOR) {
       config[CONFIG_KEY.TRAY_IMAGE_COLOR] = value
       tray.setImage(getTrayImage(value as TTrayImageColor))

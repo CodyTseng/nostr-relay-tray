@@ -88,7 +88,7 @@ export default function Data(): JSX.Element {
         <div className="flex justify-between items-center">
           <p>Clear all events in this relay.</p>
           <AlertDialog>
-            <AlertDialogTrigger>
+            <AlertDialogTrigger asChild>
               <Button
                 variant="destructive"
                 disabled={isClearing}

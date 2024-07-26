@@ -1,8 +1,14 @@
 import { Kysely } from 'kysely'
-import { IDatabase } from './common'
-import { CONFIG_KEY, DEFAULT_WSS_MAX_PAYLOAD, TConfig } from '../../common/config'
+import { CONFIG_KEY, TConfig } from '../../common/config'
+import {
+  DEFAULT_FILTER_LIMIT,
+  DEFAULT_HUB_URL,
+  DEFAULT_WSS_MAX_PAYLOAD,
+  THEME,
+  TRAY_IMAGE_COLOR
+} from '../../common/constants'
 import { RULE_ACTION } from '../../common/rule'
-import { DEFAULT_HUB_URL, THEME, TRAY_IMAGE_COLOR } from '../../common/constants'
+import { IDatabase } from './common'
 
 export class ConfigRepository {
   constructor(private readonly db: Kysely<IDatabase>) {}
@@ -28,6 +34,9 @@ export class ConfigRepository {
       [CONFIG_KEY.WSS_MAX_PAYLOAD]: rawConfig[CONFIG_KEY.WSS_MAX_PAYLOAD]
         ? parseInt(rawConfig[CONFIG_KEY.WSS_MAX_PAYLOAD])
         : DEFAULT_WSS_MAX_PAYLOAD,
+      [CONFIG_KEY.DEFAULT_FILTER_LIMIT]: rawConfig[CONFIG_KEY.DEFAULT_FILTER_LIMIT]
+        ? parseInt(rawConfig[CONFIG_KEY.DEFAULT_FILTER_LIMIT])
+        : DEFAULT_FILTER_LIMIT,
       [CONFIG_KEY.TRAY_IMAGE_COLOR]:
         rawConfig[CONFIG_KEY.TRAY_IMAGE_COLOR] ?? TRAY_IMAGE_COLOR.BLACK,
       [CONFIG_KEY.THEME]: rawConfig[CONFIG_KEY.THEME] ?? THEME.SYSTEM,
