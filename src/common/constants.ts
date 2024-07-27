@@ -21,3 +21,7 @@ export type THubConnectionStatus =
   (typeof HUB_CONNECTION_STATUS)[keyof typeof HUB_CONNECTION_STATUS]
 
 export const DEFAULT_HUB_URL = 'wss://hub.nostr-relay.app/join'
+
+export const DEFAULT_WSS_MAX_PAYLOAD = 256
+
+export const DEFAULT_FILTER_LIMIT = 100
