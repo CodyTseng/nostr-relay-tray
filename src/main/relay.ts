@@ -36,7 +36,9 @@ export class Relay {
   constructor(private readonly options: RelayOptions) {
     const userPath = app.getPath('userData')
     this.db = new BetterSqlite3(path.join(userPath, 'nostr.db'))
-    this.eventRepository = new EventRepositorySqlite(this.db) // TODO: set default filter limit
+    this.eventRepository = new EventRepositorySqlite(this.db, {
+      defaultLimit: options.defaultFilterLimit
+    })
   }
 
   async startServer() {
@@ -129,8 +131,7 @@ export class Relay {
   }
 
   setDefaultFilterLimit(defaultFilterLimit: number) {
-    // TODO: Implement this
-    console.log('setDefaultFilterLimit to', defaultFilterLimit)
+    this.eventRepository.setDefaultLimit(defaultFilterLimit)
   }
 
   getTotalEventCount(): number {
