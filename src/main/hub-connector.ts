@@ -4,6 +4,7 @@ import EventEmitter from 'events'
 import { WebSocket } from 'ws'
 import { HUB_CONNECTION_STATUS, THubConnectionStatus } from '../common/constants'
 import { Relay } from './relay'
+import { getAgent } from './utils'
 
 export class HubConnector extends EventEmitter {
   private hubWs: WebSocket | null = null
@@ -16,7 +17,7 @@ export class HubConnector extends EventEmitter {
     super()
   }
 
-  connectToHub(hubUrl: string): Promise<{
+  async connectToHub(hubUrl: string): Promise<{
     success: boolean
     errorMessage?: string
   }> {
@@ -24,8 +25,9 @@ export class HubConnector extends EventEmitter {
       relay: app.getName(),
       version: app.getVersion()
     }
+    const agent = await getAgent(hubUrl)
     return new Promise((resolve) => {
-      const ws = new WebSocket(hubUrl)
+      const ws = new WebSocket(hubUrl, { agent })
       this.updateStatus(HUB_CONNECTION_STATUS.CONNECTING)
       const timeoutTimer = setTimeout(() => {
         if (this.status === HUB_CONNECTION_STATUS.CONNECTED) {
