@@ -1,4 +1,3 @@
-import { CONFIG_KEY } from '@common/config'
 import { DEFAULT_FILTER_LIMIT } from '@common/constants'
 import { Input } from '@renderer/components/ui/input'
 import { ChangeEvent, useEffect, useState } from 'react'
@@ -7,7 +6,7 @@ export default function DefaultFilterLimitOption() {
   const [defaultFilterLimit, setDefaultFilterLimit] = useState(DEFAULT_FILTER_LIMIT)
 
   const init = async () => {
-    const defaultFilterLimit = await window.api.config.get(CONFIG_KEY.DEFAULT_FILTER_LIMIT)
+    const defaultFilterLimit = await window.api.relay.getDefaultFilterLimit()
     setDefaultFilterLimit(defaultFilterLimit)
   }
 
@@ -24,7 +23,7 @@ export default function DefaultFilterLimitOption() {
   }
 
   const handleDefaultLimitInputBlur = async () => {
-    await window.api.config.set(CONFIG_KEY.DEFAULT_FILTER_LIMIT, defaultFilterLimit.toString())
+    await window.api.relay.setDefaultFilterLimit(defaultFilterLimit)
   }
 
   return (

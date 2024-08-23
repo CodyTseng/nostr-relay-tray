@@ -26,7 +26,9 @@ export default function Data(): JSX.Element {
 
   const handleExport = async () => {
     setIsExporting(true)
-    const startSuccess = await window.api.exportEvents((progress) => setExportProgress(progress))
+    const startSuccess = await window.api.relay.exportEvents((progress) =>
+      setExportProgress(progress)
+    )
     if (!startSuccess) {
       console.error('Failed to start export')
     }
@@ -38,7 +40,9 @@ export default function Data(): JSX.Element {
 
   const handleImport = async () => {
     setIsImporting(true)
-    const startSuccess = await window.api.importEvents((progress) => setImportProgress(progress))
+    const startSuccess = await window.api.relay.importEvents((progress) =>
+      setImportProgress(progress)
+    )
     if (!startSuccess) {
       console.error('Failed to start import')
     }
@@ -50,7 +54,7 @@ export default function Data(): JSX.Element {
 
   const handleClear = async () => {
     setIsClearing(true)
-    await window.api.clearEvents()
+    await window.api.relay.clearEvents()
     setIsClearing(false)
   }
 

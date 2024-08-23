@@ -1,26 +1,59 @@
 import { Client as NostrClient } from '@nostr-relay/common'
-import { app } from 'electron'
-import EventEmitter from 'events'
+import { app, ipcMain } from 'electron'
 import { WebSocket } from 'ws'
-import { HUB_CONNECTION_STATUS, THubConnectionStatus } from '../common/constants'
-import { Relay } from './relay'
-import { getAgent } from './utils'
+import { CONFIG_KEY } from '../../common/config'
+import { HUB_CONNECTION_STATUS, THubConnectionStatus } from '../../common/constants'
+import { ConfigRepository } from '../repositories/config.repository'
+import { TSendToRenderer } from '../types'
+import { getAgent } from '../utils'
+import { RelayService } from './relay.service'
 
-export class HubConnector extends EventEmitter {
+export class HubConnectorService {
+  private enabled = false
+  private hubUrl: string | null = null
   private hubWs: WebSocket | null = null
   private status: THubConnectionStatus = HUB_CONNECTION_STATUS.DISCONNECTED
   private reconnectCount = 0
   private canReconnect = false
   private reconnectTimeout: NodeJS.Timeout | undefined
 
-  constructor(private readonly relay: Relay) {
-    super()
+  constructor(
+    private readonly relay: RelayService,
+    private readonly configRepository: ConfigRepository,
+    private readonly sendToRenderer: TSendToRenderer
+  ) {}
+
+  async init() {
+    const [configHubEnabled, configHubUrl] = await Promise.all([
+      this.configRepository.get(CONFIG_KEY.HUB_ENABLED),
+      this.configRepository.get(CONFIG_KEY.HUB_URL)
+    ])
+
+    this.enabled = configHubEnabled === 'true'
+    this.hubUrl = configHubUrl
+
+    if (this.enabled && this.hubUrl) {
+      await this.connectToHub(this.hubUrl)
+    }
+
+    ipcMain.handle('hub:currentStatus', () => this.getHubConnectionStatus())
+    ipcMain.handle('hub:connect', (_, url: string) => this.connectToHub(url))
+    ipcMain.handle('hub:disconnect', () => this.disconnectFromHub())
+    ipcMain.handle('hub:getHubUrl', () => this.hubUrl)
+    ipcMain.handle('hub:setHubUrl', (_, url: string) => this.updateUrl(url))
+    ipcMain.handle('hub:getIsEnabled', () => this.enabled)
   }
 
-  async connectToHub(hubUrl: string): Promise<{
+  private async connectToHub(hubUrl: string): Promise<{
     success: boolean
     errorMessage?: string
   }> {
+    await Promise.all([this.updateEnabled(true), this.updateUrl(hubUrl)])
+
+    if (this.status !== HUB_CONNECTION_STATUS.DISCONNECTED) {
+      return { success: true }
+    }
+
     const info = {
       relay: app.getName(),
       version: app.getVersion()
@@ -120,7 +153,9 @@ export class HubConnector extends EventEmitter {
     })
   }
 
-  disconnectFromHub() {
+  private async disconnectFromHub() {
+    await this.updateEnabled(false)
+
     if (this.status !== HUB_CONNECTION_STATUS.DISCONNECTED) {
       clearTimeout(this.reconnectTimeout)
       this.canReconnect = false
@@ -131,13 +166,25 @@ export class HubConnector extends EventEmitter {
     }
   }
 
-  getHubConnectionStatus() {
+  private getHubConnectionStatus() {
     return this.status
   }
 
   private updateStatus(status: THubConnectionStatus) {
     if (this.status === status) return
     this.status = status
-    this.emit('status', status)
+    this.sendToRenderer('hub:statusChange', status)
+  }
+
+  private async updateUrl(url: string) {
+    if (this.hubUrl === url) return
+    this.hubUrl = url
+    await this.configRepository.set(CONFIG_KEY.HUB_URL, url)
+  }
+
+  private async updateEnabled(enabled: boolean) {
+    if (this.enabled === enabled) return
+    this.enabled = enabled
+    await this.configRepository.set(CONFIG_KEY.HUB_ENABLED, `${enabled}`)
   }
 }

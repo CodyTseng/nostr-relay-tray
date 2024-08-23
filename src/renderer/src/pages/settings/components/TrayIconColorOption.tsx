@@ -1,4 +1,3 @@
-import { CONFIG_KEY } from '@common/config'
 import { TRAY_IMAGE_COLOR, TTrayImageColor } from '@common/constants'
 import {
   Select,
@@ -13,7 +12,7 @@ export default function TrayIconColorOption() {
   const [trayImageColor, setTrayImageColor] = useState<TTrayImageColor>(TRAY_IMAGE_COLOR.BLACK)
 
   const init = async () => {
-    const trayImageColor = await window.api.config.get(CONFIG_KEY.TRAY_IMAGE_COLOR)
+    const trayImageColor = await window.api.tray.getImageColor()
     setTrayImageColor(trayImageColor)
   }
 
@@ -22,7 +21,7 @@ export default function TrayIconColorOption() {
   }, [])
 
   const handleTrayImageColorChange = async (value: TTrayImageColor) => {
-    await window.api.config.set(CONFIG_KEY.TRAY_IMAGE_COLOR, value)
+    await window.api.tray.setImageColor(value)
     setTrayImageColor(value)
   }
 

@@ -8,7 +8,7 @@ export default function AutoLaunchOption() {
   const [isSetAutoLaunchLoading, setIsSetAutoLaunchLoading] = useState(false)
 
   const init = async () => {
-    const enabled = await window.api.isAutoLaunchEnabled()
+    const enabled = await window.api.autoLaunch.isEnabled()
     setIsAutoLaunchEnabled(enabled)
   }
 
@@ -19,7 +19,7 @@ export default function AutoLaunchOption() {
   const handleAutoLaunchToggle = async () => {
     setIsSetAutoLaunchLoading(true)
     const newEnabled = !isAutoLaunchEnabled
-    const success = await window.api.setAutoLaunchEnabled(!isAutoLaunchEnabled)
+    const success = await window.api.autoLaunch.set(!isAutoLaunchEnabled)
     setIsSetAutoLaunchLoading(false)
     if (success) {
       setIsAutoLaunchEnabled(newEnabled)

@@ -1,4 +1,3 @@
-import { CONFIG_KEY } from '@common/config'
 import { DEFAULT_WSS_MAX_PAYLOAD } from '@common/constants'
 import { Input } from '@renderer/components/ui/input'
 import { ChangeEvent, useEffect, useState } from 'react'
@@ -8,7 +7,7 @@ export default function MaxPayloadOption() {
   const [maxPayloadInputValueError, setMaxPayloadInputValueError] = useState<boolean>(false)
 
   const init = async () => {
-    const maxPayload = await window.api.config.get(CONFIG_KEY.WSS_MAX_PAYLOAD)
+    const maxPayload = await window.api.relay.getMaxPayload()
     setMaxPayload(maxPayload)
   }
 
@@ -30,7 +29,7 @@ export default function MaxPayloadOption() {
       setMaxPayloadInputValueError(true)
       return
     }
-    await window.api.config.set(CONFIG_KEY.WSS_MAX_PAYLOAD, maxPayload.toString())
+    await window.api.relay.updateMaxPayload(maxPayload)
   }
 
   return (
