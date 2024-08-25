@@ -50,7 +50,7 @@ export class HubConnectorService {
   }> {
     await Promise.all([this.updateEnabled(true), this.updateUrl(hubUrl)])
 
-    if (this.status !== HUB_CONNECTION_STATUS.DISCONNECTED) {
+    if (this.status === HUB_CONNECTION_STATUS.CONNECTED) {
       return { success: true }
     }
 
