@@ -1,4 +1,3 @@
-import { CONFIG_KEY } from '@common/config'
 import { THEME, TTheme } from '@common/constants'
 import {
   Select,
@@ -13,7 +12,7 @@ export default function AppearanceOption() {
   const [theme, setTheme] = useState<TTheme>(THEME.SYSTEM)
 
   const init = async () => {
-    const currentTheme = await window.api.config.get(CONFIG_KEY.THEME)
+    const currentTheme = await window.api.theme.currentConfig()
     setTheme(currentTheme)
   }
 
@@ -22,7 +21,7 @@ export default function AppearanceOption() {
   }, [])
 
   const handleThemeChange = async (newTheme: TTheme) => {
-    await window.api.config.set(CONFIG_KEY.THEME, newTheme)
+    await window.api.theme.updateConfig(newTheme)
     setTheme(newTheme)
   }
 

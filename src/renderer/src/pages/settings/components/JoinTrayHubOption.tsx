@@ -1,9 +1,9 @@
-import { CONFIG_KEY } from '@common/config'
 import { DEFAULT_HUB_URL, HUB_CONNECTION_STATUS, THubConnectionStatus } from '@common/constants'
 import { Badge } from '@renderer/components/ui/badge'
 import { Input } from '@renderer/components/ui/input'
 import { Switch } from '@renderer/components/ui/switch'
 import { useToast } from '@renderer/components/ui/use-toast'
+import { RotateCw } from 'lucide-react'
 import { ChangeEvent, useEffect, useState } from 'react'
 
 export default function JoinTrayHubOption() {
@@ -20,46 +20,43 @@ export default function JoinTrayHubOption() {
     const newEnabled = !isJoinTrayHubEnabled
     setIsJoinTrayHubEnabled(newEnabled)
     if (newEnabled) {
-      const { success, errorMessage } = await window.api.hub.connect(trayHubUrl)
-      if (!success) {
-        toast({
-          description:
-            errorMessage ?? 'Failed to connect to the hub, please check the URL and try again',
-          variant: 'destructive'
-        })
-        setIsJoinTrayHubEnabled(false)
-      }
+      await connectToHub()
     } else {
       await window.api.hub.disconnect()
     }
     setIsJoinHubSwitchLoading(false)
   }
 
+  const connectToHub = async () => {
+    const { success, errorMessage } = await window.api.hub.connect(trayHubUrl)
+    if (!success) {
+      toast({
+        description:
+          errorMessage ?? 'Failed to connect to the hub, please check the URL and try again',
+        variant: 'destructive'
+      })
+    }
+  }
+
   const handleTrayHubUrlInputChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const url = event.target.value
     setTrayHubUrl(url)
-    await window.api.config.set(CONFIG_KEY.HUB_URL, url)
+    await window.api.hub.setHubUrl(url)
   }
 
   async function init() {
-    const [hubUrl, hubConnectionStatus] = await Promise.all([
-      window.api.config.get(CONFIG_KEY.HUB_URL),
+    const [enabled, hubUrl, hubConnectionStatus] = await Promise.all([
+      window.api.hub.getIsEnabled(),
+      window.api.hub.getHubUrl(),
       window.api.hub.currentStatus()
     ])
 
     setTrayHubUrl(hubUrl)
-
-    const currentHubEnabled = hubConnectionStatus !== HUB_CONNECTION_STATUS.DISCONNECTED
-    setIsJoinTrayHubEnabled(currentHubEnabled)
+    setIsJoinTrayHubEnabled(enabled)
     setTrayHubConnectionStatus(hubConnectionStatus)
 
     window.api.hub.onStatusChange((status) => {
       setTrayHubConnectionStatus(status)
-      if (status === HUB_CONNECTION_STATUS.DISCONNECTED) {
-        setIsJoinTrayHubEnabled(false)
-      } else {
-        setIsJoinTrayHubEnabled(true)
-      }
     })
   }
 
@@ -80,10 +77,21 @@ export default function JoinTrayHubOption() {
                   ? 'bg-green-500'
                   : trayHubConnectionStatus === HUB_CONNECTION_STATUS.CONNECTING
                     ? 'bg-yellow-500'
-                    : 'bg-muted-foreground'
+                    : 'bg-destructive'
               }`}
             />
             <div className="text-sm text-muted-foreground">{trayHubConnectionStatus}</div>
+            {trayHubConnectionStatus === HUB_CONNECTION_STATUS.DISCONNECTED &&
+              isJoinTrayHubEnabled && (
+                <RotateCw
+                  onClick={connectToHub}
+                  size={14}
+                  className={
+                    'cursor-pointer hover:animate-spin ' +
+                    (isJoinHubSwitchLoading ? 'animate-spin' : '')
+                  }
+                />
+              )}
           </div>
         </div>
         <Switch

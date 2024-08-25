@@ -26,8 +26,8 @@ export default function Home(): JSX.Element {
       }
     }
     const [eventStatistics, totalEventCount] = await Promise.all([
-      window.api.getEventStatistics(),
-      window.api.getTotalEventCount()
+      window.api.relay.getEventStatistics(),
+      window.api.relay.getTotalEventCount()
     ])
 
     setEventStatistics(eventStatistics)

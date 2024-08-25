@@ -1,50 +1,62 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
-import { THubConnectionStatus } from '../common/constants'
-import { TNewRule, TRuleUpdate } from '../common/rule'
+import { THubConnectionStatus, TTheme, TTrayImageColor } from '../common/constants'
+import { TNewRule, TRuleAction, TRuleUpdate } from '../common/rule'
 import { TLog } from '../common/types'
 
 // Custom APIs for renderer
 const api = {
-  getTotalEventCount: () => ipcRenderer.invoke('getTotalEventCount'),
-  getEventStatistics: () => ipcRenderer.invoke('getEventStatistics'),
-  exportEvents: async (fn: (progress: number) => void) => {
-    ipcRenderer.on('exportEvents:progress', (_, progress) => {
-      fn(progress)
-    })
-
-    const startSuccess = await ipcRenderer.invoke('exportEvents')
-    ipcRenderer.removeAllListeners('exportEvents:progress')
-    return startSuccess
-  },
-  importEvents: async (fn: (progress: number) => void) => {
-    ipcRenderer.on('importEvents:progress', (_, progress) => {
-      fn(progress)
-    })
-
-    const startSuccess = await ipcRenderer.invoke('importEvents')
-    ipcRenderer.removeAllListeners('importEvents:progress')
-    return startSuccess
-  },
-  clearEvents: () => ipcRenderer.invoke('clearEvents'),
-  isAutoLaunchEnabled: () => ipcRenderer.invoke('isAutoLaunchEnabled'),
-  setAutoLaunchEnabled: (enabled: boolean) => ipcRenderer.invoke('setAutoLaunchEnabled', enabled),
   onLog: (cb: (log: TLog) => void) => {
     ipcRenderer.on('log', (_, log) => {
       cb(log)
     })
   },
+  autoLaunch: {
+    isEnabled: () => ipcRenderer.invoke('autoLaunch:isEnabled'),
+    set: (enabled: boolean) => ipcRenderer.invoke('autoLaunch:set', enabled)
+  },
+  relay: {
+    getTotalEventCount: () => ipcRenderer.invoke('relay:getTotalEventCount'),
+    getEventStatistics: () => ipcRenderer.invoke('relay:getEventStatistics'),
+    exportEvents: async (fn: (progress: number) => void) => {
+      ipcRenderer.on('relay:exportEvents:progress', (_, progress) => {
+        fn(progress)
+      })
 
+      const startSuccess = await ipcRenderer.invoke('relay:exportEvents')
+      ipcRenderer.removeAllListeners('relay:exportEvents:progress')
+      return startSuccess
+    },
+    importEvents: async (fn: (progress: number) => void) => {
+      ipcRenderer.on('relay:importEvents:progress', (_, progress) => {
+        fn(progress)
+      })
+
+      const startSuccess = await ipcRenderer.invoke('relay:importEvents')
+      ipcRenderer.removeAllListeners('relay:importEvents:progress')
+      return startSuccess
+    },
+    clearEvents: () => ipcRenderer.invoke('relay:clearEvents'),
+    updateMaxPayload: (maxPayload: number) =>
+      ipcRenderer.invoke('relay:updateMaxPayload', maxPayload),
+    getMaxPayload: () => ipcRenderer.invoke('relay:getMaxPayload'),
+    setDefaultFilterLimit: (defaultFilterLimit: number) =>
+      ipcRenderer.invoke('relay:setDefaultFilterLimit', defaultFilterLimit),
+    getDefaultFilterLimit: () => ipcRenderer.invoke('relay:getDefaultFilterLimit')
+  },
+  tray: {
+    getImageColor: () => ipcRenderer.invoke('tray:getImageColor'),
+    setImageColor: (color: TTrayImageColor) => ipcRenderer.invoke('tray:setImageColor', color)
+  },
   rule: {
     find: (page: number, limit: number) => ipcRenderer.invoke('rule:find', page, limit),
     findById: (id: number) => ipcRenderer.invoke('rule:findById', id),
     update: (id: number, rule: TRuleUpdate) => ipcRenderer.invoke('rule:update', id, rule),
     delete: (id: number) => ipcRenderer.invoke('rule:delete', id),
-    create: (rule: TNewRule) => ipcRenderer.invoke('rule:create', rule)
-  },
-  config: {
-    get: (key: string) => ipcRenderer.invoke('config:get', key),
-    set: (key: string, value: string) => ipcRenderer.invoke('config:set', key, value)
+    create: (rule: TNewRule) => ipcRenderer.invoke('rule:create', rule),
+    getDefaultEventAction: () => ipcRenderer.invoke('rule:getDefaultEventAction'),
+    setDefaultEventAction: (action: TRuleAction) =>
+      ipcRenderer.invoke('rule:setDefaultEventAction', action)
   },
   theme: {
     onChange: (cb: (theme: 'dark' | 'light') => void) => {
@@ -52,7 +64,9 @@ const api = {
         cb(theme)
       })
     },
-    current: () => ipcRenderer.invoke('theme:current')
+    current: () => ipcRenderer.invoke('theme:current'),
+    currentConfig: () => ipcRenderer.invoke('theme:currentConfig'),
+    updateConfig: (theme: TTheme) => ipcRenderer.invoke('theme:updateConfig', theme)
   },
   hub: {
     onStatusChange: (cb: (status: THubConnectionStatus) => void) => {
@@ -62,7 +76,10 @@ const api = {
     },
     currentStatus: () => ipcRenderer.invoke('hub:currentStatus'),
     connect: (url: string) => ipcRenderer.invoke('hub:connect', url),
-    disconnect: () => ipcRenderer.invoke('hub:disconnect')
+    disconnect: () => ipcRenderer.invoke('hub:disconnect'),
+    getHubUrl: () => ipcRenderer.invoke('hub:getHubUrl'),
+    setHubUrl: (url: string) => ipcRenderer.invoke('hub:setHubUrl', url),
+    getIsEnabled: () => ipcRenderer.invoke('hub:getIsEnabled')
   }
 }
 

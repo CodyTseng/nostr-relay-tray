@@ -61,6 +61,7 @@
     "@radix-ui/react-switch": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
+    "@radix-ui/react-tooltip": "^1.1.2",
     "@tanstack/react-table": "^8.16.0",
     "@types/auto-launch": "^5.0.5",
     "@types/better-sqlite3": "^7.6.9",
