@@ -63,7 +63,9 @@ export function RuleCondition({
       ? 'npub'
       : currentRule.fieldName === RULE_CONDITION_FIELD_NAME.KIND
         ? 'kind number'
-        : 'TagName:TagValue'
+        : currentRule.fieldName === RULE_CONDITION_FIELD_NAME.TAG
+          ? 'TagName:TagValue'
+          : 'regex'
     : ''
   const valueValidator = getValidator(currentRule.fieldName)
 
@@ -228,12 +230,14 @@ function getValidator(fieldName?: TRuleConditionFieldName) {
           .min(0, 'Kind number must be greater than or equal to 0')
           .max(40000, 'Kind number must be less than or equal to 40000')
       )
-    default:
+    case RULE_CONDITION_FIELD_NAME.TAG:
       return z
         .string({
           message: 'Please enter a string in the format TagName:TagValue'
         })
         .regex(/^.+:.+$/, 'Please enter a string in the format TagName:TagValue')
         .trim()
+    default:
+      return z.string().min(1, 'Please enter a value').trim()
   }
 }

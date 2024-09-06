@@ -7,7 +7,8 @@ export type TRuleAction = (typeof RULE_ACTION)[keyof typeof RULE_ACTION]
 export const RULE_CONDITION_FIELD_NAME = {
   AUTHOR: 'author',
   KIND: 'kind',
-  TAG: 'tag'
+  TAG: 'tag',
+  CONTENT: 'content'
 } as const
 export const RULE_CONDITION_FIELD_NAMES = Object.values(RULE_CONDITION_FIELD_NAME)
 export const MAX_RULE_CONDITIONS = RULE_CONDITION_FIELD_NAMES.length

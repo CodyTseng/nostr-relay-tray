@@ -15,6 +15,7 @@ export type TRuleFilter = {
   authors: string[]
   kinds: number[]
   tags: string[][]
+  contents: RegExp[]
 }
 
 const BLOCKED_MESSAGE = 'blocked:'
@@ -52,7 +53,8 @@ export class RestrictionPlugin implements HandleMessagePlugin {
       const filter: TRuleFilter = {
         authors: [],
         kinds: [],
-        tags: []
+        tags: [],
+        contents: []
       }
       rule.conditions.forEach((condition) => {
         if (!condition.fieldName || condition.values.length <= 0) return
@@ -63,6 +65,8 @@ export class RestrictionPlugin implements HandleMessagePlugin {
           filter.kinds = condition.values as number[]
         } else if (condition.fieldName === RULE_CONDITION_FIELD_NAME.TAG) {
           filter.tags.push(condition.values as string[])
+        } else if (condition.fieldName === RULE_CONDITION_FIELD_NAME.CONTENT) {
+          filter.contents = (condition.values as string[]).map((content) => new RegExp(content))
         }
       })
       return filter
@@ -77,6 +81,14 @@ export class RestrictionPlugin implements HandleMessagePlugin {
 
       const author = EventUtils.getAuthor(event, false)
       if (filter.authors.length && !filter.authors.includes(author)) {
+        return false
+      }
+
+      if (
+        event.content.length &&
+        filter.contents.length &&
+        filter.contents.every((content) => !content.test(event.content))
+      ) {
         return false
       }
 
