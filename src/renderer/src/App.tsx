@@ -12,6 +12,10 @@ const navItems = [
     href: '/data'
   },
   {
+    title: 'WoT',
+    href: '/wot'
+  },
+  {
     title: 'Rules',
     href: '/rules'
   },

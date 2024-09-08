@@ -118,6 +118,16 @@ export class RelayService {
     }
   }
 
+  getEventRepository() {
+    return this.eventRepository
+  }
+
+  register(plugin: NostrRelayPlugin) {
+    if (this.relay) {
+      this.relay.register(plugin)
+    }
+  }
+
   private async updateMaxPayload(maxPayload: number) {
     this.options.maxPayload = maxPayload
     await this.restartServer()

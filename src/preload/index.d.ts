@@ -54,6 +54,20 @@ declare global {
         setHubUrl: (url: string) => Promise<void>
         getIsEnabled: () => Promise<boolean>
       }
+      wot: {
+        getEnabled: () => Promise<boolean>
+        setEnabled: (enabled: boolean) => Promise<void>
+        getTrustAnchor: () => Promise<string>
+        setTrustAnchor: (trustAnchor: string) => Promise<void>
+        getTrustDepth: () => Promise<number>
+        setTrustDepth: (trustDepth: number) => Promise<void>
+        getRefreshInterval: () => Promise<number>
+        setRefreshInterval: (refreshInterval: number) => Promise<void>
+        refreshTrustedPubkeySet: () => Promise<void>
+        getLastRefreshedAt: () => Promise<number>
+        getTrustedPubkeyCount: () => Promise<number>
+        checkNpub: (npub: string) => Promise<boolean>
+      }
     }
   }
 }

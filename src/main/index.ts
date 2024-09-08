@@ -1,4 +1,6 @@
 import { electronApp, is } from '@electron-toolkit/utils'
+import dayjs from 'dayjs'
+import duration from 'dayjs/plugin/duration'
 import { app, BrowserWindow, clipboard, ipcMain, Menu, nativeImage, shell, Tray } from 'electron'
 import { join } from 'path'
 import icon from '../../build/icon.png?asset'
@@ -15,8 +17,11 @@ import { LogViewerService } from './services/log-viewer.service'
 import { RelayService } from './services/relay.service'
 import { RestrictionService } from './services/restriction.service'
 import { ThemeService } from './services/theme.service'
+import { WotService } from './services/wot.service'
 import { TSendToRenderer } from './types'
 import { getLocalIpAddress } from './utils'
+
+dayjs.extend(duration)
 
 let relay: RelayService
 let hubConnector: HubConnectorService
@@ -55,12 +60,18 @@ app.whenReady().then(async () => {
     restrictionPlugin
   ])
   await relay.init()
-
-  hubConnector = new HubConnectorService(relay, repositories.config, sendToRenderer)
-  await hubConnector.init()
+  const eventRepository = relay.getEventRepository()
 
   let trayImageColor = await getTrayImageColor(repositories.config)
   createTray({ trayImage: getTrayImage(trayImageColor) })
+
+  const wotService = new WotService(repositories.config, eventRepository)
+  await wotService.init()
+  const wotGuardPlugin = wotService.getWotGuard()
+  relay.register(wotGuardPlugin)
+
+  hubConnector = new HubConnectorService(relay, repositories.config, sendToRenderer)
+  await hubConnector.init()
 
   ipcMain.handle('tray:getImageColor', () => trayImageColor)
   ipcMain.handle('tray:setImageColor', async (_, color: TTrayImageColor) => {
