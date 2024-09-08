@@ -80,6 +80,21 @@ const api = {
     getHubUrl: () => ipcRenderer.invoke('hub:getHubUrl'),
     setHubUrl: (url: string) => ipcRenderer.invoke('hub:setHubUrl', url),
     getIsEnabled: () => ipcRenderer.invoke('hub:getIsEnabled')
+  },
+  wot: {
+    getEnabled: () => ipcRenderer.invoke('wot:getEnabled'),
+    setEnabled: (enabled: boolean) => ipcRenderer.invoke('wot:setEnabled', enabled),
+    getTrustAnchor: () => ipcRenderer.invoke('wot:getTrustAnchor'),
+    setTrustAnchor: (trustAnchor: string) => ipcRenderer.invoke('wot:setTrustAnchor', trustAnchor),
+    getTrustDepth: () => ipcRenderer.invoke('wot:getTrustDepth'),
+    setTrustDepth: (trustDepth: number) => ipcRenderer.invoke('wot:setTrustDepth', trustDepth),
+    getRefreshInterval: () => ipcRenderer.invoke('wot:getRefreshInterval'),
+    setRefreshInterval: (refreshInterval: number) =>
+      ipcRenderer.invoke('wot:setRefreshInterval', refreshInterval),
+    refreshTrustedPubkeySet: () => ipcRenderer.invoke('wot:refreshTrustedPubkeySet'),
+    getLastRefreshedAt: () => ipcRenderer.invoke('wot:getLastRefreshedAt'),
+    getTrustedPubkeyCount: () => ipcRenderer.invoke('wot:getTrustedPubkeyCount'),
+    checkNpub: (npub: string) => ipcRenderer.invoke('wot:checkNpub', npub)
   }
 }
 

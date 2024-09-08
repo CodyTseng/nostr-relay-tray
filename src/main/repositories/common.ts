@@ -1,5 +1,6 @@
-import { Generated, Selectable } from 'kysely'
+import { ColumnType, Generated, Selectable } from 'kysely'
 import { TRuleAction } from '../../common/rule'
+import { TConfigKey } from '../../common/config'
 
 export interface IDatabase {
   rule: IRuleTable
@@ -17,7 +18,7 @@ export interface IRuleTable {
 export type TRuleRow = Selectable<IRuleTable>
 
 export interface IConfigTable {
-  key: string
+  key: ColumnType<TConfigKey>
   value: string
 }
 export type TConfigRow = Selectable<IConfigTable>
