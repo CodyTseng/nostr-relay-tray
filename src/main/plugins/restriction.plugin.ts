@@ -1,13 +1,10 @@
 import {
+  BeforeHandleEventPlugin,
+  BeforeHandleEventResult,
   ClientContext,
   EventUtils,
-  HandleMessagePlugin,
-  HandleMessageResult,
-  IncomingMessage,
-  MessageType,
   Event as NostrEvent
 } from '@nostr-relay/common'
-import { createOutgoingOkMessage } from '@nostr-relay/core'
 import { nip19 } from 'nostr-tools'
 import { RULE_ACTION, RULE_CONDITION_FIELD_NAME, TRule, TRuleAction } from '../../common/rule'
 
@@ -20,28 +17,20 @@ export type TRuleFilter = {
 
 const BLOCKED_MESSAGE = 'blocked:'
 
-export class RestrictionPlugin implements HandleMessagePlugin {
+export class RestrictionPlugin implements BeforeHandleEventPlugin {
   private defaultAction: TRuleAction = RULE_ACTION.ALLOW
   private filters: TRuleFilter[] = []
 
-  async handleMessage(
-    ctx: ClientContext,
-    message: IncomingMessage,
-    next: () => Promise<HandleMessageResult>
-  ): Promise<HandleMessageResult> {
-    if (message[0] !== MessageType.EVENT) return next()
-
-    const event = message[1]
+  beforeHandleEvent(_: ClientContext, event: NostrEvent): BeforeHandleEventResult {
     const isMatchingFilters = this.isMatchingFilters(event)
     const needBlock =
       (this.defaultAction === RULE_ACTION.BLOCK && !isMatchingFilters) ||
       (this.defaultAction === RULE_ACTION.ALLOW && isMatchingFilters)
 
     if (needBlock) {
-      ctx.sendMessage(createOutgoingOkMessage(event.id, false, BLOCKED_MESSAGE))
-      return { messageType: MessageType.EVENT, success: false, message: BLOCKED_MESSAGE }
+      return { canHandle: false, message: BLOCKED_MESSAGE }
     }
-    return next()
+    return { canHandle: true }
   }
 
   updateDefaultAction(action: TRuleAction) {
