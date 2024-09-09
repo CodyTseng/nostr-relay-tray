@@ -94,7 +94,8 @@ const api = {
     refreshTrustedPubkeySet: () => ipcRenderer.invoke('wot:refreshTrustedPubkeySet'),
     getLastRefreshedAt: () => ipcRenderer.invoke('wot:getLastRefreshedAt'),
     getTrustedPubkeyCount: () => ipcRenderer.invoke('wot:getTrustedPubkeyCount'),
-    checkNpub: (npub: string) => ipcRenderer.invoke('wot:checkNpub', npub)
+    checkNpub: (npub: string) => ipcRenderer.invoke('wot:checkNpub', npub),
+    getIsRefreshing: () => ipcRenderer.invoke('wot:getIsRefreshing')
   }
 }
 

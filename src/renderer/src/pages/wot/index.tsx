@@ -63,6 +63,7 @@ export default function Wot() {
   }
 
   const handleEnableToggle = async (newEnabled: boolean) => {
+    setEnabled(newEnabled)
     if (newEnabled) {
       if (!NPUB_REGEX.test(anchor)) {
         toast({
@@ -79,7 +80,6 @@ export default function Wot() {
     } else {
       await window.api.wot.setEnabled(false)
     }
-    setEnabled(newEnabled)
   }
 
   const handleAnchorChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,8 +167,8 @@ export default function Wot() {
                 <div className="text-wrap w-80">
                   The depth of the trust net. If the trust depth is 1, the trust net will include
                   you and your following users. If the trust depth is 2, the trust net will include
-                  you, your following users, and your following users' following users. Now the
-                  maximum trust depth is 2.
+                  you, your following users, and your following users&rsquo; following users. Now
+                  the maximum trust depth is 2.
                 </div>
               </TooltipContent>
             </Tooltip>

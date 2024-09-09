@@ -1,4 +1,3 @@
-import { TConfig } from '@common/config'
 import { THubConnectionStatus, TTheme } from '@common/constants'
 import { TNewRule, TRule, TRuleUpdate } from '@common/rule'
 import { ElectronAPI } from '@electron-toolkit/preload'
@@ -67,6 +66,7 @@ declare global {
         getLastRefreshedAt: () => Promise<number>
         getTrustedPubkeyCount: () => Promise<number>
         checkNpub: (npub: string) => Promise<boolean>
+        getIsRefreshing: () => Promise<boolean>
       }
     }
   }

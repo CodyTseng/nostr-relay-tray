@@ -68,6 +68,7 @@ export class WotService {
       const pubkey = this.decodeNpub(npub)
       return this.wotGuard.checkPubkey(pubkey)
     })
+    ipcMain.handle('wot:getIsRefreshing', () => this.isRefreshing)
 
     if (!this.enabled || !this.trustAnchor) {
       return
@@ -85,7 +86,7 @@ export class WotService {
       this.wotGuard.setAgent(agent)
     }
 
-    await this.wotGuard.refreshTrustedPubkeySet()
+    await this.refreshTrustedPubkeySet()
   }
 
   getWotGuard() {
