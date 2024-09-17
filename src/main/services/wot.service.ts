@@ -13,6 +13,7 @@ export class WotService {
   private trustAnchor: string | undefined
   private trustDepth: number = 1
   private refreshInterval: number = 1
+  private refreshIntervalId: NodeJS.Timeout | null = null
   private isRefreshing: boolean = false
 
   constructor(
@@ -21,7 +22,6 @@ export class WotService {
   ) {
     this.wotGuard = new WotGuard({
       enabled: false,
-      trustAnchorPubkey: '',
       trustDepth: 0,
       eventRepository,
       relayUrls: ['wss://relay.damus.io', 'wss://relay.nostr.band', 'wss://nos.lol']
@@ -70,15 +70,13 @@ export class WotService {
     })
     ipcMain.handle('wot:getIsRefreshing', () => this.isRefreshing)
 
+    this.wotGuard.setTrustDepth(this.trustDepth)
+
     if (!this.enabled || !this.trustAnchor) {
       return
     }
 
     this.wotGuard.setTrustAnchorPubkey(this.trustAnchor)
-    this.wotGuard.setTrustDepth(this.trustDepth)
-    this.wotGuard.setRefreshInterval(
-      dayjs.duration({ hours: this.refreshInterval }).asMilliseconds()
-    )
     this.wotGuard.setEnabled(this.enabled)
 
     const agent = await getAgent('wss://relay.damus.io')
@@ -87,6 +85,13 @@ export class WotService {
     }
 
     await this.refreshTrustedPubkeySet()
+
+    this.refreshIntervalId = setInterval(
+      () => {
+        this.refreshTrustedPubkeySet()
+      },
+      dayjs.duration({ hours: this.refreshInterval }).asMilliseconds()
+    )
   }
 
   getWotGuard() {
@@ -97,8 +102,13 @@ export class WotService {
     if (this.enabled === enabled) {
       return
     }
-    this.enabled = enabled
+
+    if (!this.trustAnchor) {
+      throw new Error('Trust anchor is not set')
+    }
+    this.wotGuard.setTrustAnchorPubkey(this.trustAnchor)
     this.wotGuard.setEnabled(enabled)
+    this.enabled = enabled
     await this.configRepository.set(CONFIG_KEY.WOT_ENABLED, enabled.toString())
     if (enabled) {
       await this.refreshTrustedPubkeySet()
@@ -119,7 +129,15 @@ export class WotService {
 
   private async setRefreshInterval(refreshInterval: number) {
     this.refreshInterval = refreshInterval
-    this.wotGuard.setRefreshInterval(dayjs.duration({ hours: refreshInterval }).asMilliseconds())
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId)
+    }
+    this.refreshIntervalId = setInterval(
+      () => {
+        this.refreshTrustedPubkeySet()
+      },
+      dayjs.duration({ hours: this.refreshInterval }).asMilliseconds()
+    )
     await this.configRepository.set(CONFIG_KEY.WOT_REFRESH_INTERVAL, refreshInterval.toString())
   }
 

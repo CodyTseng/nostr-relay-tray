@@ -1,7 +1,6 @@
 import {
   BeforeHandleEventPlugin,
   BeforeHandleEventResult,
-  ClientContext,
   EventUtils,
   Event as NostrEvent
 } from '@nostr-relay/common'
@@ -15,20 +14,21 @@ export type TRuleFilter = {
   contents: RegExp[]
 }
 
-const BLOCKED_MESSAGE = 'blocked:'
-
 export class RestrictionPlugin implements BeforeHandleEventPlugin {
   private defaultAction: TRuleAction = RULE_ACTION.ALLOW
   private filters: TRuleFilter[] = []
 
-  beforeHandleEvent(_: ClientContext, event: NostrEvent): BeforeHandleEventResult {
+  beforeHandleEvent(event: NostrEvent): BeforeHandleEventResult {
     const isMatchingFilters = this.isMatchingFilters(event)
     const needBlock =
       (this.defaultAction === RULE_ACTION.BLOCK && !isMatchingFilters) ||
       (this.defaultAction === RULE_ACTION.ALLOW && isMatchingFilters)
 
     if (needBlock) {
-      return { canHandle: false, message: BLOCKED_MESSAGE }
+      return {
+        canHandle: false,
+        message: 'blocked:'
+      }
     }
     return { canHandle: true }
   }

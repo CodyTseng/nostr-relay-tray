@@ -1,6 +1,10 @@
 import cors from '@fastify/cors'
-import { Client as NostrClient, NostrRelayPlugin } from '@nostr-relay/common'
-import { createOutgoingNoticeMessage, NostrRelay } from '@nostr-relay/core'
+import {
+  Client as NostrClient,
+  NostrRelayPlugin,
+  createOutgoingNoticeMessage
+} from '@nostr-relay/common'
+import { NostrRelay } from '@nostr-relay/core'
 import { EventRepositorySqlite } from '@nostr-relay/event-repository-sqlite'
 import { RawData, Validator } from '@nostr-relay/validator'
 import BetterSqlite3 from 'better-sqlite3'
@@ -10,12 +14,12 @@ import { createReadStream, createWriteStream, readFileSync, statSync } from 'fs'
 import path from 'path'
 import { createInterface } from 'readline'
 import { WebSocketServer } from 'ws'
-import { DEFAULT_FILTER_LIMIT, DEFAULT_WSS_MAX_PAYLOAD } from '../../common/constants'
 import favicon from '../../../resources/favicon.ico?asset'
+import { CONFIG_KEY } from '../../common/config'
+import { DEFAULT_FILTER_LIMIT, DEFAULT_WSS_MAX_PAYLOAD } from '../../common/constants'
 import { KIND_DESCRIPTION_MAP } from '../constants'
 import { ConfigRepository } from '../repositories/config.repository'
 import { TSendToRenderer } from '../types'
-import { CONFIG_KEY } from '../../common/config'
 
 type RelayOptions = {
   /**
