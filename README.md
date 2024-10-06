@@ -28,6 +28,8 @@ Because the app is not signed, you may need to allow it to run in the system set
 
 You can also build the app from the source code.
 
+> Note: Node.js >= 20 is required.
+
 ```bash
 # Clone this repository
 git clone https://github.com/CodyTseng/nostr-relay-tray.git
@@ -48,11 +50,13 @@ The executable file will be in the `dist` folder.
 
 ## Screenshot
 
-![screenshot](./screenshots/screenshot-1.jpg)
+![screenshot](./screenshots/screenshot-1.png)
 
-![screenshot](./screenshots/screenshot-2.jpg)
+![screenshot](./screenshots/screenshot-2.png)
 
-![screenshot](./screenshots/screenshot-3.jpg)
+![screenshot](./screenshots/screenshot-3.png)
+
+![screenshot](./screenshots/screenshot-4.png)
 
 ## Donate
 
