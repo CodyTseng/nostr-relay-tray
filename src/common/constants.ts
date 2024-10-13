@@ -25,3 +25,5 @@ export const DEFAULT_HUB_URL = 'wss://hub.nostr-relay.app/join'
 export const DEFAULT_WSS_MAX_PAYLOAD = 256
 
 export const DEFAULT_FILTER_LIMIT = 100
+
+export const DEFAULT_POW_DIFFICULTY = 0

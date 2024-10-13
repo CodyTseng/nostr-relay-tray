@@ -12,12 +12,12 @@ import { TRAY_IMAGE_COLOR, TTrayImageColor } from '../common/constants'
 import { initRepositories } from './repositories'
 import { ConfigRepository } from './repositories/config.repository'
 import { AutoLaunchService } from './services/auto-launch.service'
+import { GuardService } from './services/guard.service'
 import { HubConnectorService } from './services/hub-connector.service'
 import { LogViewerService } from './services/log-viewer.service'
 import { RelayService } from './services/relay.service'
 import { RestrictionService } from './services/restriction.service'
 import { ThemeService } from './services/theme.service'
-import { WotService } from './services/wot.service'
 import { TSendToRenderer } from './types'
 import { getLocalIpAddress } from './utils'
 
@@ -65,10 +65,9 @@ app.whenReady().then(async () => {
   let trayImageColor = await getTrayImageColor(repositories.config)
   createTray({ trayImage: getTrayImage(trayImageColor) })
 
-  const wotService = new WotService(repositories.config, eventRepository)
-  await wotService.init()
-  const wotGuardPlugin = wotService.getWotGuard()
-  relay.register(wotGuardPlugin)
+  const guardService = new GuardService(repositories.config, eventRepository)
+  await guardService.init()
+  relay.register(guardService)
 
   hubConnector = new HubConnectorService(relay, repositories.config, sendToRenderer)
   await hubConnector.init()

@@ -68,6 +68,10 @@ declare global {
         checkNpub: (npub: string) => Promise<boolean>
         getIsRefreshing: () => Promise<boolean>
       }
+      pow: {
+        getDifficulty: () => Promise<number>
+        setDifficulty: (difficulty: number) => Promise<void>
+      }
     }
   }
 }

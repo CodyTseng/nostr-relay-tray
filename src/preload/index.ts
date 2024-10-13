@@ -96,6 +96,10 @@ const api = {
     getTrustedPubkeyCount: () => ipcRenderer.invoke('wot:getTrustedPubkeyCount'),
     checkNpub: (npub: string) => ipcRenderer.invoke('wot:checkNpub', npub),
     getIsRefreshing: () => ipcRenderer.invoke('wot:getIsRefreshing')
+  },
+  pow: {
+    getDifficulty: () => ipcRenderer.invoke('pow:getPowDifficulty'),
+    setDifficulty: (difficulty: number) => ipcRenderer.invoke('pow:setPowDifficulty', difficulty)
   }
 }
 
