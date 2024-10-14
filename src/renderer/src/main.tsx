@@ -7,7 +7,7 @@ import Logs from '@renderer/pages/logs'
 import Rules from '@renderer/pages/rules'
 import EditRule from '@renderer/pages/rules/edit'
 import Settings from '@renderer/pages/settings'
-import Wot from '@renderer/pages/wot'
+import WotAndPow from '@renderer/pages/wotAndPow'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createHashRouter, RouterProvider } from 'react-router-dom'
@@ -19,7 +19,7 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <Home /> },
       { path: '/data', element: <Data /> },
-      { path: '/wot', element: <Wot /> },
+      { path: '/wotandpow', element: <WotAndPow /> },
       { path: '/rules', element: <Rules /> },
       { path: '/rules/create', element: <EditRule /> },
       { path: '/rules/:id/edit', element: <EditRule /> },

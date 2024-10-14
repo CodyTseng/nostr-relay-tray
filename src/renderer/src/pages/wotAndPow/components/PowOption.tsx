@@ -31,9 +31,9 @@ export default function PowOption() {
   return (
     <div className="flex justify-between items-center">
       <div>
-        <div>Pow difficulty</div>
+        <div>Difficulty</div>
         <div className="text-sm text-muted-foreground">
-          The minimum pow difficulty for accepting events
+          The minimum pow difficulty for accepting events. 0 means disabled.
         </div>
       </div>
       <Input

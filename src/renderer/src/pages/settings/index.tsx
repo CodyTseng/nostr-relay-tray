@@ -3,7 +3,6 @@ import AutoLaunchOption from './components/AutoLaunchOption'
 import DefaultFilterLimitOption from './components/DefaultFilterLimitOption'
 import JoinTrayHubOption from './components/JoinTrayHubOption'
 import MaxPayloadOption from './components/MaxPayloadOption'
-import PowDifficultyOption from './components/PowDifficultyOption'
 import TrayIconColorOption from './components/TrayIconColorOption'
 
 export default function Settings() {
@@ -14,7 +13,6 @@ export default function Settings() {
       <TrayIconColorOption />
       <MaxPayloadOption />
       <DefaultFilterLimitOption />
-      <PowDifficultyOption />
       <JoinTrayHubOption />
     </div>
   )

@@ -12,6 +12,7 @@ import { useToast } from '@renderer/components/ui/use-toast'
 import dayjs from 'dayjs'
 import { CircleHelp } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import PowOption from './components/PowOption'
 
 const NPUB_REGEX = /^npub1[0-9a-z]{58}$/
 
@@ -140,8 +141,9 @@ export default function Wot() {
 
   return (
     <div className="space-y-2">
+      <div className="font-bold text-xl">WoT</div>
       <div className="flex items-center justify-between">
-        <div>Enable WoT</div>
+        <div>Enable</div>
         <Switch checked={enabled} onClick={() => handleEnableToggle(!enabled)} disabled={loading} />
       </div>
       <div className="flex items-center justify-between">
@@ -201,15 +203,14 @@ export default function Wot() {
           Refresh
         </Button>
       </div>
-      <div className="text-muted-foreground text-sm pb-8">
+      <div className="text-muted-foreground text-sm">
         <div>
           The most recent refresh of the WoT was at{' '}
           {lastRefreshedAt ? dayjs(lastRefreshedAt).format('YYYY-MM-DD HH:mm:ss') : ''}
         </div>
         <div>There are {trustedPubkeyCount} users in the WoT</div>
       </div>
-      <Separator />
-      <div className="flex items-center justify-between pt-8">
+      <div className="flex items-center justify-between pb-8">
         <div>Check if a pubkey is in the WoT</div>
         <div className="flex items-center gap-2">
           <Input
@@ -223,6 +224,13 @@ export default function Wot() {
           </Button>
         </div>
       </div>
+      <div className="flex gap-2 items-center justify-between">
+        <Separator className="w-5/12" />
+        <div className="text-muted-foreground">or</div>
+        <Separator className="w-5/12" />
+      </div>
+      <div className="font-bold text-xl pt-8">PoW</div>
+      <PowOption />
     </div>
   )
 }
