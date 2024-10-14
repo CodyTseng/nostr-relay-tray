@@ -1,7 +1,7 @@
 import { electronApp, is } from '@electron-toolkit/utils'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
-import { app, BrowserWindow, clipboard, ipcMain, Menu, nativeImage, shell, Tray } from 'electron'
+import { BrowserWindow, Menu, Tray, app, clipboard, ipcMain, nativeImage, shell } from 'electron'
 import { join } from 'path'
 import icon from '../../build/icon.png?asset'
 import nostrTemplate from '../../resources/nostrTemplate.png?asset'
@@ -28,6 +28,12 @@ let hubConnector: HubConnectorService
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
+
+const singleInstanceLock = app.requestSingleInstanceLock()
+// Quit the app if another instance is already running
+if (!singleInstanceLock) {
+  app.quit()
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
