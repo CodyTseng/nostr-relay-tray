@@ -1,6 +1,7 @@
 import { THubConnectionStatus, TTheme } from '@common/constants'
 import { TNewRule, TRule, TRuleUpdate } from '@common/rule'
 import { ElectronAPI } from '@electron-toolkit/preload'
+import { Event, Filter } from '@nostr-relay/common'
 
 declare global {
   interface Window {
@@ -21,6 +22,7 @@ declare global {
         getMaxPayload: () => Promise<number>
         setDefaultFilterLimit: (defaultFilterLimit: number) => Promise<void>
         getDefaultFilterLimit: () => Promise<number>
+        findEvents: (filter: Filter) => Promise<Event[]>
       }
       tray: {
         getImageColor: () => Promise<TTrayImageColor>

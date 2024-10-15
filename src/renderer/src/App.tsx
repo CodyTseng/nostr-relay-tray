@@ -8,6 +8,10 @@ const navItems = [
     href: '/'
   },
   {
+    title: 'Feed',
+    href: '/feed'
+  },
+  {
     title: 'Data',
     href: '/data'
   },
@@ -31,11 +35,13 @@ const navItems = [
 
 function App(): JSX.Element {
   return (
-    <>
+    <div className="h-screen">
       <ThemeProvider>
         <Titlebar />
         <div className="flex">
-          <nav className="flex-shrink-0 w-36 pt-4 pl-6">
+          <nav
+            className={`flex-shrink-0 w-36 pt-4 pl-6 sticky h-full ${window.electron.process.platform === 'darwin' ? 'top-9' : 'top-4'}`}
+          >
             <ul className="space-y-1">
               {navItems.map(({ title, href }) => (
                 <li key={href}>
@@ -52,13 +58,15 @@ function App(): JSX.Element {
               ))}
             </ul>
           </nav>
-          <div className="flex-1 w-0 pr-7">
+          <div
+            className={`flex-1 w-0 overflow-y-auto pr-4 h-screen  ${window.electron.process.platform === 'darwin' ? 'pt-9' : 'pt-4'}`}
+          >
             <Outlet />
           </div>
         </div>
         <Toaster />
       </ThemeProvider>
-    </>
+    </div>
   )
 }
 
@@ -68,10 +76,8 @@ function Titlebar(): JSX.Element {
   return (
     <>
       {window.electron.process.platform === 'darwin' ? (
-        <div className="titlebar h-9" />
-      ) : (
-        <div className="h-4" />
-      )}
+        <div className="titlebar h-9 fixed top-0 left-0 right-0" />
+      ) : null}
     </>
   )
 }

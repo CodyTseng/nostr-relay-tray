@@ -2,6 +2,7 @@ import './assets/main.css'
 
 import App from '@renderer/App'
 import Data from '@renderer/pages/data'
+import Feed from '@renderer/pages/feed'
 import Home from '@renderer/pages/home'
 import Logs from '@renderer/pages/logs'
 import Rules from '@renderer/pages/rules'
@@ -18,6 +19,7 @@ export const router = createHashRouter([
     element: <App />,
     children: [
       { index: true, element: <Home /> },
+      { path: '/feed', element: <Feed /> },
       { path: '/data', element: <Data /> },
       { path: '/wotandpow', element: <WotAndPow /> },
       { path: '/rules', element: <Rules /> },

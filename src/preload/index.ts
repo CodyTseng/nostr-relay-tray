@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { THubConnectionStatus, TTheme, TTrayImageColor } from '../common/constants'
 import { TNewRule, TRuleAction, TRuleUpdate } from '../common/rule'
 import { TLog } from '../common/types'
+import { Filter } from '@nostr-relay/common'
 
 // Custom APIs for renderer
 const api = {
@@ -42,7 +43,8 @@ const api = {
     getMaxPayload: () => ipcRenderer.invoke('relay:getMaxPayload'),
     setDefaultFilterLimit: (defaultFilterLimit: number) =>
       ipcRenderer.invoke('relay:setDefaultFilterLimit', defaultFilterLimit),
-    getDefaultFilterLimit: () => ipcRenderer.invoke('relay:getDefaultFilterLimit')
+    getDefaultFilterLimit: () => ipcRenderer.invoke('relay:getDefaultFilterLimit'),
+    findEvents: (filter: Filter) => ipcRenderer.invoke('relay:findEvents', filter)
   },
   tray: {
     getImageColor: () => ipcRenderer.invoke('tray:getImageColor'),

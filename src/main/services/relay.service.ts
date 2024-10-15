@@ -1,5 +1,6 @@
 import cors from '@fastify/cors'
 import {
+  Filter,
   Client as NostrClient,
   NostrRelayPlugin,
   createOutgoingNoticeMessage
@@ -107,6 +108,7 @@ export class RelayService {
       this.setDefaultFilterLimit(defaultFilterLimit)
     )
     ipcMain.handle('relay:getDefaultFilterLimit', () => this.options.defaultFilterLimit)
+    ipcMain.handle('relay:findEvents', (_, filter: Filter) => this.findEvents(filter))
   }
 
   async handleIncomingMessage(client: NostrClient, data: RawData) {
@@ -304,5 +306,9 @@ export class RelayService {
   private clearEvents() {
     const { changes } = this.db.prepare('DELETE FROM events').run()
     return changes
+  }
+
+  private async findEvents(filter: Filter) {
+    return this.eventRepository.find(filter)
   }
 }
