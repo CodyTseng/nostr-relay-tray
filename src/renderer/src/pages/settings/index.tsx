@@ -7,7 +7,7 @@ import TrayIconColorOption from './components/TrayIconColorOption'
 
 export default function Settings() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pr-4">
       <AutoLaunchOption />
       <AppearanceOption />
       <TrayIconColorOption />

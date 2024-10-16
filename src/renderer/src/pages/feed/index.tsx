@@ -1,6 +1,7 @@
 import { Event } from '@nostr-relay/common'
 import { useEffect, useState } from 'react'
 import Note from './components/Note'
+import { ScrollArea } from '@renderer/components/ui/scroll-area'
 
 export default function Feed() {
   const [events, setEvents] = useState<Event[]>([])
@@ -14,10 +15,10 @@ export default function Feed() {
   }, [])
 
   return (
-    <div className="px-2 w-full overflow-hidden">
+    <ScrollArea className="pr-4 w-full h-full">
       {events.map((event) => (
         <Note key={event.id} event={event} />
       ))}
-    </div>
+    </ScrollArea>
   )
 }

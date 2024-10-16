@@ -40,7 +40,7 @@ export default function Rules() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pr-4">
       <div className="flex justify-between items-center">
         <Link to="/rules/create">
           <Button>Create rule</Button>

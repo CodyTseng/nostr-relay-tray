@@ -59,7 +59,7 @@ function App(): JSX.Element {
             </ul>
           </nav>
           <div
-            className={`flex-1 w-0 overflow-y-auto pr-4 h-screen  ${window.electron.process.platform === 'darwin' ? 'pt-9' : 'pt-4'}`}
+            className={`flex-1 w-0 h-screen  ${window.electron.process.platform === 'darwin' ? 'pt-9' : 'pt-4'}`}
           >
             <Outlet />
           </div>

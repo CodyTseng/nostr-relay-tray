@@ -59,7 +59,7 @@ export default function Data(): JSX.Element {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pr-4">
       <Card className="p-4 space-y-2">
         <div className="flex justify-between items-center">
           <p>Export all events in this relay.</p>
