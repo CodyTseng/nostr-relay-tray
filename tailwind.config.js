@@ -49,7 +49,8 @@ module.exports = {
         'accent-foreground': 'hsl(var(--accent-foreground))',
         destructive: 'hsl(var(--destructive))',
         'destructive-foreground': 'hsl(var(--destructive-foreground))',
-        ring: 'hsl(var(--ring))'
+        ring: 'hsl(var(--ring))',
+        highlight: 'hsl(var(--highlight))'
       }
     }
   },

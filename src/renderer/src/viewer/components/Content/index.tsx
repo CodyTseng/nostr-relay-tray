@@ -4,22 +4,26 @@ import renderHashtag from './Hashtag'
 import renderNormalUrl from './NormalUrl'
 import ImageGallery from './ImageGallery'
 import renderEmbeddedNote from './EmbeddedNote'
+import renderEmbeddedMention from './EmbeddedMention'
 
-export function Content({ event, className }: { event: Event; className?: string }) {
+export default function Content({ event, className }: { event: Event; className?: string }) {
   const { content, images } = extractMediaUrls(event.content)
 
   let nodes: React.ReactNode[] = [content]
 
-  // // Match URLs
+  // Match URLs
   nodes = reactStringReplace(nodes, /(https?:\/\/\S+)/g, renderNormalUrl)
 
-  // // Match hashtags
+  // Match hashtags
   nodes = reactStringReplace(nodes, /#(\S+)/g, renderHashtag)
 
-  // // Match note1
+  // Match note1
   nodes = reactStringReplace(nodes, /(nostr:note1[a-z0-9]{58})/g, renderEmbeddedNote)
 
-  // // Add images
+  // Match mentions
+  nodes = reactStringReplace(nodes, /(nostr:npub1[a-z0-9]{58})/g, renderEmbeddedMention)
+
+  // Add images
   if (images.length) {
     nodes.push(<ImageGallery key="images" images={images} />)
   }
@@ -28,7 +32,7 @@ export function Content({ event, className }: { event: Event; className?: string
 }
 
 function extractMediaUrls(content: string) {
-  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const urlRegex = /(https?:\/\/[^\s"']+)/g
   const urls = content.match(urlRegex) || []
 
   let c = content
@@ -45,6 +49,10 @@ function extractMediaUrls(content: string) {
 }
 
 function isImage(url: string) {
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif']
-  return imageExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
+  try {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif']
+    return imageExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
+  } catch {
+    return false
+  }
 }

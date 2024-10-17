@@ -1,21 +1,12 @@
 import { Event } from '@nostr-relay/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
-import { Card } from '@renderer/components/ui/card'
 import { formatPubkey } from '@renderer/lib/pubkey'
 import { formatTimestamp } from '@renderer/lib/timestamp'
 import { useEffect, useState } from 'react'
-import { Content } from './Content'
-import { cn } from '@renderer/lib/utils'
+import Content from '../Content'
+import { Link } from 'react-router-dom'
 
-export default function Note({
-  event,
-  canClick = true,
-  className = ''
-}: {
-  event?: Event
-  canClick?: boolean
-  className?: string
-}) {
+export default function Note({ event }: { event?: Event }) {
   const [username, setUsername] = useState<string>(event ? formatPubkey(event.pubkey) : 'username')
   const [avatar, setAvatar] = useState<string>('')
 
@@ -47,22 +38,40 @@ export default function Note({
   }, [])
 
   return (
-    <Card className={cn('p-4', canClick ? 'hover:bg-muted' : '', className)}>
+    <div>
       <div className="flex items-center space-x-2">
-        <Avatar className="w-9 h-9">
-          <AvatarImage src={avatar} />
-          <AvatarFallback>{username}</AvatarFallback>
-        </Avatar>
+        <Link to={`/u/${event?.pubkey}`} onClick={(e) => e.stopPropagation()}>
+          <Avatar className="w-9 h-9">
+            <AvatarImage src={avatar} />
+            <AvatarFallback>{getAvatarFallback(username)}</AvatarFallback>
+          </Avatar>
+        </Link>
         <div className="w-full overflow-hidden">
-          <div className="text-sm font-semibold truncate">{username}</div>
           {event && (
-            <div className="text-xs text-muted-foreground">{formatTimestamp(event.created_at)}</div>
+            <>
+              <Link
+                to={`/u/${event?.pubkey}`}
+                className="text-sm font-semibold truncate hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {username}
+              </Link>
+              <div className="text-xs text-muted-foreground">
+                {formatTimestamp(event.created_at)}
+              </div>
+            </>
           )}
         </div>
       </div>
       {event && (
         <Content className="mt-2 text-sm text-wrap break-words whitespace-pre-wrap" event={event} />
       )}
-    </Card>
+    </div>
   )
+}
+
+function getAvatarFallback(username: string) {
+  return username.startsWith('npub1')
+    ? username.slice(4, 2).toUpperCase()
+    : username.replaceAll(' ', '').slice(0, 2).toUpperCase()
 }

@@ -1,8 +1,9 @@
 import { Event } from '@nostr-relay/common'
 import { useEffect, useState } from 'react'
-import Comment from './Comment'
+import Comment from '../Comment'
+import { cn } from '@renderer/lib/utils'
 
-export default function CommentList({ event }: { event: Event }) {
+export default function CommentList({ event, className }: { event: Event; className?: string }) {
   const [comments, setComments] = useState<Event[]>([])
 
   const init = async () => {
@@ -18,7 +19,7 @@ export default function CommentList({ event }: { event: Event }) {
   }, [])
 
   return (
-    <div className="space-y-2">
+    <div className={cn('space-y-2', className)}>
       {comments.map((comment) => {
         const parentCommentId = comment.tags.find(
           ([tagName, , , type]) => tagName === 'e' && type === 'reply'

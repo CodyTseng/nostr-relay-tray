@@ -7,6 +7,7 @@ import Notes from '@renderer/viewer/pages/notes'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createHashRouter, NavLink, Outlet, RouterProvider } from 'react-router-dom'
+import Profile from './pages/profile'
 
 const navItems = [
   {
@@ -19,7 +20,10 @@ export const router = createHashRouter([
   {
     path: '/',
     element: <Viewer />,
-    children: [{ index: true, element: <Notes /> }]
+    children: [
+      { index: true, element: <Notes /> },
+      { path: 'u/:user_id', element: <Profile /> }
+    ]
   }
 ])
 

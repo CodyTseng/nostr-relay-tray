@@ -2,7 +2,13 @@ import { Link } from 'react-router-dom'
 
 function NormalUrl({ url }: { url: string }) {
   return (
-    <Link className="text-blue-500 hover:underline" to={url} target="_blank" rel="noreferrer">
+    <Link
+      className="text-highlight hover:underline"
+      to={url}
+      target="_blank"
+      rel="noreferrer"
+      onClick={(e) => e.stopPropagation()}
+    >
       {url}
     </Link>
   )

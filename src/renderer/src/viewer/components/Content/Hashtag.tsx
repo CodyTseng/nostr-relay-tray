@@ -1,5 +1,5 @@
 function Hashtag({ hashtag }: { hashtag: string }) {
-  return <span className="text-violet-500">#{hashtag}</span>
+  return <span className="text-highlight">#{hashtag}</span>
 }
 
 export default function renderHashtag(hashtag: string, index: number) {
