@@ -1,5 +1,7 @@
+import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import NoteList from '@renderer/viewer/components/NoteList'
 import { nip19 } from 'nostr-tools'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 export default function Profile() {
@@ -16,5 +18,45 @@ export default function Profile() {
     pubkey = userId
   }
 
-  return <div className="h-full">{pubkey && <NoteList filter={{ authors: [pubkey] }} />}</div>
+  const [profile, setProfile] = useState<{
+    banner?: string
+    picture?: string
+    nip05?: string
+    display_name?: string
+    name?: string
+    about?: string
+  } | null>(null)
+
+  const init = async () => {
+    if (!pubkey) return
+
+    const [profileEvent] = await window.api.relay.findEvents({
+      authors: [pubkey],
+      kinds: [0],
+      limit: 1
+    })
+    if (!profileEvent) return
+
+    try {
+      const profile = JSON.parse(profileEvent.content)
+      setProfile(profile)
+      console.log('banner', profile.banner)
+    } catch {
+      // ignore
+    }
+  }
+
+  useEffect(() => {
+    init()
+  }, [])
+
+  return (
+    <ScrollArea className="pr-4 w-full h-full">
+      <div
+        className="bg-cover bg-center w-full aspect-[16/9] rounded-lg mb-4"
+        style={{ backgroundImage: `url(${profile?.banner ?? ''})` }}
+      />
+      {pubkey && <NoteList filter={{ authors: [pubkey] }} />}
+    </ScrollArea>
+  )
 }

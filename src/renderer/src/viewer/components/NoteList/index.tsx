@@ -1,5 +1,4 @@
 import { Event, Filter } from '@nostr-relay/common'
-import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { useEffect, useState } from 'react'
 import NoteCard from '../NoteCard'
 
@@ -18,10 +17,10 @@ export default function NoteList({ filter = {} }: { filter?: Filter }) {
   }, [])
 
   return (
-    <ScrollArea className="pr-4 w-full h-full">
+    <>
       {events.map((event, i) => (
         <NoteCard key={i} className="mb-4 w-full" event={event} />
       ))}
-    </ScrollArea>
+    </>
   )
 }
