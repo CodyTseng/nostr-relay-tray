@@ -22,8 +22,8 @@ export default function Feed() {
 
   return (
     <ScrollArea className="pr-4 w-full h-full">
-      {events.map((event) => (
-        <NoteDetail key={event.id} className="w-full text-left" event={event} />
+      {events.map((event, i) => (
+        <NoteDetail key={i} className="mb-4 w-full text-left" event={event} />
       ))}
     </ScrollArea>
   )

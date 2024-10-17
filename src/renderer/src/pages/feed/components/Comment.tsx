@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/ava
 import { formatPubkey } from '@renderer/lib/pubkey'
 import { formatTimestamp } from '@renderer/lib/timestamp'
 import { useEffect, useState } from 'react'
+import { Content } from './Content'
 
 export default function Comment({
   comment,
@@ -69,7 +70,7 @@ export default function Comment({
             </div>
           )}
         </div>
-        <div className="text-sm text-wrap break-words whitespace-pre-wrap">{comment.content}</div>
+        <Content className="text-sm text-wrap break-words whitespace-pre-wrap" event={comment} />
       </div>
     </div>
   )

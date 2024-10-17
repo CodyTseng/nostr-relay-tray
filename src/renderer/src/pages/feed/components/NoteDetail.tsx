@@ -32,7 +32,7 @@ export default function NoteDetail({
           <ScrollArea className="bg-background h-full w-full grow flex flex-col rounded-xl select-text">
             <div className="p-4">
               <Note canClick={false} event={event} />
-              <div className="pl-4">
+              <div className="pl-4 pt-4">
                 <CommentList event={event} />
               </div>
             </div>

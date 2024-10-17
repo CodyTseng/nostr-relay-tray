@@ -3,16 +3,25 @@ import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/ava
 import { Card } from '@renderer/components/ui/card'
 import { formatPubkey } from '@renderer/lib/pubkey'
 import { formatTimestamp } from '@renderer/lib/timestamp'
-import { parseContent } from '@renderer/pages/feed/components/Content'
 import { useEffect, useState } from 'react'
+import { Content } from './Content'
+import { cn } from '@renderer/lib/utils'
 
-export default function Note({ event, canClick = true }: { event: Event; canClick?: boolean }) {
-  const [username, setUsername] = useState<string>(formatPubkey(event.pubkey))
+export default function Note({
+  event,
+  canClick = true,
+  className = ''
+}: {
+  event?: Event
+  canClick?: boolean
+  className?: string
+}) {
+  const [username, setUsername] = useState<string>(event ? formatPubkey(event.pubkey) : 'username')
   const [avatar, setAvatar] = useState<string>('')
 
-  const { contentElement, images } = parseContent(event.content)
-
   const init = async () => {
+    if (!event) return
+
     const [profileEvent] = await window.api.relay.findEvents({
       authors: [event.pubkey],
       kinds: [0],
@@ -38,7 +47,7 @@ export default function Note({ event, canClick = true }: { event: Event; canClic
   }, [])
 
   return (
-    <Card className={`p-4 mb-4 ${canClick ? 'hover:bg-muted' : ''}`}>
+    <Card className={cn('p-4', canClick ? 'hover:bg-muted' : '', className)}>
       <div className="flex items-center space-x-2">
         <Avatar className="w-9 h-9">
           <AvatarImage src={avatar} />
@@ -46,15 +55,14 @@ export default function Note({ event, canClick = true }: { event: Event; canClic
         </Avatar>
         <div className="w-full overflow-hidden">
           <div className="text-sm font-semibold truncate">{username}</div>
-          <div className="text-xs text-muted-foreground">{formatTimestamp(event.created_at)}</div>
+          {event && (
+            <div className="text-xs text-muted-foreground">{formatTimestamp(event.created_at)}</div>
+          )}
         </div>
       </div>
-      <div className="mt-2 text-sm text-wrap break-words whitespace-pre-wrap">{contentElement}</div>
-      <div className="flex mt-2 gap-2">
-        {images.map((url) => (
-          <img key={url} src={url} className="w-64 object-cover" />
-        ))}
-      </div>
+      {event && (
+        <Content className="mt-2 text-sm text-wrap break-words whitespace-pre-wrap" event={event} />
+      )}
     </Card>
   )
 }
