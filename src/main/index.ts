@@ -27,7 +27,8 @@ let relay: RelayService
 let hubConnector: HubConnectorService
 
 let tray: Tray | null = null
-let mainWindow: BrowserWindow | null = null
+let dashboardWindow: BrowserWindow | null = null
+let viewerWindow: BrowserWindow | null = null
 
 const singleInstanceLock = app.requestSingleInstanceLock()
 // Quit the app if another instance is already running
@@ -45,7 +46,8 @@ app.whenReady().then(async () => {
   const repositories = await initRepositories()
 
   const sendToRenderer: TSendToRenderer = (channel, ...args) => {
-    mainWindow?.webContents.send(channel, ...args)
+    dashboardWindow?.webContents.send(channel, ...args)
+    viewerWindow?.webContents.send(channel, ...args)
   }
 
   const autoLaunchService = new AutoLaunchService()
@@ -88,7 +90,7 @@ app.whenReady().then(async () => {
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createViewerWindow()
   })
 })
 
@@ -121,14 +123,14 @@ async function getTrayImageColor(configRepository: ConfigRepository) {
   return trayImageColor
 }
 
-function createWindow(): void {
-  if (BrowserWindow.getAllWindows().length > 0) {
-    mainWindow?.focus()
+function createDashboardWindow(): void {
+  if (dashboardWindow) {
+    dashboardWindow?.focus()
     return
   }
 
   // Create the browser window.
-  mainWindow = new BrowserWindow({
+  dashboardWindow = new BrowserWindow({
     width: 840,
     height: 630,
     show: false,
@@ -140,21 +142,21 @@ function createWindow(): void {
     },
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : undefined
   })
-  mainWindow.on('closed', () => {
-    mainWindow = null
+  dashboardWindow.on('closed', () => {
+    dashboardWindow = null
   })
 
   // Open the DevTools.
   if (is.dev) {
-    mainWindow.webContents.openDevTools()
+    dashboardWindow.webContents.openDevTools()
   }
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow!.setTitle('Nostr Relay Tray')
-    mainWindow!.show()
+  dashboardWindow.on('ready-to-show', () => {
+    dashboardWindow!.setTitle('Nostr Relay Tray')
+    dashboardWindow!.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
+  dashboardWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
@@ -162,9 +164,56 @@ function createWindow(): void {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    dashboardWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/dashboard.html')
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    dashboardWindow.loadFile(join(__dirname, '../renderer/dashboard.html'))
+  }
+}
+
+function createViewerWindow(): void {
+  if (viewerWindow) {
+    viewerWindow.focus()
+    return
+  }
+
+  // Create the browser window.
+  viewerWindow = new BrowserWindow({
+    width: 840,
+    height: 630,
+    show: false,
+    autoHideMenuBar: true,
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    },
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : undefined
+  })
+  viewerWindow.on('closed', () => {
+    viewerWindow = null
+  })
+
+  // Open the DevTools.
+  if (is.dev) {
+    viewerWindow.webContents.openDevTools()
+  }
+
+  viewerWindow.on('ready-to-show', () => {
+    viewerWindow!.setTitle('Nostr Relay Tray')
+    viewerWindow!.show()
+  })
+
+  viewerWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url)
+    return { action: 'deny' }
+  })
+
+  // HMR for renderer base on electron-vite cli.
+  // Load the remote URL for development or the local html file for production.
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    viewerWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/viewer.html')
+  } else {
+    viewerWindow.loadFile(join(__dirname, '../renderer/viewer.html'))
   }
 }
 
@@ -186,9 +235,14 @@ function createTray({ trayImage }: { trayImage: Electron.NativeImage }) {
 function createMenu(localIpAddress?: string) {
   return Menu.buildFromTemplate([
     {
+      label: 'Viewer',
+      type: 'normal',
+      click: createViewerWindow
+    },
+    {
       label: 'Dashboard',
       type: 'normal',
-      click: createWindow
+      click: createDashboardWindow
     },
     { type: 'separator' },
     {

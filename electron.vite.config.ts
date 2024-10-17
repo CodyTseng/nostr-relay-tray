@@ -10,6 +10,14 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
+    build: {
+      rollupOptions: {
+        input: {
+          dashboard: resolve(__dirname, 'src/renderer/dashboard.html'),
+          viewer: resolve(__dirname, 'src/renderer/viewer.html')
+        }
+      }
+    },
     resolve: {
       alias: {
         '@renderer': resolve('src/renderer/src'),

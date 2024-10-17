@@ -1,39 +1,35 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { ThemeProvider } from './components/theme-provider'
-import { Toaster } from './components/ui/toaster'
+import '../assets/main.css'
+
+import { ThemeProvider } from '@renderer/components/theme-provider'
+import Titlebar from '@renderer/components/Titlebar'
+import { Toaster } from '@renderer/components/ui/toaster'
+import Notes from '@renderer/viewer/pages/notes'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { createHashRouter, NavLink, Outlet, RouterProvider } from 'react-router-dom'
 
 const navItems = [
   {
-    title: 'Home',
+    title: 'Notes',
     href: '/'
-  },
-  {
-    title: 'Feed',
-    href: '/feed'
-  },
-  {
-    title: 'Data',
-    href: '/data'
-  },
-  {
-    title: 'WoT & PoW',
-    href: '/wotandpow'
-  },
-  {
-    title: 'Rules',
-    href: '/rules'
-  },
-  {
-    title: 'Logs',
-    href: '/logs'
-  },
-  {
-    title: 'Settings',
-    href: '/settings'
   }
 ]
 
-function App(): JSX.Element {
+export const router = createHashRouter([
+  {
+    path: '/',
+    element: <Viewer />,
+    children: [{ index: true, element: <Notes /> }]
+  }
+])
+
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>
+)
+
+function Viewer(): JSX.Element {
   return (
     <div className="h-screen">
       <ThemeProvider>
@@ -67,17 +63,5 @@ function App(): JSX.Element {
         <Toaster />
       </ThemeProvider>
     </div>
-  )
-}
-
-export default App
-
-function Titlebar(): JSX.Element {
-  return (
-    <>
-      {window.electron.process.platform === 'darwin' ? (
-        <div className="titlebar h-9 fixed top-0 left-0 right-0" />
-      ) : null}
-    </>
   )
 }
