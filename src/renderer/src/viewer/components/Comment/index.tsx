@@ -1,6 +1,5 @@
 import { Event } from '@nostr-relay/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
-import { formatPubkey } from '@renderer/lib/pubkey'
 import { formatTimestamp } from '@renderer/lib/timestamp'
 import useFetchProfile from '@renderer/viewer/hooks/useFetchProfile'
 import Content from '../Content'
@@ -12,7 +11,7 @@ export default function Comment({
   comment: Event
   parentComment?: Event
 }) {
-  const { avatar = '', username = formatPubkey(comment.pubkey) } = useFetchProfile(comment.pubkey)
+  const { avatar = '', username } = useFetchProfile(comment.pubkey)
 
   return (
     <div className="flex space-x-2 items-start">

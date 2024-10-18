@@ -1,15 +1,12 @@
 import { Event } from '@nostr-relay/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
-import { formatPubkey } from '@renderer/lib/pubkey'
 import { formatTimestamp } from '@renderer/lib/timestamp'
 import useFetchProfile from '@renderer/viewer/hooks/useFetchProfile'
 import { Link } from 'react-router-dom'
 import Content from '../Content'
 
 export default function Note({ event }: { event?: Event }) {
-  const { avatar = '', username = event ? formatPubkey(event.pubkey) : '' } = useFetchProfile(
-    event?.pubkey
-  )
+  const { avatar = '', username } = useFetchProfile(event?.pubkey)
 
   return (
     <div>

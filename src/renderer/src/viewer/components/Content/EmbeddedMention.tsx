@@ -1,11 +1,10 @@
-import { formatNpub } from '@renderer/lib/pubkey'
 import useFetchProfile from '@renderer/viewer/hooks/useFetchProfile'
 import { Link } from 'react-router-dom'
 
 function EmbeddedMention({ id }: { id: string }) {
-  const { username = null, npub } = useFetchProfile(id)
+  const { username, npub, hasProfile } = useFetchProfile(id)
 
-  return username && npub ? (
+  return hasProfile ? (
     <Link
       to={`/profile/${npub}`}
       onClick={(e) => e.stopPropagation()}
@@ -13,22 +12,19 @@ function EmbeddedMention({ id }: { id: string }) {
     >
       @{username}
     </Link>
-  ) : npub ? (
+  ) : (
     <Link
-      to={`https://nostrudel.ninja/#/u/${npub}`}
+      to={`https://nostrudel.ninja/#/u/${id}`}
       target="_blank"
       className="text-highlight hover:underline"
       onClick={(e) => e.stopPropagation()}
     >
-      @{npub ? formatNpub(npub) : id}
+      @{username}
     </Link>
-  ) : (
-    <span className="text-highlight hover:underline" onClick={(e) => e.stopPropagation()}>
-      @{npub ? formatNpub(npub) : id}
-    </span>
   )
 }
 
 export default function renderEmbeddedMention(id: string, index: number) {
-  return <EmbeddedMention key={`embedded-mention-${index}`} id={id} />
+  const npub1 = id.split(':')[1]
+  return <EmbeddedMention key={`embedded-mention-${index}`} id={npub1} />
 }

@@ -3,9 +3,15 @@ import dayjs from 'dayjs'
 export function formatTimestamp(timestamp: number) {
   const time = dayjs(timestamp * 1000)
   const now = dayjs()
-  const diff = now.diff(time, 'day')
-  if (diff > 1) {
-    return `${diff} days ago`
+
+  const diffMonth = now.diff(time, 'month')
+  if (diffMonth > 1) {
+    return time.format('MMM D, YYYY')
+  }
+
+  const diffDay = now.diff(time, 'day')
+  if (diffDay > 1) {
+    return `${diffDay} days ago`
   }
 
   const diffHour = now.diff(time, 'hour')

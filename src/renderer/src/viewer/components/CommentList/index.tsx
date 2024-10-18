@@ -1,7 +1,7 @@
 import { Event } from '@nostr-relay/common'
+import { cn } from '@renderer/lib/utils'
 import { useEffect, useState } from 'react'
 import Comment from '../Comment'
-import { cn } from '@renderer/lib/utils'
 
 export default function CommentList({ event, className }: { event: Event; className?: string }) {
   const [comments, setComments] = useState<Event[]>([])
