@@ -1,53 +1,31 @@
 import { formatNpub } from '@renderer/lib/pubkey'
-import { nip19 } from 'nostr-tools'
-import { useEffect, useState } from 'react'
+import useFetchProfile from '@renderer/viewer/hooks/useFetchProfile'
 import { Link } from 'react-router-dom'
 
 function EmbeddedMention({ id }: { id: string }) {
-  const [username, setUsername] = useState<string | null>(null)
+  const { username = null, npub } = useFetchProfile(id)
 
-  const npub1 = id.split(':')[1] as `npub1${string}`
-
-  const init = async () => {
-    try {
-      const { data } = nip19.decode(npub1)
-      const events = await window.api.relay.findEvents({
-        authors: [data],
-        kinds: [0],
-        limit: 1
-      })
-      if (!events.length) return
-      const profile = JSON.parse(events[0].content)
-      setUsername(profile.display_name ?? profile.name ?? formatNpub(npub1))
-    } catch {
-      // ignore
-    }
-  }
-
-  useEffect(() => {
-    init()
-  }, [])
-
-  return username ? (
+  return username && npub ? (
     <Link
-      to={`/profile/${npub1}`}
-      onClick={(e) => {
-        e.stopPropagation()
-        console.log('url', `/profile/${npub1}`)
-      }}
+      to={`/profile/${npub}`}
+      onClick={(e) => e.stopPropagation()}
       className="text-highlight hover:underline"
     >
       @{username}
     </Link>
-  ) : (
+  ) : npub ? (
     <Link
-      to={`https://nostrudel.ninja/#/u/${npub1}`}
+      to={`https://nostrudel.ninja/#/u/${npub}`}
       target="_blank"
       className="text-highlight hover:underline"
       onClick={(e) => e.stopPropagation()}
     >
-      @{formatNpub(npub1)}
+      @{npub ? formatNpub(npub) : id}
     </Link>
+  ) : (
+    <span className="text-highlight hover:underline" onClick={(e) => e.stopPropagation()}>
+      @{npub ? formatNpub(npub) : id}
+    </span>
   )
 }
 

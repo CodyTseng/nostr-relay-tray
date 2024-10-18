@@ -2,7 +2,7 @@ import { Event } from '@nostr-relay/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
 import { formatPubkey } from '@renderer/lib/pubkey'
 import { formatTimestamp } from '@renderer/lib/timestamp'
-import { useEffect, useState } from 'react'
+import useFetchProfile from '@renderer/viewer/hooks/useFetchProfile'
 import Content from '../Content'
 
 export default function Comment({
@@ -12,33 +12,7 @@ export default function Comment({
   comment: Event
   parentComment?: Event
 }) {
-  const [username, setUsername] = useState<string>(formatPubkey(comment.pubkey))
-  const [avatar, setAvatar] = useState<string>('')
-
-  const init = async () => {
-    const [profileEvent] = await window.api.relay.findEvents({
-      authors: parentComment ? [comment.pubkey, parentComment.pubkey] : [comment.pubkey],
-      kinds: [0],
-      limit: 1
-    })
-    if (!profileEvent) return
-
-    try {
-      const profile = JSON.parse(profileEvent.content)
-      const name = profile.display_name ?? profile.name
-      if (name) setUsername(name)
-
-      if (profile.picture) {
-        setAvatar(profile.picture)
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  useEffect(() => {
-    init()
-  }, [])
+  const { avatar = '', username = formatPubkey(comment.pubkey) } = useFetchProfile(comment.pubkey)
 
   return (
     <div className="flex space-x-2 items-start">
@@ -63,29 +37,7 @@ export default function Comment({
 }
 
 function ParentComment({ comment }: { comment: Event }) {
-  const [avatar, setAvatar] = useState<string>('')
-
-  const init = async () => {
-    const [profileEvent] = await window.api.relay.findEvents({
-      authors: [comment.pubkey],
-      kinds: [0],
-      limit: 1
-    })
-    if (!profileEvent) return
-
-    try {
-      const profile = JSON.parse(profileEvent.content)
-      if (profile.picture) {
-        setAvatar(profile.picture)
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  useEffect(() => {
-    init()
-  }, [])
+  const { avatar } = useFetchProfile(comment.pubkey)
 
   return (
     <div className="flex space-x-1 items-center text-xs">

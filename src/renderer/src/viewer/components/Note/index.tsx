@@ -2,43 +2,14 @@ import { Event } from '@nostr-relay/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
 import { formatPubkey } from '@renderer/lib/pubkey'
 import { formatTimestamp } from '@renderer/lib/timestamp'
-import { useEffect, useState } from 'react'
-import Content from '../Content'
+import useFetchProfile from '@renderer/viewer/hooks/useFetchProfile'
 import { Link } from 'react-router-dom'
+import Content from '../Content'
 
 export default function Note({ event }: { event?: Event }) {
-  const [username, setUsername] = useState<string>(event ? formatPubkey(event.pubkey) : 'username')
-  const [avatar, setAvatar] = useState<string>('')
-
-  const init = async () => {
-    setUsername('username')
-    setAvatar('')
-    if (!event) return
-    setUsername(formatPubkey(event.pubkey))
-
-    const [profileEvent] = await window.api.relay.findEvents({
-      authors: [event.pubkey],
-      kinds: [0],
-      limit: 1
-    })
-    if (!profileEvent) return
-
-    try {
-      const profile = JSON.parse(profileEvent.content)
-      const name = profile.display_name ?? profile.name
-      if (name) setUsername(name)
-
-      if (profile.picture) {
-        setAvatar(profile.picture)
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  useEffect(() => {
-    init()
-  }, [event])
+  const { avatar = '', username = event ? formatPubkey(event.pubkey) : '' } = useFetchProfile(
+    event?.pubkey
+  )
 
   return (
     <div>

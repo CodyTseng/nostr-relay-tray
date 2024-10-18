@@ -1,25 +1,12 @@
-import { Event } from '@nostr-relay/common'
 import { Separator } from '@renderer/components/ui/separator'
 import CommentList from '@renderer/viewer/components/CommentList'
 import Note from '@renderer/viewer/components/Note'
-import { useEffect, useState } from 'react'
+import useFetchEvent from '@renderer/viewer/hooks/useFetchEvent'
 import { useParams } from 'react-router-dom'
 
 export default function NotePage() {
   const params = useParams<{ id: string }>()
-  const [event, setEvent] = useState<Event | null>(null)
-
-  useEffect(() => {
-    const fetchEvent = async () => {
-      if (!params.id) return
-      const events = await window.api.relay.findEvents({ ids: [params.id], limit: 1 })
-      if (events.length) {
-        setEvent(events[0])
-      }
-    }
-
-    fetchEvent()
-  }, [params.id])
+  const event = params.id ? useFetchEvent({ ids: [params.id] }) : null
 
   return (
     <div>
