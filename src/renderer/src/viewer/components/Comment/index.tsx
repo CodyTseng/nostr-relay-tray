@@ -42,7 +42,7 @@ export default function Comment({
 
   return (
     <div className="flex space-x-2 items-start">
-      <Avatar className="w-9 h-9">
+      <Avatar className="w-7 h-7">
         <AvatarImage src={avatar} />
         <AvatarFallback>{username}</AvatarFallback>
       </Avatar>

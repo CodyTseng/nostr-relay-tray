@@ -50,7 +50,7 @@ function extractMediaUrls(content: string) {
 
 function isImage(url: string) {
   try {
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif']
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', 'webp']
     return imageExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
   } catch {
     return false

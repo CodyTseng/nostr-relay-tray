@@ -11,7 +11,10 @@ export default function Note({ event }: { event?: Event }) {
   const [avatar, setAvatar] = useState<string>('')
 
   const init = async () => {
+    setUsername('username')
+    setAvatar('')
     if (!event) return
+    setUsername(formatPubkey(event.pubkey))
 
     const [profileEvent] = await window.api.relay.findEvents({
       authors: [event.pubkey],
@@ -35,7 +38,7 @@ export default function Note({ event }: { event?: Event }) {
 
   useEffect(() => {
     init()
-  }, [])
+  }, [event])
 
   return (
     <div>

@@ -1,7 +1,6 @@
 import '../assets/main.css'
 
 import { ThemeProvider } from '@renderer/components/theme-provider'
-import Titlebar from '@renderer/components/Titlebar'
 import { Toaster } from '@renderer/components/ui/toaster'
 import Data from '@renderer/dashboard/pages/data'
 import Home from '@renderer/dashboard/pages/home'
@@ -13,6 +12,7 @@ import WotAndPow from '@renderer/dashboard/pages/wotAndPow'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createHashRouter, NavLink, Outlet, RouterProvider } from 'react-router-dom'
+import Titlebar from './components/Titlebar'
 
 const navItems = [
   {

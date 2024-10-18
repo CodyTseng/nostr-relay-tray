@@ -13,6 +13,10 @@
     -webkit-app-region: drag;
   }
 
+  .titlebar button {
+    -webkit-app-region: no-drag;
+  }
+
   .border {
     border-color: hsl(var(--border));
   }
