@@ -40,7 +40,7 @@ export default function Note({ event }: { event?: Event }) {
   return (
     <div>
       <div className="flex items-center space-x-2">
-        <Link to={`/u/${event?.pubkey}`} onClick={(e) => e.stopPropagation()}>
+        <Link to={`/profile/${event?.pubkey}`} onClick={(e) => e.stopPropagation()}>
           <Avatar className="w-9 h-9">
             <AvatarImage src={avatar} />
             <AvatarFallback>{getAvatarFallback(username)}</AvatarFallback>
@@ -50,7 +50,7 @@ export default function Note({ event }: { event?: Event }) {
           {event && (
             <>
               <Link
-                to={`/u/${event?.pubkey}`}
+                to={`/profile/${event?.pubkey}`}
                 className="text-sm font-semibold truncate hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >

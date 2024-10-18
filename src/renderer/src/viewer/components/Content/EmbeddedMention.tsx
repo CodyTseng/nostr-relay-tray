@@ -1,4 +1,3 @@
-import { Event } from '@nostr-relay/common'
 import { formatNpub } from '@renderer/lib/pubkey'
 import { nip19 } from 'nostr-tools'
 import { useEffect, useState } from 'react'
@@ -31,10 +30,10 @@ function EmbeddedMention({ id }: { id: string }) {
 
   return username ? (
     <Link
-      to={`/u/${npub1}`}
+      to={`/profile/${npub1}`}
       onClick={(e) => {
         e.stopPropagation()
-        console.log('url', `/u/${npub1}`)
+        console.log('url', `/profile/${npub1}`)
       }}
       className="text-highlight hover:underline"
     >

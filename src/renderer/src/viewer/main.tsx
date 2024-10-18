@@ -22,7 +22,7 @@ export const router = createHashRouter([
     element: <Viewer />,
     children: [
       { index: true, element: <Notes /> },
-      { path: 'u/:user_id', element: <Profile /> }
+      { path: 'profile/:id', element: <Profile /> }
     ]
   }
 ])

@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 export default function Profile() {
-  const params = useParams<{ user_id: string }>()
-  const userId = params.user_id
+  const params = useParams<{ id: string }>()
+  const userId = params.id
 
   let pubkey: string | null = null
   if (!userId) {
