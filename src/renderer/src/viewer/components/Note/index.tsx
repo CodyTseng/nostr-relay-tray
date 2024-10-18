@@ -2,10 +2,11 @@ import { Event } from '@nostr-relay/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
 import { formatTimestamp } from '@renderer/lib/timestamp'
 import useFetchProfile from '@renderer/viewer/hooks/useFetchProfile'
+import { kinds } from 'nostr-tools'
 import { Link } from 'react-router-dom'
 import Content from '../Content'
 
-export default function Note({ event }: { event?: Event }) {
+export default function Note({ event }: { event: Event }) {
   const { avatar = '', username } = useFetchProfile(event?.pubkey)
 
   return (
@@ -34,8 +35,16 @@ export default function Note({ event }: { event?: Event }) {
           )}
         </div>
       </div>
-      {event && (
+      {[kinds.ShortTextNote].includes(event.kind) ? (
         <Content className="mt-2 text-sm text-wrap break-words whitespace-pre-wrap" event={event} />
+      ) : (
+        <Link
+          to={`https://nostrudel.ninja/#/n/${event.id}`}
+          target="_blank"
+          className="text-highlight hover:underline"
+        >
+          view on noStrudel
+        </Link>
       )}
     </div>
   )
