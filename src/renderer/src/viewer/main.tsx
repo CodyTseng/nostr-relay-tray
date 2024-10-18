@@ -14,6 +14,7 @@ import Left from './Left'
 import Right from './Right'
 import NotePage from './pages/NotePage'
 import ProfilePage from './pages/ProfilePage'
+import Titlebar from './components/Titlebar'
 
 export const router = createHashRouter([
   {
@@ -39,6 +40,7 @@ function Viewer(): JSX.Element {
   return (
     <div className="h-screen">
       <ThemeProvider>
+        <Titlebar />
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel minSize={30}>
             <Left />
