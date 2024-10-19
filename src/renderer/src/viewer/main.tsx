@@ -12,10 +12,9 @@ import ReactDOM from 'react-dom/client'
 import { RouterProvider, createHashRouter, useLocation } from 'react-router-dom'
 import Left from './Left'
 import Right from './Right'
+import Sidebar from './components/Sidebar'
 import NotePage from './pages/NotePage'
 import ProfilePage from './pages/ProfilePage'
-import RightTitlebar from './components/Titlebar'
-import Sidebar from './components/Sidebar'
 
 export const router = createHashRouter([
   {

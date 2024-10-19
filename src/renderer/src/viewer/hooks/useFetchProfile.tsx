@@ -24,7 +24,7 @@ type TProfile =
       about?: string
     }
 
-export default function useFetchProfile(id?: string) {
+export function useFetchProfile(id?: string) {
   const [profile, setProfile] = useState<TProfile>({ username: 'username', hasProfile: false })
 
   useEffect(() => {

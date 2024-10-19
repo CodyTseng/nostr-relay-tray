@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-function NormalUrl({ url }: { url: string }) {
+export function EmbeddedNormalUrl({ url }: { url: string }) {
   return (
     <Link
       className="text-highlight hover:underline"
@@ -12,7 +12,4 @@ function NormalUrl({ url }: { url: string }) {
       {url}
     </Link>
   )
-}
-export default function renderNormalUrl(url: string, index: number) {
-  return <NormalUrl key={`normal-url-${index}`} url={url} />
 }

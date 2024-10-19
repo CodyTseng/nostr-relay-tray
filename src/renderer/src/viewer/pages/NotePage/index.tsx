@@ -1,7 +1,7 @@
 import { Separator } from '@renderer/components/ui/separator'
 import CommentList from '@renderer/viewer/components/CommentList'
 import Note from '@renderer/viewer/components/Note'
-import useFetchEventById from '@renderer/viewer/hooks/useFetchEvent'
+import { useFetchEventById } from '@renderer/viewer/hooks'
 import { useParams } from 'react-router-dom'
 
 export default function NotePage() {

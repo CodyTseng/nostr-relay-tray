@@ -1,7 +1,7 @@
-import useFetchProfile from '@renderer/viewer/hooks/useFetchProfile'
+import { useFetchProfile } from '@renderer/viewer/hooks'
 import { Link } from 'react-router-dom'
 
-function EmbeddedMention({ id }: { id: string }) {
+export function EmbeddedMention({ id }: { id: string }) {
   const { username, npub, hasProfile } = useFetchProfile(id)
 
   return hasProfile ? (
@@ -22,9 +22,4 @@ function EmbeddedMention({ id }: { id: string }) {
       @{username}
     </Link>
   )
-}
-
-export default function renderEmbeddedMention(id: string, index: number) {
-  const npub1 = id.split(':')[1]
-  return <EmbeddedMention key={`embedded-mention-${index}`} id={npub1} />
 }

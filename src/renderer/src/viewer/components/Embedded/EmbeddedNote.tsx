@@ -1,8 +1,8 @@
-import useFetchEventById from '@renderer/viewer/hooks/useFetchEvent'
+import { useFetchEventById } from '@renderer/viewer/hooks'
 import { Link } from 'react-router-dom'
 import NoteCard from '../NoteCard'
 
-function EmbeddedNote({ id }: { id: string }) {
+export function EmbeddedNote({ id }: { id: string }) {
   const event = useFetchEventById(id)
 
   return event ? (
@@ -17,9 +17,4 @@ function EmbeddedNote({ id }: { id: string }) {
       {id}
     </Link>
   )
-}
-
-export default function renderEmbeddedNote(nostrId: string, index: number) {
-  const id = nostrId.split(':')[1]
-  return <EmbeddedNote key={`embedded-note-${index}`} id={id} />
 }

@@ -2,7 +2,7 @@ import { Event, Filter } from '@nostr-relay/common'
 import { nip19 } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 
-export default function useFetchEventById(id: string) {
+export function useFetchEventById(id: string) {
   const [event, setEvent] = useState<Event | null>(null)
 
   useEffect(() => {

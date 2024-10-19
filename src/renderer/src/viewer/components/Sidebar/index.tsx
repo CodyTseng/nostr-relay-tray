@@ -20,7 +20,7 @@ export default function Sidebar() {
           <div className="text-sm">offline</div>
         </div>
         <NavLink
-          to={'/'}
+          to={'/profile/npub1y3rzjvyzrdzl2v8vqp37eg9x2gh954mc2muc9755fhcw7090qw4s9yyq9d'}
           className={({ isActive }) =>
             isActive ? 'text-highlight' : 'text-muted-foreground hover:text-highlight/80'
           }

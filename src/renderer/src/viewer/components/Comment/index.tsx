@@ -1,7 +1,7 @@
 import { Event } from '@nostr-relay/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
 import { formatTimestamp } from '@renderer/lib/timestamp'
-import useFetchProfile from '@renderer/viewer/hooks/useFetchProfile'
+import { useFetchProfile } from '@renderer/viewer/hooks'
 import Content from '../Content'
 
 export default function Comment({
