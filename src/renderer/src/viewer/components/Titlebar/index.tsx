@@ -1,18 +1,22 @@
 import { Button } from '@renderer/components/ui/button'
-import { ArrowLeft, X } from 'lucide-react'
+import { cn } from '@renderer/lib/utils'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
-export default function Titlebar(): JSX.Element {
-  const navigate = useNavigate()
-  const [showButtons, setShowButtons] = useState(false)
+export function Titlebar({
+  children,
+  className
+}: {
+  children?: React.ReactNode
+  className?: string
+}) {
+  const [show, setShow] = useState(false)
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
       if (event.clientY < 50) {
-        setShowButtons(true)
+        setShow(true)
       } else {
-        setShowButtons(false)
+        setShow(false)
       }
     }
 
@@ -23,30 +27,29 @@ export default function Titlebar(): JSX.Element {
   }, [])
 
   return (
-    <div className="sticky top-0 z-10 w-full pointer-events-none">
+    <div className="sticky top-0 z-10 w-full">
       <div
-        className={`absolute top-2 left-2 transition-transform duration-300 flex items-center space-x-2 ${
-          showButtons ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-100'
-        }`}
+        className={cn(
+          'draggable absolute w-full h-9 bg-background/50 backdrop-blur-md transition-transform duration-500 flex items-center',
+          show ? 'translate-y-0' : '-translate-y-10',
+          className
+        )}
       >
-        <TitlebarButton onClick={() => navigate(-1)}>
-          <ArrowLeft className="text-foreground" />
-        </TitlebarButton>
-        <TitlebarButton onClick={() => navigate('/')}>
-          <X className="text-foreground" />
-        </TitlebarButton>
+        {children}
       </div>
     </div>
   )
 }
 
-function TitlebarButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+export function TitlebarButton({
+  onClick,
+  children
+}: {
+  onClick: () => void
+  children: React.ReactNode
+}) {
   return (
-    <Button
-      variant="outline"
-      className="h-8 w-8 p-2 pointer-events-auto rounded-full"
-      onClick={onClick}
-    >
+    <Button variant="ghost" className="h-7 w-7 p-0 rounded-lg" onClick={onClick}>
       {children}
     </Button>
   )

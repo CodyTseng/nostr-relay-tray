@@ -12,7 +12,6 @@ import ReactDOM from 'react-dom/client'
 import { RouterProvider, createHashRouter, useLocation } from 'react-router-dom'
 import Left from './Left'
 import Right from './Right'
-import Sidebar from './components/Sidebar'
 import NotePage from './pages/NotePage'
 import ProfilePage from './pages/ProfilePage'
 
@@ -40,23 +39,19 @@ function Viewer(): JSX.Element {
   return (
     <div className="h-screen">
       <ThemeProvider>
-        <div className="flex h-full">
-          <Sidebar />
-          <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel minSize={30}>
-              <Left />
-            </ResizablePanel>
-            {location.pathname === '/' ? null : (
-              <>
-                <ResizableHandle />
-                <ResizablePanel minSize={30}>
-                  <Right />
-                </ResizablePanel>
-              </>
-            )}
-          </ResizablePanelGroup>
-        </div>
-
+        <ResizablePanelGroup direction="horizontal">
+          <ResizablePanel minSize={30}>
+            <Left />
+          </ResizablePanel>
+          {location.pathname === '/' ? null : (
+            <>
+              <ResizableHandle />
+              <ResizablePanel minSize={30}>
+                <Right />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
         <Toaster />
       </ThemeProvider>
     </div>
