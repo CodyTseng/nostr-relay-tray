@@ -2,6 +2,7 @@ import { Event } from '@nostr-relay/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
 import { formatTimestamp } from '@renderer/lib/timestamp'
 import { useFetchProfile } from '@renderer/viewer/hooks'
+import { Link } from 'react-router-dom'
 import Content from '../Content'
 
 export default function Comment({
@@ -15,13 +16,20 @@ export default function Comment({
 
   return (
     <div className="flex space-x-2 items-start">
-      <Avatar className="w-7 h-7">
-        <AvatarImage src={avatar} />
-        <AvatarFallback>{username}</AvatarFallback>
-      </Avatar>
+      <Link to={`/profile/${comment.pubkey}`} onClick={(e) => e.stopPropagation()}>
+        <Avatar className="w-7 h-7">
+          <AvatarImage src={avatar} />
+          <AvatarFallback>{username}</AvatarFallback>
+        </Avatar>
+      </Link>
       <div className="w-full overflow-hidden">
         <div className="flex space-x-2 items-center">
-          <div className="text-sm font-semibold truncate">{username}</div>
+          <Link
+            to={`/profile/${comment.pubkey}`}
+            className="text-sm font-semibold truncate hover:underline"
+          >
+            {username}
+          </Link>
           <div className="text-xs text-muted-foreground">{formatTimestamp(comment.created_at)}</div>
         </div>
         {parentComment && (

@@ -1,4 +1,5 @@
 import { useFetchProfile } from '@renderer/viewer/hooks'
+import { toNoStrudelProfile, toProfile } from '@renderer/viewer/lib/url'
 import { Link } from 'react-router-dom'
 
 export function EmbeddedMention({ id }: { id: string }) {
@@ -6,7 +7,7 @@ export function EmbeddedMention({ id }: { id: string }) {
 
   return hasProfile ? (
     <Link
-      to={`/profile/${npub}`}
+      to={toProfile(npub)}
       onClick={(e) => e.stopPropagation()}
       className="text-highlight hover:underline"
     >
@@ -14,7 +15,7 @@ export function EmbeddedMention({ id }: { id: string }) {
     </Link>
   ) : (
     <Link
-      to={`https://nostrudel.ninja/#/u/${id}`}
+      to={toNoStrudelProfile(id)}
       target="_blank"
       className="text-highlight hover:underline"
       onClick={(e) => e.stopPropagation()}

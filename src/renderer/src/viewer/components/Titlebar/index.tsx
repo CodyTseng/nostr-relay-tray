@@ -30,7 +30,7 @@ export function Titlebar({
     <div className="sticky top-0 z-10 w-full">
       <div
         className={cn(
-          'draggable absolute w-full h-9 bg-background/50 backdrop-blur-md transition-transform duration-500 flex items-center',
+          'draggable absolute w-full h-9 bg-background/50 backdrop-blur-md transition-transform duration-300 flex items-center',
           show ? 'translate-y-0' : '-translate-y-10',
           className
         )}

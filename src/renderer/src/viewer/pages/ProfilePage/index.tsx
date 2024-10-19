@@ -30,7 +30,7 @@ export default function ProfilePage() {
         </div>
       </div>
       <Separator className="my-4" />
-      {pubkey ? <NoteList key={pubkey} filter={{ authors: [pubkey], kinds: [1] }} /> : null}
+      {pubkey ? <NoteList key={pubkey} filter={{ authors: [pubkey] }} /> : null}
     </div>
   )
 }
