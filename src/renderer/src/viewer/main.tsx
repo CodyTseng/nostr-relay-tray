@@ -14,7 +14,8 @@ import Left from './Left'
 import Right from './Right'
 import NotePage from './pages/NotePage'
 import ProfilePage from './pages/ProfilePage'
-import Titlebar from './components/Titlebar'
+import RightTitlebar from './components/Titlebar'
+import Sidebar from './components/Sidebar'
 
 export const router = createHashRouter([
   {
@@ -40,20 +41,23 @@ function Viewer(): JSX.Element {
   return (
     <div className="h-screen">
       <ThemeProvider>
-        <Titlebar />
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel minSize={30}>
-            <Left />
-          </ResizablePanel>
-          {location.pathname === '/' ? null : (
-            <>
-              <ResizableHandle />
-              <ResizablePanel minSize={30}>
-                <Right />
-              </ResizablePanel>
-            </>
-          )}
-        </ResizablePanelGroup>
+        <div className="flex h-full">
+          <Sidebar />
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel minSize={30}>
+              <Left />
+            </ResizablePanel>
+            {location.pathname === '/' ? null : (
+              <>
+                <ResizableHandle />
+                <ResizablePanel minSize={30}>
+                  <Right />
+                </ResizablePanel>
+              </>
+            )}
+          </ResizablePanelGroup>
+        </div>
+
         <Toaster />
       </ThemeProvider>
     </div>

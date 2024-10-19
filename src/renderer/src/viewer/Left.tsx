@@ -4,8 +4,8 @@ import NoteListPage from './pages/NoteListPage'
 export default function Left() {
   return (
     <>
-      <ScrollArea className="px-4 h-full" scrollBarClassName="pt-9">
-        <div className="pt-14">
+      <ScrollArea className="h-full">
+        <div className="p-4">
           <NoteListPage />
         </div>
       </ScrollArea>

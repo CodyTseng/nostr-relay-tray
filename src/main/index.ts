@@ -86,6 +86,7 @@ app.whenReady().then(async () => {
     tray?.setImage(getTrayImage(color))
     await repositories.config.set(CONFIG_KEY.TRAY_IMAGE_COLOR, color)
   })
+  ipcMain.handle('window:openDashboard', createDashboardWindow)
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

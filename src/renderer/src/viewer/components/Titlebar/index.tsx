@@ -1,29 +1,53 @@
 import { Button } from '@renderer/components/ui/button'
 import { ArrowLeft, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 export default function Titlebar(): JSX.Element {
   const navigate = useNavigate()
-  const location = useLocation()
-  const [canBack, setCanBack] = useState(false)
+  const [showButtons, setShowButtons] = useState(false)
 
   useEffect(() => {
-    setCanBack(location.pathname !== '/')
-  }, [location])
+    const handleMouseMove = (event: MouseEvent) => {
+      if (event.clientY < 50) {
+        setShowButtons(true)
+      } else {
+        setShowButtons(false)
+      }
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [])
 
   return (
-    <div className="titlebar fixed top-0 h-9 z-10 w-full bg-background/50 backdrop-blur-sm drop-shadow-sm">
-      {canBack && (
-        <div className="h-full flex items-center px-2 justify-end">
-          <Button variant="ghost" className="h-6 w-6 p-0" onClick={() => navigate(-1)}>
-            <ArrowLeft className="text-foreground" size={15} />
-          </Button>
-          <Button variant="ghost" className="h-6 w-6 p-0" onClick={() => navigate('/')}>
-            <X className="text-foreground" size={15} />
-          </Button>
-        </div>
-      )}
+    <div className="sticky top-0 z-10 w-full pointer-events-none">
+      <div
+        className={`absolute top-2 left-2 transition-transform duration-300 flex items-center space-x-2 ${
+          showButtons ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-100'
+        }`}
+      >
+        <TitlebarButton onClick={() => navigate(-1)}>
+          <ArrowLeft className="text-foreground" />
+        </TitlebarButton>
+        <TitlebarButton onClick={() => navigate('/')}>
+          <X className="text-foreground" />
+        </TitlebarButton>
+      </div>
     </div>
+  )
+}
+
+function TitlebarButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <Button
+      variant="outline"
+      className="h-8 w-8 p-2 pointer-events-auto rounded-full"
+      onClick={onClick}
+    >
+      {children}
+    </Button>
   )
 }

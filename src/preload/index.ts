@@ -102,6 +102,9 @@ const api = {
   pow: {
     getDifficulty: () => ipcRenderer.invoke('pow:getPowDifficulty'),
     setDifficulty: (difficulty: number) => ipcRenderer.invoke('pow:setPowDifficulty', difficulty)
+  },
+  window: {
+    openDashboard: () => ipcRenderer.invoke('window:openDashboard')
   }
 }
 

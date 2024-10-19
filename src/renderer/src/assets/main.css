@@ -9,11 +9,15 @@
     background-color: hsl(var(--background));
   }
 
-  .titlebar {
+  .draggable {
     -webkit-app-region: drag;
   }
 
-  .titlebar button {
+  .draggable button {
+    -webkit-app-region: no-drag;
+  }
+
+  .draggable a {
     -webkit-app-region: no-drag;
   }
 

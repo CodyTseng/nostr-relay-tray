@@ -74,6 +74,9 @@ declare global {
         getDifficulty: () => Promise<number>
         setDifficulty: (difficulty: number) => Promise<void>
       }
+      window: {
+        openDashboard: () => void
+      }
     }
   }
 }

@@ -13,6 +13,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createHashRouter, NavLink, Outlet, RouterProvider } from 'react-router-dom'
 import Titlebar from './components/Titlebar'
+import { isMacOS } from '@renderer/lib/platform'
 
 const navItems = [
   {
@@ -71,7 +72,7 @@ function Dashboard(): JSX.Element {
         <Titlebar />
         <div className="flex">
           <nav
-            className={`flex-shrink-0 w-36 pt-4 pl-6 sticky h-full ${window.electron.process.platform === 'darwin' ? 'top-9' : 'top-4'}`}
+            className={`flex-shrink-0 w-36 pt-4 pl-6 sticky h-full ${isMacOS() ? 'top-9' : 'top-4'}`}
           >
             <ul className="space-y-1">
               {navItems.map(({ title, href }) => (
@@ -89,9 +90,7 @@ function Dashboard(): JSX.Element {
               ))}
             </ul>
           </nav>
-          <div
-            className={`flex-1 w-0 h-screen  ${window.electron.process.platform === 'darwin' ? 'pt-9' : 'pt-4'}`}
-          >
+          <div className={`flex-1 w-0 h-screen ${isMacOS() ? 'pt-9' : 'pt-4'}`}>
             <Outlet />
           </div>
         </div>

@@ -1,11 +1,13 @@
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Outlet } from 'react-router-dom'
+import Titlebar from './components/Titlebar'
 
 export default function Right() {
   return (
     <>
-      <ScrollArea className="px-4 h-full" scrollBarClassName="pt-9">
-        <div className="pt-14">
+      <ScrollArea className="h-full">
+        <Titlebar />
+        <div className="p-4">
           <Outlet />
         </div>
       </ScrollArea>
