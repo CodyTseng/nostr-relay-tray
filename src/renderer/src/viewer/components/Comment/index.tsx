@@ -37,7 +37,7 @@ export default function Comment({
             <ParentComment comment={parentComment} />
           </div>
         )}
-        <Content className="text-sm text-wrap break-words whitespace-pre-wrap" event={comment} />
+        <Content event={comment} />
       </div>
     </div>
   )

@@ -1,13 +1,14 @@
 import { Event } from '@nostr-relay/common'
+import { cn } from '@renderer/lib/utils'
 import {
   embedded,
-  embeddedNostrEventRenderer,
   embeddedHashtagRenderer,
-  embeddedNostrNpubRenderer,
   embeddedNormalUrlRenderer,
-  embeddedNostrNoteRenderer
+  embeddedNostrEventRenderer,
+  embeddedNostrNoteRenderer,
+  embeddedNostrNpubRenderer
 } from '@renderer/viewer/embedded'
-import ImageGallery from './ImageGallery'
+import ImageGallery from '../ImageGallery'
 
 export default function Content({ event, className }: { event: Event; className?: string }) {
   const { content, images } = extractMediaUrls(event.content)
@@ -22,10 +23,14 @@ export default function Content({ event, className }: { event: Event; className?
 
   // Add images
   if (images.length) {
-    nodes.push(<ImageGallery key="images" images={images} />)
+    nodes.push(<ImageGallery className="mt-2" key="images" images={images} />)
   }
 
-  return <div className={className}>{nodes}</div>
+  return (
+    <div className={cn('text-sm text-wrap break-words whitespace-pre-wrap', className)}>
+      {nodes}
+    </div>
+  )
 }
 
 function extractMediaUrls(content: string) {

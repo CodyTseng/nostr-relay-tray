@@ -1,3 +1,5 @@
+import 'react-photo-album/rows.css'
+import 'yet-another-react-lightbox/styles.css'
 import '../assets/main.css'
 
 import { ThemeProvider } from '@renderer/components/theme-provider'

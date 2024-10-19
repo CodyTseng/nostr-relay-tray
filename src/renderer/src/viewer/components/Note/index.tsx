@@ -31,7 +31,7 @@ export default function Note({ event }: { event: Event }) {
         </div>
       </div>
       {[kinds.ShortTextNote].includes(event.kind) ? (
-        <Content className="mt-2 text-sm text-wrap break-words whitespace-pre-wrap" event={event} />
+        <Content className="mt-2" event={event} />
       ) : (
         <Link
           to={toNoStrudelNote(event.id)}
