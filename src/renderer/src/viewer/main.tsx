@@ -14,9 +14,9 @@ import ReactDOM from 'react-dom/client'
 import { RouterProvider, createHashRouter } from 'react-router-dom'
 import Left from './Left'
 import Right from './Right'
+import HashtagPage from './pages/HashtagPage'
 import NotePage from './pages/NotePage'
 import ProfilePage from './pages/ProfilePage'
-import HashtagPage from './pages/HashtagPage'
 
 export const router = createHashRouter([
   {

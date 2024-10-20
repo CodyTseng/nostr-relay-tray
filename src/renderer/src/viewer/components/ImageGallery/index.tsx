@@ -14,7 +14,6 @@ export default function ImageGallery({
 
   useEffect(() => {
     const initSlideMap = async () => {
-      setSlideMap({})
       await Promise.all(
         images.map(async (image) => {
           try {

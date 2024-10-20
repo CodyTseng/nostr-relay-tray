@@ -6,7 +6,6 @@ export function EmbeddedNormalUrl({ url }: { url: string }) {
       className="text-highlight hover:underline"
       to={url}
       target="_blank"
-      rel="noreferrer"
       onClick={(e) => e.stopPropagation()}
     >
       {url}

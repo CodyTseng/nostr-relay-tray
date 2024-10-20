@@ -5,6 +5,6 @@ export const embeddedNostrNpubRenderer: TEmbeddedRenderer = {
   regex: /(nostr:npub1[a-z0-9]{58})/g,
   render: (id: string, index: number) => {
     const npub1 = id.split(':')[1]
-    return <EmbeddedMention key={`embedded-mention-${index}`} id={npub1} />
+    return <EmbeddedMention key={`embedded-mention-${index}`} userId={npub1} />
   }
 }

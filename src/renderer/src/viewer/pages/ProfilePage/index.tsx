@@ -1,15 +1,33 @@
 import { Avatar, AvatarImage } from '@renderer/components/ui/avatar'
 import { Separator } from '@renderer/components/ui/separator'
+import { formatNpub } from '@renderer/lib/pubkey'
 import Nip05 from '@renderer/viewer/components/Nip05'
 import NoteList from '@renderer/viewer/components/NoteList'
 import ProfileAbout from '@renderer/viewer/components/ProfileAbout'
 import { useFetchProfile } from '@renderer/viewer/hooks'
+import { Copy } from 'lucide-react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 export default function ProfilePage() {
   const params = useParams<{ id: string }>()
+  const {
+    banner = '',
+    avatar = '',
+    username,
+    nip05,
+    about,
+    pubkey,
+    npub
+  } = useFetchProfile(params.id)
+  const [copied, setCopied] = useState(false)
 
-  const { banner = '', avatar = '', username, nip05, about, pubkey } = useFetchProfile(params.id)
+  const copyNpub = () => {
+    if (!npub) return
+    navigator.clipboard.writeText(npub)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <div>
@@ -23,8 +41,23 @@ export default function ProfilePage() {
         </Avatar>
       </div>
       <div className="px-4 space-y-1">
-        <div className="text-lg font-semibold">{username}</div>
+        <div className="text-xl font-semibold">{username}</div>
         {nip05 && pubkey && <Nip05 nip05={nip05} pubkey={pubkey} />}
+        {npub && (
+          <div
+            className="flex gap-2 text-sm text-muted-foreground items-center bg-muted w-fit px-2 rounded-full hover:text-foreground cursor-pointer"
+            onClick={() => copyNpub()}
+          >
+            {copied ? (
+              <div>Copied!</div>
+            ) : (
+              <>
+                <div>{formatNpub(npub)}</div>
+                <Copy size={14} />
+              </>
+            )}
+          </div>
+        )}
         <div className="text-sm text-wrap break-words whitespace-pre-wrap">
           <ProfileAbout about={about} />
         </div>

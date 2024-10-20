@@ -8,7 +8,7 @@ export default function Left() {
     <>
       <ScrollArea className="h-full" scrollBarClassName={isMacOS() ? 'pt-9' : 'pt-4'}>
         <LeftTitlebar />
-        <div className="p-4">
+        <div className="px-4 pb-4 pt-[52px]">
           <NoteListPage />
         </div>
       </ScrollArea>

@@ -8,7 +8,7 @@ export default function Right() {
     <>
       <ScrollArea className="h-full" scrollBarClassName={isMacOS() ? 'pt-10' : 'pt-4'}>
         <RightTitlebar />
-        <div className="p-4">
+        <div className="px-4 pb-4 pt-[52px]">
           <Outlet />
         </div>
       </ScrollArea>
