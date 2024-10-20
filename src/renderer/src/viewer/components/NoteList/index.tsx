@@ -2,7 +2,7 @@ import { Event, Filter } from '@nostr-relay/common'
 import { now } from '@renderer/lib/timestamp'
 import { cn } from '@renderer/lib/utils'
 import { kinds } from 'nostr-tools'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import NoteCard from '../NoteCard'
 
 export default function NoteList({
@@ -13,20 +13,57 @@ export default function NoteList({
   className?: string
 }) {
   const [events, setEvents] = useState<Event[]>([])
-  const init = async () => {
-    const events = await window.api.relay.findEvents([
-      { kinds: [1, 6], limit: 100, until: now(), ...filter }
-    ])
+  const [noteFilter, setNoteFilter] = useState<Filter>({
+    kinds: [1, 6],
+    limit: 20,
+    until: now(),
+    ...filter
+  })
+  const [hasMore, setHasMore] = useState<boolean>(true)
+  const observer = useRef<IntersectionObserver | null>(null)
+  const bottomRef = useRef<HTMLDivElement | null>(null)
+
+  const loadMore = useCallback(async () => {
+    const newEvents = await window.api.relay.findEvents([noteFilter])
+    if (newEvents.length === 0) {
+      setHasMore(false)
+      return
+    }
     setEvents((oldEvents) => [
       ...oldEvents,
-      ...events.filter(
+      ...newEvents.filter(
         (e) => !(e.kind === kinds.ShortTextNote && e.tags.some(([tagName]) => tagName === 'e'))
       )
     ])
-  }
+    setNoteFilter({ ...noteFilter, until: newEvents[newEvents.length - 1].created_at - 1 })
+  }, [noteFilter])
 
   useEffect(() => {
-    init()
+    const options = {
+      root: null,
+      rootMargin: '10px',
+      threshold: 1
+    }
+
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        loadMore()
+      }
+    }, options)
+
+    if (bottomRef.current) {
+      observer.current.observe(bottomRef.current)
+    }
+
+    return () => {
+      if (observer.current && bottomRef.current) {
+        observer.current.unobserve(bottomRef.current)
+      }
+    }
+  }, [noteFilter])
+
+  useEffect(() => {
+    loadMore()
   }, [])
 
   return (
@@ -34,6 +71,11 @@ export default function NoteList({
       {events.map((event, i) => (
         <NoteCard key={i} className="w-full" event={event} />
       ))}
+      {hasMore ? (
+        <div ref={bottomRef} />
+      ) : (
+        <div className="text-center text-muted-foreground">No more notes</div>
+      )}
     </div>
   )
 }
