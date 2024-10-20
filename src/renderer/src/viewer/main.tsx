@@ -11,7 +11,7 @@ import {
 import { Toaster } from '@renderer/components/ui/toaster'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { RouterProvider, createHashRouter, useLocation } from 'react-router-dom'
+import { RouterProvider, createHashRouter } from 'react-router-dom'
 import Left from './Left'
 import Right from './Right'
 import NotePage from './pages/NotePage'
@@ -36,8 +36,6 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 )
 
 function Viewer(): JSX.Element {
-  const location = useLocation()
-
   return (
     <div className="h-screen">
       <ThemeProvider>
@@ -45,14 +43,10 @@ function Viewer(): JSX.Element {
           <ResizablePanel minSize={30}>
             <Left />
           </ResizablePanel>
-          {location.pathname === '/' ? null : (
-            <>
-              <ResizableHandle />
-              <ResizablePanel minSize={30}>
-                <Right />
-              </ResizablePanel>
-            </>
-          )}
+          <ResizableHandle />
+          <ResizablePanel minSize={30}>
+            <Right />
+          </ResizablePanel>
         </ResizablePanelGroup>
         <Toaster />
       </ThemeProvider>
