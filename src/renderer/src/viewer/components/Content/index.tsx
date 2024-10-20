@@ -42,7 +42,7 @@ function extractMediaUrls(content: string) {
 
   urls.forEach((url) => {
     if (isImage(url)) {
-      c = c.replace(url, '')
+      c = c.replace(url, '').trim()
       images.push(url)
     }
   })

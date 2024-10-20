@@ -2,6 +2,7 @@ import { Event, Filter } from '@nostr-relay/common'
 import { cn } from '@renderer/lib/utils'
 import { useEffect, useState } from 'react'
 import NoteCard from '../NoteCard'
+import { kinds } from 'nostr-tools'
 
 export default function NoteList({
   filter = {},
@@ -12,10 +13,12 @@ export default function NoteList({
 }) {
   const [events, setEvents] = useState<Event[]>([])
   const init = async () => {
-    const events = await window.api.relay.findEvents({ kinds: [1], limit: 100, ...filter })
+    const events = await window.api.relay.findEvents({ kinds: [1, 6], limit: 100, ...filter })
     setEvents((oldEvents) => [
       ...oldEvents,
-      ...events.filter((event) => !event.tags.some(([tagName]) => tagName === 'e'))
+      ...events.filter(
+        (e) => !(e.kind === kinds.ShortTextNote && e.tags.some(([tagName]) => tagName === 'e'))
+      )
     ])
   }
 
