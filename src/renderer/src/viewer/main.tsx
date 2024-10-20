@@ -16,6 +16,7 @@ import Left from './Left'
 import Right from './Right'
 import NotePage from './pages/NotePage'
 import ProfilePage from './pages/ProfilePage'
+import HashtagPage from './pages/HashtagPage'
 
 export const router = createHashRouter([
   {
@@ -24,7 +25,8 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <div /> },
       { path: '/profile/:id', element: <ProfilePage /> },
-      { path: '/note/:id', element: <NotePage /> }
+      { path: '/note/:id', element: <NotePage /> },
+      { path: '/hashtag/:id', element: <HashtagPage /> }
     ]
   }
 ])

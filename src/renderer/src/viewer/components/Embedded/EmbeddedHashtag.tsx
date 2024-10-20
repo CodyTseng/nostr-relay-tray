@@ -1,3 +1,14 @@
+import { toHashtag } from '@renderer/viewer/lib/url'
+import { Link } from 'react-router-dom'
+
 export function EmbeddedHashtag({ hashtag }: { hashtag: string }) {
-  return <span className="text-highlight">#{hashtag}</span>
+  return (
+    <Link
+      className="text-highlight hover:underline"
+      to={toHashtag(hashtag)}
+      onClick={(e) => e.stopPropagation()}
+    >
+      #{hashtag}
+    </Link>
+  )
 }
