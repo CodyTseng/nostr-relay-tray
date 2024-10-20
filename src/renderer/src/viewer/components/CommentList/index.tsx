@@ -7,11 +7,13 @@ export default function CommentList({ event, className }: { event: Event; classN
   const [comments, setComments] = useState<Event[]>([])
 
   const init = async () => {
-    const comments = await window.api.relay.findEvents({
-      '#e': [event.id],
-      kinds: [1],
-      limit: 1000
-    })
+    const comments = await window.api.relay.findEvents([
+      {
+        '#e': [event.id],
+        kinds: [1],
+        limit: 1000
+      }
+    ])
     setComments(comments.reverse())
   }
   useEffect(() => {

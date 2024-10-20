@@ -7,7 +7,7 @@ export default function LeftTitlebar() {
   const navigate = useNavigate()
   return (
     <Titlebar className={isMacOS() ? 'pl-20' : ''}>
-      <TitlebarButton onClick={() => navigate('/hashtag/press')}>
+      <TitlebarButton onClick={() => navigate('/')}>
         <TestTube className="text-foreground" />
       </TitlebarButton>
     </Titlebar>

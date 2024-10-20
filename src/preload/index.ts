@@ -44,7 +44,7 @@ const api = {
     setDefaultFilterLimit: (defaultFilterLimit: number) =>
       ipcRenderer.invoke('relay:setDefaultFilterLimit', defaultFilterLimit),
     getDefaultFilterLimit: () => ipcRenderer.invoke('relay:getDefaultFilterLimit'),
-    findEvents: (filter: Filter) => ipcRenderer.invoke('relay:findEvents', filter)
+    findEvents: (filters: Filter[]) => ipcRenderer.invoke('relay:findEvents', filters)
   },
   tray: {
     getImageColor: () => ipcRenderer.invoke('tray:getImageColor'),

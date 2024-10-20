@@ -51,11 +51,13 @@ export function useFetchProfile(id?: string) {
         if (!pubkey || !npub) return
 
         profile.username = formatNpub(npub)
-        const [profileEvent] = await window.api.relay.findEvents({
-          authors: [pubkey],
-          kinds: [0],
-          limit: 1
-        })
+        const [profileEvent] = await window.api.relay.findEvents([
+          {
+            authors: [pubkey],
+            kinds: [0],
+            limit: 1
+          }
+        ])
         if (!profileEvent) {
           setProfile({ ...profile, pubkey, npub })
           return

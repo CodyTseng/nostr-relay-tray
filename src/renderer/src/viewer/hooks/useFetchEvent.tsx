@@ -28,7 +28,7 @@ export function useFetchEventById(id: string) {
       }
       if (!filter) return
 
-      const events = await window.api.relay.findEvents({ ...filter, limit: 1 })
+      const events = await window.api.relay.findEvents([{ ...filter, limit: 1 }])
       if (events.length) {
         setEvent(events[0])
       } else {

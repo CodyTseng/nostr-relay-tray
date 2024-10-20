@@ -308,7 +308,10 @@ export class RelayService {
     return changes
   }
 
-  private async findEvents(filter: Filter) {
-    return this.eventRepository.find(filter)
+  private async findEvents(filters: Filter[]) {
+    if (!this.relay) {
+      return []
+    }
+    return this.relay.findEvents(filters)
   }
 }

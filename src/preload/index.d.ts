@@ -22,7 +22,7 @@ declare global {
         getMaxPayload: () => Promise<number>
         setDefaultFilterLimit: (defaultFilterLimit: number) => Promise<void>
         getDefaultFilterLimit: () => Promise<number>
-        findEvents: (filter: Filter) => Promise<Event[]>
+        findEvents: (filters: Filter[]) => Promise<Event[]>
       }
       tray: {
         getImageColor: () => Promise<TTrayImageColor>

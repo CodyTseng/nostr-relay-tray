@@ -1,8 +1,9 @@
 import { Event, Filter } from '@nostr-relay/common'
 import { cn } from '@renderer/lib/utils'
+import { now } from '@renderer/viewer/lib/timestamp'
+import { kinds } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import NoteCard from '../NoteCard'
-import { kinds } from 'nostr-tools'
 
 export default function NoteList({
   filter = {},
@@ -13,7 +14,9 @@ export default function NoteList({
 }) {
   const [events, setEvents] = useState<Event[]>([])
   const init = async () => {
-    const events = await window.api.relay.findEvents({ kinds: [1, 6], limit: 100, ...filter })
+    const events = await window.api.relay.findEvents([
+      { kinds: [1, 6], limit: 100, until: now(), ...filter }
+    ])
     setEvents((oldEvents) => [
       ...oldEvents,
       ...events.filter(
