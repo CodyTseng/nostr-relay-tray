@@ -8,7 +8,7 @@ export default function RightTitlebar(): JSX.Element {
   return (
     <Titlebar className="pl-1">
       <TitlebarButton onClick={() => navigate(-1)}>
-        <ArrowLeft className="text-foreground" size={15} />
+        <ArrowLeft className="text-foreground" />
       </TitlebarButton>
     </Titlebar>
   )

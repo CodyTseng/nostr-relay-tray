@@ -6,9 +6,9 @@ import RightTitlebar from './RightTitlebar'
 export default function Right() {
   return (
     <>
-      <ScrollArea className="h-full">
+      <ScrollArea className="h-full" scrollBarClassName={isMacOS() ? 'pt-10' : 'pt-4'}>
         <RightTitlebar />
-        <div className={isMacOS() ? 'px-4 pt-10 pb-4' : 'p-4'}>
+        <div className="p-4">
           <Outlet />
         </div>
       </ScrollArea>

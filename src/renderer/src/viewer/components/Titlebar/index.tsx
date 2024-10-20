@@ -1,6 +1,5 @@
 import { Button } from '@renderer/components/ui/button'
 import { cn } from '@renderer/lib/utils'
-import { useEffect, useState } from 'react'
 
 export function Titlebar({
   children,
@@ -9,29 +8,11 @@ export function Titlebar({
   children?: React.ReactNode
   className?: string
 }) {
-  const [show, setShow] = useState(false)
-
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      if (event.clientY < 50) {
-        setShow(true)
-      } else {
-        setShow(false)
-      }
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-    }
-  }, [])
-
   return (
-    <div className="sticky top-0 z-10 w-full">
+    <div className="sticky top-0 h-9 z-10 w-full">
       <div
         className={cn(
-          'draggable absolute w-full h-9 bg-background/50 backdrop-blur-md transition-transform duration-300 flex items-center',
-          show ? 'translate-y-0' : '-translate-y-10',
+          'draggable absolute w-full h-full bg-background/50 backdrop-blur-md flex items-center',
           className
         )}
       >
@@ -49,7 +30,7 @@ export function TitlebarButton({
   children: React.ReactNode
 }) {
   return (
-    <Button variant="ghost" className="h-7 w-7 p-0 rounded-lg" onClick={onClick}>
+    <Button variant="ghost" className="h-7 w-7 p-1 rounded-lg" onClick={onClick}>
       {children}
     </Button>
   )

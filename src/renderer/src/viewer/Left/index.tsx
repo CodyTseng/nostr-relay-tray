@@ -6,9 +6,9 @@ import LeftTitlebar from './LeftTitlebar'
 export default function Left() {
   return (
     <>
-      <ScrollArea className="h-full">
+      <ScrollArea className="h-full" scrollBarClassName={isMacOS() ? 'pt-9' : 'pt-4'}>
         <LeftTitlebar />
-        <div className={isMacOS() ? 'px-4 pt-10 pb-4' : 'p-4'}>
+        <div className="p-4">
           <NoteListPage />
         </div>
       </ScrollArea>
