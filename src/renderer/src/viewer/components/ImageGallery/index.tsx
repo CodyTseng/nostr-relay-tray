@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Photo, RowsPhotoAlbum } from 'react-photo-album'
 import Lightbox from 'yet-another-react-lightbox'
+import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 
 export default function ImageGallery({
   className,
@@ -51,9 +52,11 @@ export default function ImageGallery({
       <Lightbox
         index={index}
         slides={slides}
+        plugins={[Zoom]}
         open={index >= 0}
         close={() => setIndex(-1)}
         controller={{ closeOnBackdropClick: true, closeOnPullUp: true, closeOnPullDown: true }}
+        styles={{ toolbar: { paddingTop: '2.25rem' } }}
       />
     </div>
   )
