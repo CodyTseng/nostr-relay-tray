@@ -1,8 +1,8 @@
 import { Event } from '@nostr-relay/common'
-import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
 import { formatTimestamp } from '@renderer/lib/timestamp'
 import { useFetchProfile } from '@renderer/viewer/hooks'
 import { Link } from 'react-router-dom'
+import ProfileAvatarLink from '../ProfileAvatarLink'
 import Content from '../Content'
 
 export default function Comment({
@@ -16,12 +16,7 @@ export default function Comment({
 
   return (
     <div className="flex space-x-2 items-start">
-      <Link to={`/profile/${comment.pubkey}`} onClick={(e) => e.stopPropagation()}>
-        <Avatar className="w-7 h-7">
-          <AvatarImage src={avatar} />
-          <AvatarFallback>{username}</AvatarFallback>
-        </Avatar>
-      </Link>
+      <ProfileAvatarLink avatar={avatar} userId={comment.pubkey} className="w-7 h-7" />
       <div className="w-full overflow-hidden">
         <div className="flex space-x-2 items-center">
           <Link
@@ -44,14 +39,12 @@ export default function Comment({
 }
 
 function ParentComment({ comment }: { comment: Event }) {
-  const { avatar } = useFetchProfile(comment.pubkey)
+  const { avatar = '' } = useFetchProfile(comment.pubkey)
 
   return (
     <div className="flex space-x-1 items-center text-xs">
       <div>reply to</div>
-      <Avatar className="w-3 h-3">
-        <AvatarImage src={avatar} />
-      </Avatar>
+      <ProfileAvatarLink avatar={avatar} userId={comment.pubkey} className="w-3 h-3" />
       <div className="truncate">{comment.content}</div>
     </div>
   )

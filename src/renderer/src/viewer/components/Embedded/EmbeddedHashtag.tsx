@@ -1,4 +1,4 @@
-import { toHashtag } from '@renderer/viewer/lib/url'
+import { toHashtag } from '@renderer/lib/url'
 import { Link } from 'react-router-dom'
 
 export function EmbeddedHashtag({ hashtag }: { hashtag: string }) {

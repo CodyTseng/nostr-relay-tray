@@ -1,6 +1,6 @@
 import { Event } from '@nostr-relay/common'
 import { Card } from '@renderer/components/ui/card'
-import { toNote } from '@renderer/viewer/lib/url'
+import { toNote } from '@renderer/lib/url'
 import { useNavigate } from 'react-router-dom'
 import Note from '../Note'
 

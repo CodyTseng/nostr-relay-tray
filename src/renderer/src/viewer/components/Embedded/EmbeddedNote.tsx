@@ -1,5 +1,5 @@
 import { useFetchEventById } from '@renderer/viewer/hooks'
-import { toNoStrudelNote } from '@renderer/viewer/lib/url'
+import { toNoStrudelNote } from '@renderer/lib/url'
 import { Link } from 'react-router-dom'
 import NoteCard from '../NoteCard'
 

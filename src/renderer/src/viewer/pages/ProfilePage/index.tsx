@@ -1,9 +1,9 @@
-import { Avatar, AvatarImage } from '@renderer/components/ui/avatar'
 import { Separator } from '@renderer/components/ui/separator'
 import { formatNpub } from '@renderer/lib/pubkey'
 import Nip05 from '@renderer/viewer/components/Nip05'
 import NoteList from '@renderer/viewer/components/NoteList'
 import ProfileAbout from '@renderer/viewer/components/ProfileAbout'
+import ProfileAvatarLink from '@renderer/viewer/components/ProfileAvatarLink'
 import { useFetchProfile } from '@renderer/viewer/hooks'
 import { Copy } from 'lucide-react'
 import { useState } from 'react'
@@ -22,6 +22,8 @@ export default function ProfilePage() {
   } = useFetchProfile(params.id)
   const [copied, setCopied] = useState(false)
 
+  if (!pubkey || !npub) return null
+
   const copyNpub = () => {
     if (!npub) return
     navigator.clipboard.writeText(npub)
@@ -36,34 +38,34 @@ export default function ProfilePage() {
           className="bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-12"
           style={{ backgroundImage: `url(${banner})` }}
         />
-        <Avatar className="absolute bottom-0 left-4 translate-y-1/2 w-24 h-24 border-4 border-background">
-          <AvatarImage src={avatar} />
-        </Avatar>
+        <ProfileAvatarLink
+          avatar={avatar}
+          userId={pubkey}
+          className="absolute bottom-0 left-4 translate-y-1/2 w-24 h-24 border-4 border-background"
+        />
       </div>
       <div className="px-4 space-y-1">
         <div className="text-xl font-semibold">{username}</div>
-        {nip05 && pubkey && <Nip05 nip05={nip05} pubkey={pubkey} />}
-        {npub && (
-          <div
-            className="flex gap-2 text-sm text-muted-foreground items-center bg-muted w-fit px-2 rounded-full hover:text-foreground cursor-pointer"
-            onClick={() => copyNpub()}
-          >
-            {copied ? (
-              <div>Copied!</div>
-            ) : (
-              <>
-                <div>{formatNpub(npub)}</div>
-                <Copy size={14} />
-              </>
-            )}
-          </div>
-        )}
+        {nip05 && <Nip05 nip05={nip05} pubkey={pubkey} />}
+        <div
+          className="flex gap-2 text-sm text-muted-foreground items-center bg-muted w-fit px-2 rounded-full hover:text-foreground cursor-pointer"
+          onClick={() => copyNpub()}
+        >
+          {copied ? (
+            <div>Copied!</div>
+          ) : (
+            <>
+              <div>{formatNpub(npub)}</div>
+              <Copy size={14} />
+            </>
+          )}
+        </div>
         <div className="text-sm text-wrap break-words whitespace-pre-wrap">
           <ProfileAbout about={about} />
         </div>
       </div>
       <Separator className="my-4" />
-      {pubkey ? <NoteList key={pubkey} filter={{ authors: [pubkey] }} /> : null}
+      <NoteList key={pubkey} filter={{ authors: [pubkey] }} />
     </div>
   )
 }

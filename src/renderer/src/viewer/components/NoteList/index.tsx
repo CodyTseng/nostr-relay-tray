@@ -1,6 +1,6 @@
 import { Event, Filter } from '@nostr-relay/common'
+import { now } from '@renderer/lib/timestamp'
 import { cn } from '@renderer/lib/utils'
-import { now } from '@renderer/viewer/lib/timestamp'
 import { kinds } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import NoteCard from '../NoteCard'
