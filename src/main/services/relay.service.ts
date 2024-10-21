@@ -108,7 +108,7 @@ export class RelayService {
       this.setDefaultFilterLimit(defaultFilterLimit)
     )
     ipcMain.handle('relay:getDefaultFilterLimit', () => this.options.defaultFilterLimit)
-    ipcMain.handle('relay:findEvents', (_, filter: Filter) => this.findEvents(filter))
+    ipcMain.handle('relay:findEvents', (_, filters: Filter[]) => this.findEvents(filters))
   }
 
   async handleIncomingMessage(client: NostrClient, data: RawData) {
