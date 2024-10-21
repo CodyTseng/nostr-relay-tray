@@ -9,9 +9,10 @@ import {
   embeddedNostrNpubRenderer
 } from '@renderer/viewer/embedded'
 import ImageGallery from '../ImageGallery'
+import VideoPlayer from '../VideoPlayer'
 
 export default function Content({ event, className }: { event: Event; className?: string }) {
-  const { content, images } = extractMediaUrls(event.content)
+  const { content, images, videos } = extractMediaUrls(event.content)
 
   const nodes = embedded(content, [
     embeddedNormalUrlRenderer,
@@ -24,6 +25,13 @@ export default function Content({ event, className }: { event: Event; className?
   // Add images
   if (images.length) {
     nodes.push(<ImageGallery className="mt-2" key="images" images={images} />)
+  }
+
+  // Add videos
+  if (videos.length) {
+    videos.forEach((src, index) => {
+      nodes.push(<VideoPlayer className="mt-2" key={`video-${index}`} src={src} />)
+    })
   }
 
   return (
@@ -39,21 +47,34 @@ function extractMediaUrls(content: string) {
 
   let c = content
   const images: string[] = []
+  const videos: string[] = []
 
   urls.forEach((url) => {
     if (isImage(url)) {
       c = c.replace(url, '').trim()
       images.push(url)
+    } else if (isVideo(url)) {
+      c = c.replace(url, '').trim()
+      videos.push(url)
     }
   })
 
-  return { content: c, images }
+  return { content: c, images, videos }
 }
 
 function isImage(url: string) {
   try {
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', 'webp']
     return imageExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
+  } catch {
+    return false
+  }
+}
+
+function isVideo(url: string) {
+  try {
+    const videoExtensions = ['.mp4', '.webm', '.ogg']
+    return videoExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
   } catch {
     return false
   }

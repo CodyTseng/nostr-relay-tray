@@ -42,7 +42,7 @@ export default function ImageGallery({
         photos={slides}
         targetRowHeight={150}
         onClick={({ index: current, event }) => handlePhotoClick(event, current)}
-        rowConstraints={{ singleRowMaxHeight: 300 }}
+        rowConstraints={{ singleRowMaxHeight: 320 }}
         render={{
           image: ({ src, width, height }) => (
             <img className="rounded-lg" src={src} width={width} height={height} />
