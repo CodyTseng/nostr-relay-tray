@@ -1,29 +1,29 @@
 import { userIdToPubkey } from '@renderer/lib/pubkey'
 import { toProfile } from '@renderer/lib/url'
 import { cn } from '@renderer/lib/utils'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
-export default function ProfileTextLink({
-  children,
+export default function Username({
   userId,
+  username,
+  showAt = false,
   className
 }: {
-  children: React.ReactNode
   userId: string
+  username: string
+  showAt?: boolean
   className?: string
 }) {
-  const navigate = useNavigate()
   const pubkey = userIdToPubkey(userId)
 
   return (
-    <div
+    <Link
+      to={toProfile(pubkey)}
       className={cn('font-semibold truncate hover:underline cursor-pointer', className)}
-      onClick={(e) => {
-        e.stopPropagation()
-        navigate(toProfile(pubkey))
-      }}
+      onClick={(e) => e.stopPropagation()}
     >
-      {children}
-    </div>
+      {showAt && '@'}
+      {username}
+    </Link>
   )
 }

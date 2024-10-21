@@ -1,7 +1,7 @@
 import { Event } from '@nostr-relay/common'
 import { useFetchEventById, useFetchProfile } from '@renderer/viewer/hooks'
-import ProfileAvatarLink from '../ProfileAvatarLink'
-import ProfileTextLink from '../ProfileTextLink'
+import UserAvatar from '../UserAvatar'
+import Username from '../Username'
 import ShortTextNoteCard from './ShortTextNoteCard'
 
 export default function RepostNoteCard({ event, className }: { event: Event; className?: string }) {
@@ -13,8 +13,8 @@ export default function RepostNoteCard({ event, className }: { event: Event; cla
   return (
     <div className={className}>
       <div className="flex gap-2 pl-4 mb-1 text-sm items-center">
-        <ProfileAvatarLink avatar={avatar} userId={event.pubkey} className="w-6 h-6" />
-        <ProfileTextLink userId={event.pubkey}>{username}</ProfileTextLink>
+        <UserAvatar avatar={avatar} userId={event.pubkey} className="w-6 h-6" />
+        <Username userId={event.pubkey} username={username} />
         <div>Repost</div>
       </div>
       <ShortTextNoteCard event={targetEvent} />

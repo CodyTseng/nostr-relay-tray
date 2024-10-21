@@ -2,7 +2,7 @@ import { Event } from '@nostr-relay/common'
 import { formatTimestamp } from '@renderer/lib/timestamp'
 import { useFetchProfile } from '@renderer/viewer/hooks'
 import { Link } from 'react-router-dom'
-import ProfileAvatarLink from '../ProfileAvatarLink'
+import UserAvatar from '../UserAvatar'
 import Content from '../Content'
 
 export default function Comment({
@@ -16,7 +16,7 @@ export default function Comment({
 
   return (
     <div className="flex space-x-2 items-start">
-      <ProfileAvatarLink avatar={avatar} userId={comment.pubkey} className="w-7 h-7" />
+      <UserAvatar avatar={avatar} userId={comment.pubkey} className="w-7 h-7" />
       <div className="w-full overflow-hidden">
         <div className="flex space-x-2 items-center">
           <Link
@@ -44,7 +44,7 @@ function ParentComment({ comment }: { comment: Event }) {
   return (
     <div className="flex space-x-1 items-center text-xs">
       <div>reply to</div>
-      <ProfileAvatarLink avatar={avatar} userId={comment.pubkey} className="w-3 h-3" />
+      <UserAvatar avatar={avatar} userId={comment.pubkey} className="w-3 h-3" />
       <div className="truncate">{comment.content}</div>
     </div>
   )

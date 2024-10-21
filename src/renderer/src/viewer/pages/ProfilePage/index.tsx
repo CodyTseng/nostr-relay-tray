@@ -3,7 +3,7 @@ import { formatNpub } from '@renderer/lib/pubkey'
 import Nip05 from '@renderer/viewer/components/Nip05'
 import NoteList from '@renderer/viewer/components/NoteList'
 import ProfileAbout from '@renderer/viewer/components/ProfileAbout'
-import ProfileAvatarLink from '@renderer/viewer/components/ProfileAvatarLink'
+import UserAvatar from '@renderer/viewer/components/UserAvatar'
 import { useFetchProfile } from '@renderer/viewer/hooks'
 import { Copy } from 'lucide-react'
 import { useState } from 'react'
@@ -38,7 +38,7 @@ export default function ProfilePage() {
           className="bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-12"
           style={{ backgroundImage: `url(${banner})` }}
         />
-        <ProfileAvatarLink
+        <UserAvatar
           avatar={avatar}
           userId={pubkey}
           className="absolute bottom-0 left-4 translate-y-1/2 w-24 h-24 border-4 border-background"

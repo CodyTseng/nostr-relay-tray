@@ -1,15 +1,13 @@
 import { toNoStrudelProfile } from '@renderer/lib/url'
 import { useFetchProfile } from '@renderer/viewer/hooks'
 import { Link } from 'react-router-dom'
-import ProfileTextLink from '../ProfileTextLink'
+import Username from '../Username'
 
 export function EmbeddedMention({ userId }: { userId: string }) {
   const { username, pubkey, hasProfile } = useFetchProfile(userId)
 
   return hasProfile ? (
-    <ProfileTextLink userId={pubkey} className="text-highlight">
-      @{username}
-    </ProfileTextLink>
+    <Username userId={pubkey} username={username} showAt className="text-highlight font-normal" />
   ) : (
     <Link
       to={toNoStrudelProfile(userId)}
