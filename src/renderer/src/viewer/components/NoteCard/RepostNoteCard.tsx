@@ -12,7 +12,7 @@ export default function RepostNoteCard({ event, className }: { event: Event; cla
 
   return (
     <div className={className}>
-      <div className="flex gap-2 pl-4 mb-1 text-sm items-center">
+      <div className="flex gap-2 mb-1 text-sm items-center">
         <UserAvatar avatar={avatar} userId={event.pubkey} className="w-6 h-6" />
         <Username userId={event.pubkey} username={username} />
         <div>Repost</div>
