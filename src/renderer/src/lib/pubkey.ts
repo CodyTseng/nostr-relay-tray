@@ -51,12 +51,12 @@ export function generateImageByPubkey(pubkey: string, aspectRatio: number = 1): 
       const cx = parseInt(point.slice(0, 2), 16) % 100
       const cy = parseInt(point.slice(2, 4), 16) % 100
       const r = (parseInt(point.slice(4, 6), 16) % 35) + 30
-      const colorIndex = index % (colors.length - 1)
+      const c = colors[index % (colors.length - 1)]
 
       return `
         <radialGradient id="grad${index}-${pubkey}" cx="${cx}%" cy="${cy}%" r="${r}%">
-          <stop offset="0%" style="stop-color:${colors[colorIndex]};stop-opacity:1" />
-          <stop offset="100%" style="stop-color:${colors[colorIndex]};stop-opacity:0" />
+          <stop offset="0%" style="stop-color:${c};stop-opacity:1" />
+          <stop offset="100%" style="stop-color:${c};stop-opacity:0" />
         </radialGradient>
         <rect width="100%" height="100%" fill="url(#grad${index}-${pubkey})" />
       `
@@ -69,5 +69,5 @@ export function generateImageByPubkey(pubkey: string, aspectRatio: number = 1): 
       ${gradients}
     </svg>
   `
-  return `data:image/svg+xml;base64,${image}`
+  return `data:image/svg+xml;base64,${btoa(image)}`
 }
