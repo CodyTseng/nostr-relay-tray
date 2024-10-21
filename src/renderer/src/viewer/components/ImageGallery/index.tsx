@@ -5,9 +5,11 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 
 export default function ImageGallery({
   className,
+  imageClassName,
   images
 }: {
   className?: string
+  imageClassName?: string
   images: string[]
 }) {
   const [slideMap, setSlideMap] = useState<Record<string, Photo>>({})
@@ -42,10 +44,9 @@ export default function ImageGallery({
         photos={slides}
         targetRowHeight={150}
         onClick={({ index: current, event }) => handlePhotoClick(event, current)}
-        rowConstraints={{ singleRowMaxHeight: 320 }}
         render={{
           image: ({ src, width, height }) => (
-            <img className="rounded-lg" src={src} width={width} height={height} />
+            <img className={imageClassName} src={src} width={width} height={height} />
           )
         }}
       />
