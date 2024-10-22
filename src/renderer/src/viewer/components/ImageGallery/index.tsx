@@ -1,37 +1,16 @@
-import { useEffect, useState } from 'react'
-import { Photo, RowsPhotoAlbum } from 'react-photo-album'
+import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area'
+import { useState } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 
 export default function ImageGallery({
   className,
-  imageClassName,
   images
 }: {
   className?: string
-  imageClassName?: string
   images: string[]
 }) {
-  const [slideMap, setSlideMap] = useState<Record<string, Photo>>({})
   const [index, setIndex] = useState(-1)
-
-  useEffect(() => {
-    const initSlideMap = async () => {
-      await Promise.all(
-        images.map(async (image) => {
-          try {
-            const size = await getImageSize(image)
-            setSlideMap((pre) => ({ ...pre, [image]: { src: image, ...size } }))
-          } catch {
-            // ignore
-          }
-        })
-      )
-    }
-    initSlideMap()
-  }, [images])
-
-  const slides = Object.values(slideMap)
 
   const handlePhotoClick = (event: React.MouseEvent, current: number) => {
     event.preventDefault()
@@ -40,19 +19,24 @@ export default function ImageGallery({
 
   return (
     <div className={className} onClick={(e) => e.stopPropagation()}>
-      <RowsPhotoAlbum
-        photos={slides}
-        targetRowHeight={150}
-        onClick={({ index: current, event }) => handlePhotoClick(event, current)}
-        render={{
-          image: ({ src, width, height }) => (
-            <img className={imageClassName} src={src} width={width} height={height} />
-          )
-        }}
-      />
+      <ScrollArea className="rounded-lg w-fit">
+        <div className="flex w-fit space-x-2">
+          {images.map((src, index) => {
+            return (
+              <img
+                className="rounded-lg max-h-60 max-w-full"
+                key={src}
+                src={src}
+                onClick={(e) => handlePhotoClick(e, index)}
+              />
+            )
+          })}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
       <Lightbox
         index={index}
-        slides={slides}
+        slides={images.map((src) => ({ src }))}
         plugins={[Zoom]}
         open={index >= 0}
         close={() => setIndex(-1)}
@@ -61,17 +45,4 @@ export default function ImageGallery({
       />
     </div>
   )
-}
-
-function getImageSize(src: string): Promise<{ width: number; height: number }> {
-  return new Promise((res, rej) => {
-    const image = new Image()
-    image.src = src
-
-    image.onload = () => {
-      const size = { width: image.width, height: image.height }
-      res(size)
-    }
-    image.onerror = () => rej(new Error('Failed to get image size'))
-  })
 }

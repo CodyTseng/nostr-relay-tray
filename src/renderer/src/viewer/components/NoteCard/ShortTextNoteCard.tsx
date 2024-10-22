@@ -14,7 +14,13 @@ export default function ShortTextNoteCard({
   const navigate = useNavigate()
 
   return (
-    <div className={className} onClick={() => navigate(toNote(event.id))}>
+    <div
+      className={className}
+      onClick={(e) => {
+        e.stopPropagation()
+        navigate(toNote(event.id))
+      }}
+    >
       <Card className="p-4 hover:bg-muted/50 text-left cursor-pointer">
         <Note event={event} />
       </Card>
