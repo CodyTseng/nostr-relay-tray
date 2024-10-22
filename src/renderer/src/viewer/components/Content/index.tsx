@@ -1,4 +1,5 @@
 import { Event } from '@nostr-relay/common'
+import { isNsfwEvent } from '@renderer/lib/event'
 import { cn } from '@renderer/lib/utils'
 import {
   embedded,
@@ -13,6 +14,7 @@ import VideoPlayer from '../VideoPlayer'
 
 export default function Content({ event, className }: { event: Event; className?: string }) {
   const { content, images, videos } = extractMediaUrls(event.content)
+  const isNsfw = isNsfwEvent(event)
 
   const nodes = embedded(content, [
     embeddedNormalUrlRenderer,
@@ -24,13 +26,15 @@ export default function Content({ event, className }: { event: Event; className?
 
   // Add images
   if (images.length) {
-    nodes.push(<ImageGallery className="mt-2 w-fit max-h-60" key="images" images={images} />)
+    nodes.push(
+      <ImageGallery className="mt-2 w-fit max-h-60" key="images" images={images} isNsfw={isNsfw} />
+    )
   }
 
   // Add videos
   if (videos.length) {
     videos.forEach((src, index) => {
-      nodes.push(<VideoPlayer className="mt-2" key={`video-${index}`} src={src} />)
+      nodes.push(<VideoPlayer className="mt-2" key={`video-${index}`} src={src} isNsfw={isNsfw} />)
     })
   }
 

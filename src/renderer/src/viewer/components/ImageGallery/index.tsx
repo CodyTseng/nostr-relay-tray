@@ -2,13 +2,17 @@ import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area'
 import { useState } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
+import NsfwOverlay from '../NsfwOverlay'
+import { cn } from '@renderer/lib/utils'
 
 export default function ImageGallery({
   className,
-  images
+  images,
+  isNsfw = false
 }: {
   className?: string
   images: string[]
+  isNsfw?: boolean
 }) {
   const [index, setIndex] = useState(-1)
 
@@ -18,7 +22,7 @@ export default function ImageGallery({
   }
 
   return (
-    <div className={className} onClick={(e) => e.stopPropagation()}>
+    <div className={cn('relative', className)} onClick={(e) => e.stopPropagation()}>
       <ScrollArea className="rounded-lg w-fit">
         <div className="flex w-fit space-x-2">
           {images.map((src, index) => {
@@ -43,6 +47,7 @@ export default function ImageGallery({
         controller={{ closeOnBackdropClick: true, closeOnPullUp: true, closeOnPullDown: true }}
         styles={{ toolbar: { paddingTop: '2.25rem' } }}
       />
+      {isNsfw && <NsfwOverlay className="rounded-lg" />}
     </div>
   )
 }

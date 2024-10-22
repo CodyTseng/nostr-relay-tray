@@ -1,5 +1,19 @@
 import { cn } from '@renderer/lib/utils'
+import NsfwOverlay from '../NsfwOverlay'
 
-export default function VideoPlayer({ src, className }: { src: string; className?: string }) {
-  return <video controls className={cn('rounded-lg max-h-80', className)} src={src} />
+export default function VideoPlayer({
+  src,
+  className,
+  isNsfw = false
+}: {
+  src: string
+  className?: string
+  isNsfw?: boolean
+}) {
+  return (
+    <div className="relative">
+      <video controls className={cn('rounded-lg max-h-80', className)} src={src} />
+      {isNsfw && <NsfwOverlay className="rounded-lg" />}
+    </div>
+  )
 }
