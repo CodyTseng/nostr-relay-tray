@@ -29,11 +29,13 @@ export function userIdToPubkey(userId: string) {
 }
 
 export function generateImageByPubkey(pubkey: string): string {
+  const paddedPubkey = pubkey.padEnd(2, '0')
+
   // Split into 3 parts for colors and the rest for control points
   const colors: string[] = []
   const controlPoints: string[] = []
-  for (let i = 0; i < 10; i++) {
-    const part = pubkey.slice(i * 6, (i + 1) * 6)
+  for (let i = 0; i < 11; i++) {
+    const part = paddedPubkey.slice(i * 6, (i + 1) * 6)
     if (i < 3) {
       colors.push(`#${part}`)
     } else {
