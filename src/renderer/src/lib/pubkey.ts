@@ -8,8 +8,18 @@ export function formatPubkey(pubkey: string) {
   return pubkey.slice(0, 4) + '...' + pubkey.slice(-4)
 }
 
-export function formatNpub(npub: string) {
-  return npub.slice(0, 8) + '...' + npub.slice(-4)
+export function formatNpub(npub: string, length = 12) {
+  if (length < 12) {
+    length = 12
+  }
+
+  if (length >= 63) {
+    return npub
+  }
+
+  const prefixLength = Math.floor((length - 5) / 2) + 5
+  const suffixLength = length - prefixLength
+  return npub.slice(0, prefixLength) + '...' + npub.slice(-suffixLength)
 }
 
 export function pubkeyToNpub(pubkey: string) {

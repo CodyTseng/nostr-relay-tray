@@ -48,7 +48,7 @@ export default function ProfilePage() {
             <div>Copied!</div>
           ) : (
             <>
-              <div>{formatNpub(npub)}</div>
+              <div>{formatNpub(npub, 24)}</div>
               <Copy size={14} />
             </>
           )}
