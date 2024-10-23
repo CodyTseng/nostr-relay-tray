@@ -28,7 +28,7 @@ export default function ImageGallery({
           {images.map((src, index) => {
             return (
               <img
-                className="rounded-lg max-h-60 max-w-full"
+                className="rounded-lg max-w-full max-h-[30vh]"
                 key={src}
                 src={src}
                 onClick={(e) => handlePhotoClick(e, index)}

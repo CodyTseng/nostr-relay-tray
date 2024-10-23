@@ -12,7 +12,7 @@ export default function VideoPlayer({
 }) {
   return (
     <div className="relative">
-      <video controls className={cn('rounded-lg max-h-80', className)} src={src} />
+      <video controls className={cn('rounded-lg max-h-[50vh] max-w-full', className)} src={src} />
       {isNsfw && <NsfwOverlay className="rounded-lg" />}
     </div>
   )

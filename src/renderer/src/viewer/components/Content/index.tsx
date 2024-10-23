@@ -26,9 +26,7 @@ export default function Content({ event, className }: { event: Event; className?
 
   // Add images
   if (images.length) {
-    nodes.push(
-      <ImageGallery className="mt-2 w-fit max-h-60" key="images" images={images} isNsfw={isNsfw} />
-    )
+    nodes.push(<ImageGallery className="mt-2 w-fit" key="images" images={images} isNsfw={isNsfw} />)
   }
 
   // Add videos
