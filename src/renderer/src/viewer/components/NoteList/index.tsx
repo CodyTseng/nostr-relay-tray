@@ -72,9 +72,11 @@ export default function NoteList({
         <NoteCard key={i} className="w-full" event={event} />
       ))}
       {hasMore ? (
-        <div ref={bottomRef} />
+        <div ref={bottomRef} className="text-center text-sm text-muted-foreground">
+          loading...
+        </div>
       ) : (
-        <div className="text-center text-muted-foreground">No more notes</div>
+        <div className="text-center text-sm text-muted-foreground">no more notes</div>
       )}
     </div>
   )
