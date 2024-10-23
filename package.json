@@ -35,6 +35,7 @@
     "@nostr-relay/pow-guard": "^0.0.3",
     "@nostr-relay/validator": "^0.0.37",
     "@nostr-relay/wot-guard": "^0.0.11",
+    "@radix-ui/react-hover-card": "^1.1.2",
     "auto-launch": "^5.0.6",
     "better-sqlite3": "^9.5.0",
     "dayjs": "^1.11.12",
