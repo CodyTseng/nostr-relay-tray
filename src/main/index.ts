@@ -90,6 +90,8 @@ app.whenReady().then(async () => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  await relay.initSearchIndex()
 })
 
 // Prevent the app from closing when the last window is closed

@@ -57,6 +57,7 @@ export class RelayService {
   }
 
   async init() {
+    await this.eventRepository.init()
     const [configWssMaxPayload, configDefaultFilterLimit] = await Promise.all([
       this.configRepository.get(CONFIG_KEY.WSS_MAX_PAYLOAD),
       this.configRepository.get(CONFIG_KEY.DEFAULT_FILTER_LIMIT)
@@ -132,6 +133,30 @@ export class RelayService {
     }
   }
 
+  async initSearchIndex() {
+    const cursorStr = await this.configRepository.get(CONFIG_KEY.INIT_SEARCH_INDEX_CURSOR)
+    let cursor = cursorStr ? parseInt(cursorStr) : Math.floor(Date.now() / 1000)
+
+    while (cursor > 0) {
+      const events = await this.eventRepository.find({
+        until: cursor,
+        limit: 1000,
+        kinds: [0, 1, 1111, 9802, 30023, 30024]
+      })
+      if (events.length === 0) {
+        cursor = 0
+        await this.configRepository.set(CONFIG_KEY.INIT_SEARCH_INDEX_CURSOR, cursor.toString())
+        break
+      }
+      for (const event of events) {
+        await this.eventRepository.insertToSearch(event)
+      }
+      cursor = events[events.length - 1].created_at - 1
+      await this.configRepository.set(CONFIG_KEY.INIT_SEARCH_INDEX_CURSOR, cursor.toString())
+      await new Promise((resolve) => setTimeout(resolve, 200)) // Sleep 200ms
+    }
+  }
+
   private async updateMaxPayload(maxPayload: number) {
     this.options.maxPayload = maxPayload
     await this.restartServer()
@@ -170,6 +195,16 @@ export class RelayService {
     const faviconFile = readFileSync(favicon)
     this.server.get('/favicon.ico', function (_, reply) {
       reply.header('cache-control', 'max-age=604800').type('image/x-icon').send(faviconFile)
+    })
+
+    this.server.get('/', function () {
+      return {
+        description: 'a nostr relay for desktop',
+        name: 'nostr-relay-tray',
+        software: 'https://github.com/CodyTseng/nostr-relay-tray',
+        supported_nips: [1, 50],
+        version: app.getVersion()
+      }
     })
 
     this.server.listen({ port: 4869, host: '0.0.0.0' }, function (err) {
@@ -303,6 +338,7 @@ export class RelayService {
 
   private clearEvents() {
     const { changes } = this.db.prepare('DELETE FROM events').run()
+    this.db.prepare('DELETE FROM events_fts').run()
     return changes
   }
 }

@@ -10,6 +10,7 @@ export const CONFIG_KEY = {
   WOT_TRUST_ANCHOR: 'wot_trust_anchor',
   WOT_TRUST_DEPTH: 'wot_trust_depth',
   WOT_REFRESH_INTERVAL: 'wot_refresh_interval',
-  POW_DIFFICULTY: 'pow_difficulty'
+  POW_DIFFICULTY: 'pow_difficulty',
+  INIT_SEARCH_INDEX_CURSOR: 'init_search_index_cursor'
 } as const
 export type TConfigKey = (typeof CONFIG_KEY)[keyof typeof CONFIG_KEY]
