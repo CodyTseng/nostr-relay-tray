@@ -188,6 +188,13 @@ function createTray({ trayImage }: { trayImage: Electron.NativeImage }) {
 function createMenu(localIpAddress?: string) {
   return Menu.buildFromTemplate([
     {
+      label: 'Browse Local Events',
+      type: 'normal',
+      click: () => {
+        shell.openExternal(`http://localhost:4869`)
+      }
+    },
+    {
       label: 'Dashboard',
       type: 'normal',
       click: createWindow
