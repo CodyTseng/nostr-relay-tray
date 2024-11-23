@@ -207,7 +207,7 @@ export class RelayService {
           version: app.getVersion()
         }
       }
-      return reply.redirect(301, 'https://jumble.social/?r=localhost:4869')
+      return reply.redirect(301, 'https://jumble.social/?r=ws://localhost:4869')
     })
 
     this.server.listen({ port: 4869, host: '0.0.0.0' }, function (err) {
