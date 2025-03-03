@@ -7,7 +7,10 @@ import { ipcMain } from 'electron'
 import { nip19 } from 'nostr-tools'
 import { CONFIG_KEY } from '../../common/config'
 import { DEFAULT_POW_DIFFICULTY } from '../../common/constants'
+import { RULE_ACTION, TRule } from '../../common/rule'
+import { AllowGuard, BlockGuard } from '../guards/restriction.guard'
 import { ConfigRepository } from '../repositories/config.repository'
+import { RuleRepository } from '../repositories/rule.repository'
 import { getAgent } from '../utils'
 
 type WotGUardConfig = {
@@ -22,6 +25,8 @@ type WotGUardConfig = {
 export class GuardService implements BeforeHandleEventPlugin {
   private readonly wotGuard: WotGuard
   private readonly powGuard: PowGuard
+  private readonly allowGuard: AllowGuard = new AllowGuard()
+  private blockGuard: BlockGuard | null = null
   private guards = new Set<BeforeHandleEventPlugin>()
   private wotConfig: WotGUardConfig = {
     enabled: false,
@@ -34,6 +39,7 @@ export class GuardService implements BeforeHandleEventPlugin {
 
   constructor(
     private readonly configRepository: ConfigRepository,
+    private readonly ruleRepository: RuleRepository,
     eventRepository: EventRepositorySqlite
   ) {
     this.wotGuard = new WotGuard({
@@ -46,6 +52,13 @@ export class GuardService implements BeforeHandleEventPlugin {
   }
 
   async beforeHandleEvent(event: Event): Promise<BeforeHandleEventResult> {
+    if (this.blockGuard) {
+      const blockResult = this.blockGuard.beforeHandleEvent(event)
+      if (!blockResult.canHandle) {
+        return blockResult
+      }
+    }
+
     if (!this.guards.size) {
       return { canHandle: true }
     }
@@ -71,11 +84,13 @@ export class GuardService implements BeforeHandleEventPlugin {
       CONFIG_KEY.POW_DIFFICULTY
     ])
 
+    // =================== WoT ===================
     this.wotConfig.enabled = config.get(CONFIG_KEY.WOT_ENABLED) === 'true'
     this.wotConfig.trustDepth = parseInt(config.get(CONFIG_KEY.WOT_TRUST_DEPTH) ?? '1')
     this.wotConfig.refreshInterval = parseInt(config.get(CONFIG_KEY.WOT_REFRESH_INTERVAL) ?? '1')
     this.wotConfig.trustAnchor = config.get(CONFIG_KEY.WOT_TRUST_ANCHOR)
 
+    // =================== PoW ===================
     const powDifficultyStr = config.get(CONFIG_KEY.POW_DIFFICULTY)
     if (powDifficultyStr) {
       const powDifficulty = parseInt(powDifficultyStr)
@@ -85,6 +100,10 @@ export class GuardService implements BeforeHandleEventPlugin {
       }
     }
 
+    // =================== Rules ===================
+    await this.updateRules()
+
+    // =================== WoT ===================
     ipcMain.handle('wot:getEnabled', () => this.wotConfig.enabled)
     ipcMain.handle('wot:setEnabled', async (_, enabled: boolean) => {
       await this.setWotEnabled(enabled)
@@ -116,9 +135,28 @@ export class GuardService implements BeforeHandleEventPlugin {
     })
     ipcMain.handle('wot:getIsRefreshing', () => this.wotConfig.isRefreshing)
 
+    // =================== PoW ===================
     ipcMain.handle('pow:getPowDifficulty', () => this.powGuard.getMinPowDifficulty())
     ipcMain.handle('pow:setPowDifficulty', async (_, powDifficulty: number) => {
       await this.setPowDifficulty(powDifficulty)
+    })
+
+    // =================== Rules ===================
+    ipcMain.handle('rule:find', (_, page: number, limit: number) =>
+      this.ruleRepository.find(page, limit)
+    )
+    ipcMain.handle('rule:findById', (_, id: number) => this.ruleRepository.findById(id))
+    ipcMain.handle('rule:update', async (_, id: number, rule: any) => {
+      await this.ruleRepository.update(id, rule)
+      await this.updateRules()
+    })
+    ipcMain.handle('rule:delete', async (_, id: number) => {
+      await this.ruleRepository.delete(id)
+      await this.updateRules()
+    })
+    ipcMain.handle('rule:create', async (_, rule: TRule) => {
+      await this.ruleRepository.create(rule)
+      await this.updateRules()
     })
 
     this.wotGuard.setTrustDepth(this.wotConfig.trustDepth)
@@ -226,5 +264,29 @@ export class GuardService implements BeforeHandleEventPlugin {
 
   private encodeHexPubkey(pubkey: string) {
     return nip19.npubEncode(pubkey)
+  }
+
+  private async updateRules() {
+    const rules = await this.ruleRepository.findAll({
+      enabled: true
+    })
+    const blockRules = rules.filter((rule) => rule.action === RULE_ACTION.BLOCK)
+    const allowRules = rules.filter((rule) => rule.action === RULE_ACTION.ALLOW)
+
+    if (blockRules.length === 0) {
+      this.blockGuard = null
+    } else if (!this.blockGuard) {
+      this.blockGuard = new BlockGuard()
+      this.blockGuard.updateFiltersByRules(blockRules)
+    } else {
+      this.blockGuard.updateFiltersByRules(blockRules)
+    }
+
+    if (allowRules.length === 0) {
+      this.guards.delete(this.allowGuard)
+    } else {
+      this.allowGuard.updateFiltersByRules(allowRules)
+      this.guards.add(this.allowGuard)
+    }
   }
 }
