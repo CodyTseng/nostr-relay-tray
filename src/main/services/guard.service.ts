@@ -273,13 +273,13 @@ export class GuardService implements BeforeHandleEventPlugin {
     const blockRules = rules.filter((rule) => rule.action === RULE_ACTION.BLOCK)
     const allowRules = rules.filter((rule) => rule.action === RULE_ACTION.ALLOW)
 
-    if (blockRules.length === 0) {
-      this.blockGuard = null
-    } else if (!this.blockGuard) {
-      this.blockGuard = new BlockGuard()
+    if (blockRules.length > 0) {
+      if (!this.blockGuard) {
+        this.blockGuard = new BlockGuard()
+      }
       this.blockGuard.updateFiltersByRules(blockRules)
     } else {
-      this.blockGuard.updateFiltersByRules(blockRules)
+      this.blockGuard = null
     }
 
     if (allowRules.length === 0) {
