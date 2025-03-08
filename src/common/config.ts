@@ -1,5 +1,4 @@
 export const CONFIG_KEY = {
-  DEFAULT_EVENT_ACTION: 'default_event_action',
   WSS_MAX_PAYLOAD: 'wss_max_payload',
   DEFAULT_FILTER_LIMIT: 'default_filter_limit',
   TRAY_IMAGE_COLOR: 'tray_image_color',

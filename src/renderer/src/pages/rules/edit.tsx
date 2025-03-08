@@ -1,4 +1,4 @@
-import { RULE_ACTION, TRuleCondition } from '@common/rule'
+import { RULE_ACTION, RULE_CONDITION_OPERATOR, TRuleCondition } from '@common/rule'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@renderer/components/ui/button'
 import {
@@ -40,7 +40,9 @@ export default function EditRule(): JSX.Element {
   const { id } = useParams<{ id?: string }>()
   const [ruleId, setRuleId] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
-  const [ruleConditions, setRuleConditions] = useState<TRuleCondition[]>([{ values: [] }])
+  const [ruleConditions, setRuleConditions] = useState<TRuleCondition[]>([
+    { operator: RULE_CONDITION_OPERATOR.IN, values: [] }
+  ])
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {

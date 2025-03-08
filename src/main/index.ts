@@ -16,7 +16,6 @@ import { GuardService } from './services/guard.service'
 import { HubConnectorService } from './services/hub-connector.service'
 import { LogViewerService } from './services/log-viewer.service'
 import { RelayService } from './services/relay.service'
-import { RestrictionService } from './services/restriction.service'
 import { ThemeService } from './services/theme.service'
 import { TSendToRenderer } from './types'
 import { getLocalIpAddress } from './utils'
@@ -54,24 +53,17 @@ app.whenReady().then(async () => {
   const themeService = new ThemeService(repositories.config, sendToRenderer)
   await themeService.init()
 
-  const restrictionService = new RestrictionService(repositories.rule, repositories.config)
-  await restrictionService.init()
-  const restrictionPlugin = restrictionService.getRestrictionPlugin()
-
   const logViewerService = new LogViewerService(sendToRenderer)
   const requestLoggerPlugin = logViewerService.getRequestLoggerPlugin()
 
-  relay = new RelayService(repositories.config, sendToRenderer, [
-    requestLoggerPlugin,
-    restrictionPlugin
-  ])
+  relay = new RelayService(repositories.config, sendToRenderer, [requestLoggerPlugin])
   await relay.init()
   const eventRepository = relay.getEventRepository()
 
   let trayImageColor = await getTrayImageColor(repositories.config)
   createTray({ trayImage: getTrayImage(trayImageColor) })
 
-  const guardService = new GuardService(repositories.config, eventRepository)
+  const guardService = new GuardService(repositories.config, repositories.rule, eventRepository)
   await guardService.init()
   relay.register(guardService)
 

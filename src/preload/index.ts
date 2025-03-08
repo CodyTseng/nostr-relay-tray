@@ -1,7 +1,7 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
 import { THubConnectionStatus, TTheme, TTrayImageColor } from '../common/constants'
-import { TNewRule, TRuleAction, TRuleUpdate } from '../common/rule'
+import { TNewRule, TRuleUpdate } from '../common/rule'
 import { TLog } from '../common/types'
 
 // Custom APIs for renderer
@@ -53,10 +53,7 @@ const api = {
     findById: (id: number) => ipcRenderer.invoke('rule:findById', id),
     update: (id: number, rule: TRuleUpdate) => ipcRenderer.invoke('rule:update', id, rule),
     delete: (id: number) => ipcRenderer.invoke('rule:delete', id),
-    create: (rule: TNewRule) => ipcRenderer.invoke('rule:create', rule),
-    getDefaultEventAction: () => ipcRenderer.invoke('rule:getDefaultEventAction'),
-    setDefaultEventAction: (action: TRuleAction) =>
-      ipcRenderer.invoke('rule:setDefaultEventAction', action)
+    create: (rule: TNewRule) => ipcRenderer.invoke('rule:create', rule)
   },
   theme: {
     onChange: (cb: (theme: 'dark' | 'light') => void) => {
