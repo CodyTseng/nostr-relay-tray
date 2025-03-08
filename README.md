@@ -18,6 +18,48 @@
 - **Granular Control**: Manage which events to accept or reject with precision.
 - **Cross-Platform**: Available for macOS, Windows, and Linux.
 
+## Flexible event filtering
+
+nostr-relay-tray provides a flexible event filtering mechanism, allowing you to precisely control which events are accepted. The mechanism works in two layers:
+
+```
+                  Incoming Event
+                        │
+                        ▼
+                ┌───────────────┐
+                │  Block Rules  │  ✖ If blocked, event is rejected.
+                └───────────────┘
+                        │ (not blocked)
+                        ▼
+   ┌─────────────────────────────────────────┐
+   │         Second Layer Filtering          │
+   │        (Only one needs to pass)         │
+   ├─────────────┬─────────────┬─────────────┤
+   │ Allow Rules │     WoT     │     PoW     │
+   └─────────────┴─────────────┴─────────────┘
+                        │
+                        ▼
+                  Event Accepted ✅
+```
+
+### Layer 1
+
+- If block rules exist, any matching event is immediately rejected.
+- If no block rules are defined, this layer is skipped, and the event proceeds to the second layer.
+
+### Layer 2
+
+This layer consists of three independent filters:
+
+- Allow Rules: Accepts events that meet predefined conditions.
+- Web of Trust (WoT): Accepts events from trusted users or relays.
+- Proof of Work (PoW): Accepts events that meet a certain computational difficulty.
+
+Filtering logic:
+
+- If at least one filter is enabled, the event must pass at least one.
+- If all filters are disabled, the event is automatically accepted.
+
 ## Download
 
 You can download the latest version from the [release page](https://github.com/CodyTseng/nostr-relay-tray/releases). If you want to use Apple Silicon version, you need to build it from the source code.

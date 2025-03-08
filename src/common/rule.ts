@@ -15,8 +15,17 @@ export const MAX_RULE_CONDITIONS = RULE_CONDITION_FIELD_NAMES.length
 export type TRuleConditionFieldName =
   (typeof RULE_CONDITION_FIELD_NAME)[keyof typeof RULE_CONDITION_FIELD_NAME]
 
+export const RULE_CONDITION_OPERATOR = {
+  IN: 'IN',
+  NOT_IN: 'NOT IN'
+} as const
+export const RULE_CONDITION_OPERATORS = Object.values(RULE_CONDITION_OPERATOR)
+export type TRuleConditionOperator =
+  (typeof RULE_CONDITION_OPERATOR)[keyof typeof RULE_CONDITION_OPERATOR]
+
 export type TRuleCondition = {
   fieldName?: TRuleConditionFieldName
+  operator?: TRuleConditionOperator
   values: (string | number)[]
 }
 

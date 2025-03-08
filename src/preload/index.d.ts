@@ -32,8 +32,6 @@ declare global {
         update: (id: number, rule: TRuleUpdate) => Promise<void>
         delete: (id: number) => Promise<void>
         create: (rule: TNewRule) => Promise<void>
-        getDefaultEventAction: () => Promise<TRuleAction>
-        setDefaultEventAction: (action: TRuleAction) => Promise<void>
       }
       theme: {
         onChange: (cb: (theme: 'dark' | 'light') => void) => void
