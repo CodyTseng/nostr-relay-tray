@@ -1,8 +1,11 @@
 import {
   RULE_CONDITION_FIELD_NAME,
   RULE_CONDITION_FIELD_NAMES,
+  RULE_CONDITION_OPERATOR,
+  RULE_CONDITION_OPERATORS,
   TRuleCondition,
-  TRuleConditionFieldName
+  TRuleConditionFieldName,
+  TRuleConditionOperator
 } from '@common/rule'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
@@ -38,7 +41,9 @@ export default function RuleConditions({
       <Button
         className="w-full"
         variant="outline"
-        onClick={() => setConditions([...conditions, { values: [] }])}
+        onClick={() =>
+          setConditions([...conditions, { operator: RULE_CONDITION_OPERATOR.IN, values: [] }])
+        }
         type="button"
       >
         And
@@ -75,7 +80,13 @@ export function RuleCondition({
 
   const onFieldNameChange = (fieldName: TRuleConditionFieldName) => {
     const newRules = [...conditions]
-    newRules[index] = { fieldName, values: [] }
+    newRules[index] = { ...currentRule, fieldName, values: [] }
+    setConditions(newRules)
+  }
+
+  const onOperatorChange = (operator: TRuleConditionOperator) => {
+    const newRules = [...conditions]
+    newRules[index] = { ...currentRule, operator }
     setConditions(newRules)
   }
 
@@ -136,7 +147,7 @@ export function RuleCondition({
           onValueChange={(value: TRuleConditionFieldName) => onFieldNameChange(value)}
           value={currentRule.fieldName}
         >
-          <SelectTrigger className="w-32 min-w-32">
+          <SelectTrigger className="w-28 shrink-0">
             <SelectValue placeholder="Select..." />
           </SelectTrigger>
           <SelectContent>
@@ -153,7 +164,22 @@ export function RuleCondition({
             ))}
           </SelectContent>
         </Select>
-        <p>IN</p>
+        <Select
+          onValueChange={(value: TRuleConditionOperator) => onOperatorChange(value)}
+          value={currentRule.operator}
+          defaultValue={RULE_CONDITION_OPERATOR.IN}
+        >
+          <SelectTrigger className="w-24 shrink-0">
+            <SelectValue placeholder="Select..." />
+          </SelectTrigger>
+          <SelectContent>
+            {RULE_CONDITION_OPERATORS.map((operator) => (
+              <SelectItem key={operator} value={operator}>
+                {operator}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Input
           className={isInputValid ? '' : 'border-destructive'}
           placeholder={valuePlaceholder}
@@ -182,8 +208,8 @@ export function RuleCondition({
           </Button>
         ) : null}
       </div>
-      {valueError ? <p className="text-destructive pl-40">{valueError}</p> : null}
-      <div className="flex flex-wrap pl-40">
+      {valueError ? <p className="text-destructive pl-56">{valueError}</p> : null}
+      <div className="flex flex-wrap pl-56">
         {currentRule.values?.map((value, index) => (
           <Badge key={index} className="flex m-1" variant="secondary">
             {truncateValue(value)}
