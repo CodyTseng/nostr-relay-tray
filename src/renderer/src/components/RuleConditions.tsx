@@ -1,6 +1,5 @@
 import {
   RULE_CONDITION_FIELD_NAME,
-  RULE_CONDITION_FIELD_NAMES,
   RULE_CONDITION_OPERATOR,
   RULE_CONDITION_OPERATORS,
   TRuleCondition,
@@ -22,9 +21,11 @@ import { ChangeEvent, Dispatch, SetStateAction, useState } from 'react'
 import { z } from 'zod'
 
 export default function RuleConditions({
+  supportedFields,
   conditions,
   setConditions
 }: {
+  supportedFields: TRuleConditionFieldName[]
   conditions: TRuleCondition[]
   setConditions: Dispatch<SetStateAction<TRuleCondition[]>>
 }): JSX.Element {
@@ -34,6 +35,7 @@ export default function RuleConditions({
         <RuleCondition
           key={index}
           index={index}
+          supportedFields={supportedFields}
           conditions={conditions}
           setConditions={setConditions}
         />
@@ -53,10 +55,12 @@ export default function RuleConditions({
 }
 
 export function RuleCondition({
+  supportedFields,
   index,
   conditions,
   setConditions
 }: {
+  supportedFields: TRuleConditionFieldName[]
   index: number
   conditions: TRuleCondition[]
   setConditions: Dispatch<SetStateAction<TRuleCondition[]>>
@@ -70,7 +74,9 @@ export function RuleCondition({
         ? 'kind number'
         : currentRule.fieldName === RULE_CONDITION_FIELD_NAME.TAG
           ? 'TagName:TagValue'
-          : 'regex'
+          : currentRule.fieldName === RULE_CONDITION_FIELD_NAME.ID
+            ? 'event hex ID'
+            : 'regex'
     : ''
   const valueValidator = getValidator(currentRule.fieldName)
 
@@ -85,6 +91,8 @@ export function RuleCondition({
   }
 
   const onOperatorChange = (operator: TRuleConditionOperator) => {
+    if (currentRule.fieldName === RULE_CONDITION_FIELD_NAME.ID) return
+
     const newRules = [...conditions]
     newRules[index] = { ...currentRule, operator }
     setConditions(newRules)
@@ -151,7 +159,7 @@ export function RuleCondition({
             <SelectValue placeholder="Select..." />
           </SelectTrigger>
           <SelectContent>
-            {RULE_CONDITION_FIELD_NAMES.map((name) => (
+            {supportedFields.map((name) => (
               <SelectItem
                 key={name}
                 value={name}
@@ -173,7 +181,10 @@ export function RuleCondition({
             <SelectValue placeholder="Select..." />
           </SelectTrigger>
           <SelectContent>
-            {RULE_CONDITION_OPERATORS.map((operator) => (
+            {(currentRule.fieldName === RULE_CONDITION_FIELD_NAME.ID
+              ? [RULE_CONDITION_OPERATOR.IN]
+              : RULE_CONDITION_OPERATORS
+            ).map((operator) => (
               <SelectItem key={operator} value={operator}>
                 {operator}
               </SelectItem>
@@ -243,6 +254,10 @@ function getValidator(fieldName?: TRuleConditionFieldName) {
           message: 'Please enter a npub format public key'
         })
         .regex(/^npub[0-9a-zA-Z]{59}$/, 'Please enter a npub format public key')
+    case RULE_CONDITION_FIELD_NAME.ID:
+      return z
+        .string({ message: 'Please enter an event hex ID' })
+        .regex(/^[0-9a-f]{64}$/, 'Please enter an event hex ID')
     case RULE_CONDITION_FIELD_NAME.KIND:
       return z.preprocess(
         (value) => {

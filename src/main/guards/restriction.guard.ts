@@ -4,8 +4,7 @@ import {
   EventUtils,
   Event as NostrEvent
 } from '@nostr-relay/common'
-import { nip19 } from 'nostr-tools'
-import { RULE_CONDITION_FIELD_NAME, RULE_CONDITION_OPERATOR, TRule } from '../../common/rule'
+import { conditionsToFilter, TRule } from '../../common/rule'
 
 export type TRuleFilter = {
   authors: string[]
@@ -32,7 +31,7 @@ export class AllowGuard implements BeforeHandleEventPlugin {
   }
 
   updateFiltersByRules(rules: TRule[]) {
-    this.filters = rules.map(formatFilter)
+    this.filters = rules.map((rule) => conditionsToFilter(rule.conditions))
   }
 }
 
@@ -50,7 +49,7 @@ export class BlockGuard implements BeforeHandleEventPlugin {
   }
 
   updateFiltersByRules(rules: TRule[]) {
-    this.filters = rules.map(formatFilter)
+    this.filters = rules.map((rule) => conditionsToFilter(rule.conditions))
   }
 }
 
@@ -102,47 +101,4 @@ function isMatchingFilters(event: NostrEvent, filters: TRuleFilter[]) {
 
     return true
   })
-}
-
-function formatFilter(rule: TRule) {
-  const filter: TRuleFilter = {
-    authors: [],
-    nAuthors: [],
-    kinds: [],
-    nKinds: [],
-    tags: [],
-    nTags: [],
-    contents: [],
-    nContents: []
-  }
-  rule.conditions.forEach((condition) => {
-    if (!condition.fieldName || condition.values.length <= 0) return
-
-    if (condition.fieldName === RULE_CONDITION_FIELD_NAME.AUTHOR) {
-      if (condition.operator === RULE_CONDITION_OPERATOR.NOT_IN) {
-        filter.nAuthors = condition.values.map((v) => nip19.decode(v as string).data as string)
-      } else {
-        filter.authors = condition.values.map((v) => nip19.decode(v as string).data as string)
-      }
-    } else if (condition.fieldName === RULE_CONDITION_FIELD_NAME.KIND) {
-      if (condition.operator === RULE_CONDITION_OPERATOR.NOT_IN) {
-        filter.nKinds = condition.values as number[]
-      } else {
-        filter.kinds = condition.values as number[]
-      }
-    } else if (condition.fieldName === RULE_CONDITION_FIELD_NAME.TAG) {
-      if (condition.operator === RULE_CONDITION_OPERATOR.NOT_IN) {
-        filter.nTags.push(condition.values as string[])
-      } else {
-        filter.tags.push(condition.values as string[])
-      }
-    } else if (condition.fieldName === RULE_CONDITION_FIELD_NAME.CONTENT) {
-      if (condition.operator === RULE_CONDITION_OPERATOR.NOT_IN) {
-        filter.nContents = (condition.values as string[]).map((content) => new RegExp(content))
-      } else {
-        filter.contents = (condition.values as string[]).map((content) => new RegExp(content))
-      }
-    }
-  })
-  return filter
 }

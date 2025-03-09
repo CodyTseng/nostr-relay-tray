@@ -1,7 +1,7 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
 import { THubConnectionStatus, TTheme, TTrayImageColor } from '../common/constants'
-import { TNewRule, TRuleUpdate } from '../common/rule'
+import { TNewRule, TRuleFilter, TRuleUpdate } from '../common/rule'
 import { TLog } from '../common/types'
 
 // Custom APIs for renderer
@@ -42,7 +42,11 @@ const api = {
     getMaxPayload: () => ipcRenderer.invoke('relay:getMaxPayload'),
     setDefaultFilterLimit: (defaultFilterLimit: number) =>
       ipcRenderer.invoke('relay:setDefaultFilterLimit', defaultFilterLimit),
-    getDefaultFilterLimit: () => ipcRenderer.invoke('relay:getDefaultFilterLimit')
+    getDefaultFilterLimit: () => ipcRenderer.invoke('relay:getDefaultFilterLimit'),
+    countEventsByFilter: (filter: TRuleFilter) =>
+      ipcRenderer.invoke('relay:countEventsByFilter', filter),
+    deleteEventsByFilter: (filter: TRuleFilter) =>
+      ipcRenderer.invoke('relay:deleteEventsByFilter', filter)
   },
   tray: {
     getImageColor: () => ipcRenderer.invoke('tray:getImageColor'),

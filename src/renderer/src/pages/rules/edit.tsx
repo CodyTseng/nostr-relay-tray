@@ -1,5 +1,11 @@
-import { RULE_ACTION, RULE_CONDITION_OPERATOR, TRuleCondition } from '@common/rule'
+import {
+  RULE_ACTION,
+  RULE_CONDITION_FIELD_NAME,
+  RULE_CONDITION_OPERATOR,
+  TRuleCondition
+} from '@common/rule'
 import { zodResolver } from '@hookform/resolvers/zod'
+import RuleConditions from '@renderer/components/RuleConditions'
 import { Button } from '@renderer/components/ui/button'
 import {
   Form,
@@ -23,7 +29,6 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
-import RuleConditions from './components/rule-conditions'
 
 const formSchema = z.object({
   name: z
@@ -152,7 +157,16 @@ export default function EditRule(): JSX.Element {
           />
           <FormItem>
             <FormLabel>Conditions</FormLabel>
-            <RuleConditions conditions={ruleConditions} setConditions={setRuleConditions} />
+            <RuleConditions
+              conditions={ruleConditions}
+              setConditions={setRuleConditions}
+              supportedFields={[
+                RULE_CONDITION_FIELD_NAME.AUTHOR,
+                RULE_CONDITION_FIELD_NAME.KIND,
+                RULE_CONDITION_FIELD_NAME.TAG,
+                RULE_CONDITION_FIELD_NAME.CONTENT
+              ]}
+            />
           </FormItem>
           <div className="flex justify-between items-center">
             <FormField

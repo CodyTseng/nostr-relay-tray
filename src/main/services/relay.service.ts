@@ -5,18 +5,20 @@ import {
   createOutgoingNoticeMessage
 } from '@nostr-relay/common'
 import { NostrRelay } from '@nostr-relay/core'
-import { EventRepositorySqlite } from '@nostr-relay/event-repository-sqlite'
+import { Database, EventRepositorySqlite } from '@nostr-relay/event-repository-sqlite'
 import { RawData, Validator } from '@nostr-relay/validator'
 import BetterSqlite3 from 'better-sqlite3'
 import { app, dialog, ipcMain } from 'electron'
 import fastify, { FastifyInstance } from 'fastify'
 import { createReadStream, createWriteStream, readFileSync, statSync } from 'fs'
+import { Kysely, SqliteDialect } from 'kysely'
 import path from 'path'
 import { createInterface } from 'readline'
 import { WebSocketServer } from 'ws'
 import favicon from '../../../resources/favicon.ico?asset'
 import { CONFIG_KEY } from '../../common/config'
 import { DEFAULT_FILTER_LIMIT, DEFAULT_WSS_MAX_PAYLOAD } from '../../common/constants'
+import { TRuleFilter } from '../../common/rule'
 import { KIND_DESCRIPTION_MAP } from '../constants'
 import { ConfigRepository } from '../repositories/config.repository'
 import { TSendToRenderer } from '../types'
@@ -34,6 +36,7 @@ export class RelayService {
     maxFilterGenericTagsLength: 512
   })
   private readonly db: BetterSqlite3.Database
+  private readonly kysely: Kysely<Database>
   private readonly eventRepository: EventRepositorySqlite
 
   private options: RelayOptions = {
@@ -53,6 +56,9 @@ export class RelayService {
     this.db = new BetterSqlite3(path.join(userPath, 'nostr.db'))
     this.eventRepository = new EventRepositorySqlite(this.db, {
       defaultLimit: this.options.defaultFilterLimit
+    })
+    this.kysely = new Kysely<Database>({
+      dialect: new SqliteDialect({ database: this.db })
     })
   }
 
@@ -108,6 +114,8 @@ export class RelayService {
       this.setDefaultFilterLimit(defaultFilterLimit)
     )
     ipcMain.handle('relay:getDefaultFilterLimit', () => this.options.defaultFilterLimit)
+    ipcMain.handle('relay:countEventsByFilter', (_, filter) => this.countEventsByFilter(filter))
+    ipcMain.handle('relay:deleteEventsByFilter', (_, filter) => this.deleteEventsByFilter(filter))
   }
 
   async handleIncomingMessage(client: NostrClient, data: RawData) {
@@ -343,5 +351,57 @@ export class RelayService {
     const { changes } = this.db.prepare('DELETE FROM events').run()
     this.db.prepare('DELETE FROM events_fts').run()
     return changes
+  }
+
+  private async countEventsByFilter(filter: TRuleFilter) {
+    console.debug('[count] filter', JSON.stringify(filter))
+    let query = this.kysely.selectFrom('events as e')
+
+    if (filter.ids.length) {
+      query = query.where('e.id', 'in', filter.ids)
+    }
+
+    if (filter.authors.length) {
+      query = query.where('e.author', 'in', filter.authors)
+    }
+    if (filter.nAuthors.length) {
+      query = query.where('e.author', 'not in', filter.nAuthors)
+    }
+
+    if (filter.kinds.length) {
+      query = query.where('e.kind', 'in', filter.kinds)
+    }
+    if (filter.nKinds.length) {
+      query = query.where('e.kind', 'not in', filter.nKinds)
+    }
+
+    const result = await query.select(({ fn }) => [fn.countAll().as('count')]).execute()
+    return result[0].count
+  }
+
+  private async deleteEventsByFilter(filter: TRuleFilter) {
+    console.debug('[delete] filter', JSON.stringify(filter))
+    let query = this.kysely.deleteFrom('events as e')
+
+    if (filter.ids.length) {
+      query = query.where('e.id', 'in', filter.ids)
+    }
+
+    if (filter.authors.length) {
+      query = query.where('e.author', 'in', filter.authors)
+    }
+    if (filter.nAuthors.length) {
+      query = query.where('e.author', 'not in', filter.nAuthors)
+    }
+
+    if (filter.kinds.length) {
+      query = query.where('e.kind', 'in', filter.kinds)
+    }
+    if (filter.nKinds.length) {
+      query = query.where('e.kind', 'not in', filter.nKinds)
+    }
+
+    const result = await query.execute()
+    return result.length
   }
 }

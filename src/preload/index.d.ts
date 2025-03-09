@@ -1,5 +1,5 @@
 import { THubConnectionStatus, TTheme } from '@common/constants'
-import { TNewRule, TRule, TRuleUpdate } from '@common/rule'
+import { TNewRule, TRule, TRuleFilter, TRuleUpdate } from '@common/rule'
 import { ElectronAPI } from '@electron-toolkit/preload'
 
 declare global {
@@ -21,6 +21,8 @@ declare global {
         getMaxPayload: () => Promise<number>
         setDefaultFilterLimit: (defaultFilterLimit: number) => Promise<void>
         getDefaultFilterLimit: () => Promise<number>
+        countEventsByFilter: (filter: TRuleFilter) => Promise<number>
+        deleteEventsByFilter: (filter: TRuleFilter) => Promise<number>
       }
       tray: {
         getImageColor: () => Promise<TTrayImageColor>

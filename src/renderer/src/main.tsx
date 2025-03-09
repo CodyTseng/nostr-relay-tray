@@ -2,6 +2,7 @@ import './assets/main.css'
 
 import App from '@renderer/App'
 import Data from '@renderer/pages/data'
+import DeleteEvents from '@renderer/pages/data/DeleteEvents'
 import Home from '@renderer/pages/home'
 import Logs from '@renderer/pages/logs'
 import Rules from '@renderer/pages/rules'
@@ -19,6 +20,7 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <Home /> },
       { path: '/data', element: <Data /> },
+      { path: '/data/delete', element: <DeleteEvents /> },
       { path: '/wotandpow', element: <WotAndPow /> },
       { path: '/rules', element: <Rules /> },
       { path: '/rules/create', element: <EditRule /> },

@@ -1,3 +1,5 @@
+import { nip19 } from 'nostr-tools'
+
 export const RULE_ACTION = {
   BLOCK: 'block',
   ALLOW: 'allow'
@@ -5,6 +7,7 @@ export const RULE_ACTION = {
 export type TRuleAction = (typeof RULE_ACTION)[keyof typeof RULE_ACTION]
 
 export const RULE_CONDITION_FIELD_NAME = {
+  ID: 'id',
   AUTHOR: 'author',
   KIND: 'kind',
   TAG: 'tag',
@@ -39,3 +42,59 @@ export type TRule = {
 }
 export type TNewRule = Omit<TRule, 'id'>
 export type TRuleUpdate = Partial<TNewRule>
+
+export type TRuleFilter = {
+  ids: string[]
+  authors: string[]
+  nAuthors: string[]
+  kinds: number[]
+  nKinds: number[]
+  tags: string[][]
+  nTags: string[][]
+  contents: RegExp[]
+  nContents: RegExp[]
+}
+
+export function conditionsToFilter(conditions: TRuleCondition[]) {
+  const filter: TRuleFilter = {
+    ids: [],
+    authors: [],
+    nAuthors: [],
+    kinds: [],
+    nKinds: [],
+    tags: [],
+    nTags: [],
+    contents: [],
+    nContents: []
+  }
+  conditions.forEach((condition) => {
+    if (!condition.fieldName || condition.values.length <= 0) return
+
+    if (condition.fieldName === RULE_CONDITION_FIELD_NAME.AUTHOR) {
+      if (condition.operator === RULE_CONDITION_OPERATOR.NOT_IN) {
+        filter.nAuthors = condition.values.map((v) => nip19.decode(v as string).data as string)
+      } else {
+        filter.authors = condition.values.map((v) => nip19.decode(v as string).data as string)
+      }
+    } else if (condition.fieldName === RULE_CONDITION_FIELD_NAME.KIND) {
+      if (condition.operator === RULE_CONDITION_OPERATOR.NOT_IN) {
+        filter.nKinds = condition.values as number[]
+      } else {
+        filter.kinds = condition.values as number[]
+      }
+    } else if (condition.fieldName === RULE_CONDITION_FIELD_NAME.TAG) {
+      if (condition.operator === RULE_CONDITION_OPERATOR.NOT_IN) {
+        filter.nTags.push(condition.values as string[])
+      } else {
+        filter.tags.push(condition.values as string[])
+      }
+    } else if (condition.fieldName === RULE_CONDITION_FIELD_NAME.CONTENT) {
+      if (condition.operator === RULE_CONDITION_OPERATOR.NOT_IN) {
+        filter.nContents = (condition.values as string[]).map((content) => new RegExp(content))
+      } else {
+        filter.contents = (condition.values as string[]).map((content) => new RegExp(content))
+      }
+    }
+  })
+  return filter
+}
