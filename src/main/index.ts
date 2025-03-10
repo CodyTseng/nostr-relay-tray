@@ -183,7 +183,7 @@ function createMenu(localIpAddress?: string) {
       label: 'Browse Local Events',
       type: 'normal',
       click: () => {
-        shell.openExternal(`http://localhost:4869`)
+        shell.openExternal('https://jumble.social/?r=ws://localhost:4869')
       }
     },
     {
