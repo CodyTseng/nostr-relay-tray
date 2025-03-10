@@ -47,6 +47,12 @@ export class RelayService {
   private server: FastifyInstance | null = null
   private relay: NostrRelay | null = null
 
+  private totalEventCountCache: { data: number; updatedAt: number } | null = null
+  private eventStatisticsCache: {
+    data: { kind: number; description: string; count: number }[]
+    updatedAt: number
+  } | null = null
+
   constructor(
     private readonly configRepository: ConfigRepository,
     private readonly sendToRenderer: TSendToRenderer,
@@ -260,22 +266,38 @@ export class RelayService {
   }
 
   private getTotalEventCount(): number {
-    return (this.db.prepare('SELECT COUNT(1) FROM events').get() as { 'COUNT(1)': number })[
-      'COUNT(1)'
-    ]
+    if (this.totalEventCountCache && Date.now() - this.totalEventCountCache.updatedAt < 1000 * 60) {
+      return this.totalEventCountCache.data
+    }
+    const newTotalEventCount = (
+      this.db.prepare('SELECT COUNT(1) FROM events').get() as { 'COUNT(1)': number }
+    )['COUNT(1)']
+    this.totalEventCountCache = {
+      data: newTotalEventCount,
+      updatedAt: Date.now()
+    }
+    return newTotalEventCount
   }
 
   private getEventStatistics(): { kind: number; description: string; count: number }[] {
+    if (this.eventStatisticsCache && Date.now() - this.eventStatisticsCache.updatedAt < 1000 * 60) {
+      return this.eventStatisticsCache?.data
+    }
     const result = this.db
       .prepare(
         'SELECT kind, COUNT(1) AS count FROM events GROUP BY kind ORDER BY count DESC LIMIT 8'
       )
       .all() as { kind: number; count: number }[]
-    return result.map(({ kind, count }) => ({
+    const newStatistics = result.map(({ kind, count }) => ({
       kind,
       description: KIND_DESCRIPTION_MAP[kind] ?? 'unknown',
       count
     }))
+    this.eventStatisticsCache = {
+      data: newStatistics,
+      updatedAt: Date.now()
+    }
+    return newStatistics
   }
 
   private exportEvents(filePath: string, fn: (progress: number) => void) {
@@ -347,11 +369,12 @@ export class RelayService {
   private clearEvents() {
     const { changes } = this.db.prepare('DELETE FROM events').run()
     this.db.prepare('DELETE FROM events_fts').run()
+    this.totalEventCountCache = null
+    this.eventStatisticsCache = null
     return changes
   }
 
   private async countEventsByFilter(filter: TRuleFilter) {
-    console.debug('[count] filter', JSON.stringify(filter))
     let query = this.kysely.selectFrom('events as e')
 
     if (filter.ids.length) {
@@ -377,7 +400,6 @@ export class RelayService {
   }
 
   private async deleteEventsByFilter(filter: TRuleFilter) {
-    console.debug('[delete] filter', JSON.stringify(filter))
     let query = this.kysely.deleteFrom('events as e')
 
     if (filter.ids.length) {
@@ -399,6 +421,8 @@ export class RelayService {
     }
 
     const result = await query.execute()
+    this.totalEventCountCache = null
+    this.eventStatisticsCache = null
     return result.length
   }
 }
