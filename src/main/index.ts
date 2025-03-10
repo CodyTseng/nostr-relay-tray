@@ -13,7 +13,6 @@ import { initRepositories } from './repositories'
 import { ConfigRepository } from './repositories/config.repository'
 import { AutoLaunchService } from './services/auto-launch.service'
 import { GuardService } from './services/guard.service'
-import { HubConnectorService } from './services/hub-connector.service'
 import { LogViewerService } from './services/log-viewer.service'
 import { RelayService } from './services/relay.service'
 import { ThemeService } from './services/theme.service'
@@ -23,7 +22,6 @@ import { getLocalIpAddress } from './utils'
 dayjs.extend(duration)
 
 let relay: RelayService
-let hubConnector: HubConnectorService
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
@@ -66,9 +64,6 @@ app.whenReady().then(async () => {
   const guardService = new GuardService(repositories.config, repositories.rule, eventRepository)
   await guardService.init()
   relay.register(guardService)
-
-  hubConnector = new HubConnectorService(relay, repositories.config, sendToRenderer)
-  await hubConnector.init()
 
   ipcMain.handle('tray:getImageColor', () => trayImageColor)
   ipcMain.handle('tray:setImageColor', async (_, color: TTrayImageColor) => {

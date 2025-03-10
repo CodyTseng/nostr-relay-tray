@@ -3,8 +3,8 @@ export const CONFIG_KEY = {
   DEFAULT_FILTER_LIMIT: 'default_filter_limit',
   TRAY_IMAGE_COLOR: 'tray_image_color',
   THEME: 'theme',
-  HUB_ENABLED: 'hub_enabled',
-  HUB_URL: 'hub_url',
+  HUB_ENABLED: 'hub_enabled', // deprecated
+  HUB_URL: 'hub_url', // deprecated
   WOT_ENABLED: 'wot_enabled',
   WOT_TRUST_ANCHOR: 'wot_trust_anchor',
   WOT_TRUST_DEPTH: 'wot_trust_depth',
