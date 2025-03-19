@@ -1,3 +1,4 @@
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils'
 import { Client as NostrClient } from '@nostr-relay/common'
 import { ipcMain } from 'electron'
 import { finalizeEvent, generateSecretKey, VerifiedEvent } from 'nostr-tools'
@@ -45,7 +46,15 @@ export class ProxyConnectorService {
       }
     | { success: true; publicAddress: string }
   > {
-    const sk = generateSecretKey()
+    const storedPrivateKey = await this.configRepository.get(CONFIG_KEY.PRIVATE_KEY)
+    let sk: Uint8Array
+    if (!storedPrivateKey) {
+      sk = generateSecretKey()
+      const hexSk = bytesToHex(sk)
+      await this.configRepository.set(CONFIG_KEY.PRIVATE_KEY, hexSk) // maybe need to encrypt this
+    } else {
+      sk = hexToBytes(storedPrivateKey)
+    }
     await this.updateEnabled(true)
 
     if (this.status === PROXY_CONNECTION_STATUS.CONNECTED && this.publicAddress) {
@@ -159,8 +168,7 @@ export class ProxyConnectorService {
         clearTimeout(closeTimer)
         clearTimeout(timeoutTimer)
 
-        // 60 * 5s = 5 minutes
-        if (!this.canReconnect || this.reconnectCount >= 60) {
+        if (!this.canReconnect) {
           this.updateStatus(PROXY_CONNECTION_STATUS.DISCONNECTED)
           this.reconnectCount = 0
           return resolve({
@@ -173,7 +181,7 @@ export class ProxyConnectorService {
         this.reconnectCount++
         this.reconnectTimeout = setTimeout(async () => {
           await this.connectToProxy()
-        }, 5000)
+        }, 10000)
       })
     })
   }
