@@ -54,7 +54,12 @@ declare global {
         getIsEnabled: () => Promise<boolean>
       }
       proxy: {
-        onStatusChange: (cb: (status: TProxyConnectionStatus) => void) => void
+        onStatusChange: (
+          cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
+        ) => void
+        removeStatusChange: (
+          cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
+        ) => void
         currentStatus: () => Promise<TProxyConnectionStatus>
         connect: () => Promise<
           | {

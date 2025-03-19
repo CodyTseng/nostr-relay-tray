@@ -1,4 +1,5 @@
 import { Button } from '@renderer/components/ui/button'
+import { Input } from '@renderer/components/ui/input'
 import { Check, Copy } from 'lucide-react'
 import { useState } from 'react'
 
@@ -16,11 +17,14 @@ export default function PublicAddress({ publicAddress }: { publicAddress?: strin
   }
 
   return (
-    <div className="flex items-center space-x-2 text-muted-foreground">
-      <div className="truncate">Public address: {publicAddress}</div>
-      <Button variant="ghost" size="icon" className="shrink-0" onClick={copyAddress}>
-        {copied ? <Check /> : <Copy />}
-      </Button>
+    <div className="space-y-2">
+      <div className="truncate">Public address:</div>
+      <div className="flex items-center space-x-2">
+        <Input value={publicAddress} />
+        <Button variant="ghost" size="icon" className="shrink-0" onClick={copyAddress}>
+          {copied ? <Check /> : <Copy />}
+        </Button>
+      </div>
     </div>
   )
 }

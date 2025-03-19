@@ -1,14 +1,14 @@
 import { PROXY_CONNECTION_STATUS, TProxyConnectionStatus } from '@common/constants'
-import { Button } from '@renderer/components/ui/button'
+import { Switch } from '@renderer/components/ui/switch'
 import { useToast } from '@renderer/components/ui/use-toast'
 import { useEffect, useState } from 'react'
 import PublicAddress from './PublicAddress'
+import { cn } from '@renderer/lib/utils'
 
 export default function Proxy(): JSX.Element {
   const { toast } = useToast()
   const [status, setStatus] = useState<TProxyConnectionStatus>(PROXY_CONNECTION_STATUS.DISCONNECTED)
   const [publicAddress, setPublicAddress] = useState<string>('')
-  const [hover, setHover] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -18,12 +18,16 @@ export default function Proxy(): JSX.Element {
       ])
       setStatus(currentStatus)
       setPublicAddress(publicAddress ?? '')
-
-      window.api.proxy.onStatusChange((status: TProxyConnectionStatus) => {
-        setStatus(status)
-      })
     }
     init()
+
+    const listener = (_, status: TProxyConnectionStatus) => {
+      setStatus(status)
+    }
+    window.api.proxy.onStatusChange(listener)
+    return () => {
+      window.api.proxy.removeStatusChange(listener)
+    }
   }, [])
 
   const connectProxy = async () => {
@@ -53,42 +57,59 @@ export default function Proxy(): JSX.Element {
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <div>
-          <div>Connect to proxy</div>
-          <div className="text-sm text-muted-foreground">
-            Expose your local relay to the internet
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex gap-2 items-center">
+              <div>Connect to proxy</div>
+              <div
+                className={cn(
+                  'w-2 h-2 rounded-full',
+                  status === PROXY_CONNECTION_STATUS.CONNECTED
+                    ? 'bg-green-400'
+                    : status === PROXY_CONNECTION_STATUS.CONNECTING
+                      ? 'bg-orange-400'
+                      : 'bg-gray-400'
+                )}
+              />
+              <div
+                className={cn(
+                  'text-xs',
+                  status === PROXY_CONNECTION_STATUS.CONNECTED
+                    ? 'text-green-400'
+                    : status === PROXY_CONNECTION_STATUS.CONNECTING
+                      ? 'text-orange-400'
+                      : 'text-gray-400'
+                )}
+              >
+                {status === PROXY_CONNECTION_STATUS.CONNECTED
+                  ? 'Connected'
+                  : status === PROXY_CONNECTION_STATUS.CONNECTING
+                    ? 'Connecting...'
+                    : 'Disconnected'}
+              </div>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Expose your local relay to the internet
+            </div>
           </div>
+          <Switch
+            checked={status !== PROXY_CONNECTION_STATUS.DISCONNECTED}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                connectProxy()
+              } else {
+                disconnectProxy()
+              }
+            }}
+            title={
+              status === PROXY_CONNECTION_STATUS.CONNECTED
+                ? 'Disconnect from proxy'
+                : 'Connect to proxy'
+            }
+          />
         </div>
-        {status === 'disconnected' ? (
-          <Button
-            className="w-32"
-            onClick={() => connectProxy()}
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
-          >
-            Connect
-          </Button>
-        ) : status === 'connecting' ? (
-          <Button
-            disabled
-            className="w-32"
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
-          >
-            Connecting...
-          </Button>
-        ) : (
-          <Button
-            className="bg-green-500 hover:bg-destructive/90 w-32"
-            onClick={() => disconnectProxy()}
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
-          >
-            {hover ? 'Disconnect' : 'Connected'}
-          </Button>
-        )}
       </div>
       <PublicAddress publicAddress={publicAddress} />
     </div>
