@@ -15,6 +15,7 @@ import { AutoLaunchService } from './services/auto-launch.service'
 import { GuardService } from './services/guard.service'
 import { HubConnectorService } from './services/hub-connector.service'
 import { LogViewerService } from './services/log-viewer.service'
+import { ProxyConnectorService } from './services/proxy-connector.service'
 import { RelayService } from './services/relay.service'
 import { ThemeService } from './services/theme.service'
 import { TSendToRenderer } from './types'
@@ -69,6 +70,9 @@ app.whenReady().then(async () => {
 
   hubConnector = new HubConnectorService(relay, repositories.config, sendToRenderer)
   await hubConnector.init()
+
+  const proxyConnector = new ProxyConnectorService(relay, repositories.config, sendToRenderer)
+  await proxyConnector.init()
 
   ipcMain.handle('tray:getImageColor', () => trayImageColor)
   ipcMain.handle('tray:setImageColor', async (_, color: TTrayImageColor) => {

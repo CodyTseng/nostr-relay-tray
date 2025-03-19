@@ -1,4 +1,4 @@
-import { THubConnectionStatus, TTheme } from '@common/constants'
+import { THubConnectionStatus, TProxyConnectionStatus, TTheme } from '@common/constants'
 import { TNewRule, TRule, TRuleFilter, TRuleUpdate } from '@common/rule'
 import { ElectronAPI } from '@electron-toolkit/preload'
 
@@ -52,6 +52,22 @@ declare global {
         getHubUrl: () => Promise<string>
         setHubUrl: (url: string) => Promise<void>
         getIsEnabled: () => Promise<boolean>
+      }
+      proxy: {
+        onStatusChange: (cb: (status: TProxyConnectionStatus) => void) => void
+        currentStatus: () => Promise<TProxyConnectionStatus>
+        connect: () => Promise<
+          | {
+              success: false
+              errorMessage?: string
+            }
+          | {
+              success: true
+              publicAddress: string
+            }
+        >
+        disconnect: () => Promise<void>
+        publicAddress: () => Promise<string | null>
       }
       wot: {
         getEnabled: () => Promise<boolean>
