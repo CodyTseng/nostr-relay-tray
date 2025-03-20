@@ -74,25 +74,32 @@ export class ProxyConnectorService {
           success: false,
           errorMessage: 'Connection timeout.'
         })
-      }, 5000)
+      }, 5_000)
 
-      let closeTimer = setTimeout(() => {
-        ws.close()
-      }, 30000)
+      let closeTimer: NodeJS.Timeout | null = null
+      const setCloseTimer = () => {
+        if (closeTimer) {
+          clearTimeout(closeTimer)
+        }
+        closeTimer = setTimeout(() => {
+          ws.close()
+        }, 180_000)
+      }
 
       const pingTimer = setInterval(() => {
         if (ws.readyState === 1) {
           ws.ping()
         }
-      }, 20000)
+      }, 60_000)
 
       let authEvent: VerifiedEvent | null = null
 
+      ws.on('open', () => {
+        setCloseTimer()
+      })
+
       ws.on('pong', () => {
-        clearTimeout(closeTimer)
-        closeTimer = setTimeout(() => {
-          ws.close()
-        }, 60000)
+        setCloseTimer()
       })
 
       const client: NostrClient = {
@@ -109,6 +116,7 @@ export class ProxyConnectorService {
       })
 
       ws.on('message', async (data) => {
+        setCloseTimer()
         const message = JSON.parse(data.toString())
         if (!Array.isArray(message)) {
           return
@@ -126,7 +134,7 @@ export class ProxyConnectorService {
                   ['relay', PROXY_URL]
                 ],
                 content: '',
-                created_at: Math.floor(Date.now() / 1000)
+                created_at: Math.floor(Date.now() / 1_000)
               },
               sk
             )
@@ -165,8 +173,10 @@ export class ProxyConnectorService {
         this.proxyWs = null
         this.publicAddress = null
         clearInterval(pingTimer)
-        clearTimeout(closeTimer)
         clearTimeout(timeoutTimer)
+        if (closeTimer) {
+          clearTimeout(closeTimer)
+        }
 
         if (!this.canReconnect) {
           this.updateStatus(PROXY_CONNECTION_STATUS.DISCONNECTED)
