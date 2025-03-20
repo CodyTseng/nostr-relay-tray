@@ -95,6 +95,13 @@ export default function Proxy(): JSX.Element {
             </div>
           </div>
           <Switch
+            className={
+              status === PROXY_CONNECTION_STATUS.CONNECTED
+                ? 'data-[state=checked]:bg-green-400'
+                : status === PROXY_CONNECTION_STATUS.CONNECTING
+                  ? 'data-[state=checked]:bg-orange-400'
+                  : ''
+            }
             checked={status !== PROXY_CONNECTION_STATUS.DISCONNECTED}
             onCheckedChange={(checked) => {
               if (checked) {
