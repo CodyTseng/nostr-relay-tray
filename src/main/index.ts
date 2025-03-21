@@ -195,7 +195,6 @@ function createMenu(localIpAddress?: string) {
     {
       label: 'Browse Local Events',
       type: 'normal',
-      enabled: ready,
       click: () => {
         shell.openExternal('https://jumble.social/?r=ws://localhost:4869')
       }
@@ -203,6 +202,7 @@ function createMenu(localIpAddress?: string) {
     {
       label: 'Dashboard',
       type: 'normal',
+      enabled: ready,
       click: createWindow
     },
     { type: 'separator' },
