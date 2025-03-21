@@ -140,14 +140,14 @@ export class ProxyConnectorService {
             )
             ws.send(JSON.stringify(['AUTH', authEvent]))
           } else if (type === 'OK') {
-            const [, eventId, success, publicAddress] = message
+            const [, eventId, success, addressOrErrMsg] = message
             if (eventId !== authEvent?.id) return
 
             if (!success) {
               ws.close()
               resolve({
                 success: false,
-                errorMessage: 'Authentication failed.'
+                errorMessage: addressOrErrMsg || 'Authentication failed.'
               })
               return
             }
@@ -157,10 +157,10 @@ export class ProxyConnectorService {
             this.reconnectCount = 0
             this.canReconnect = true
             this.proxyWs = ws
-            this.publicAddress = publicAddress
+            this.publicAddress = addressOrErrMsg
             resolve({
               success: true,
-              publicAddress
+              publicAddress: addressOrErrMsg
             })
             return
           }
