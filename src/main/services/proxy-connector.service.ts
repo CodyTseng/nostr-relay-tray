@@ -19,6 +19,7 @@ export class ProxyConnectorService {
   private reconnectCount = 0
   private canReconnect = false
   private reconnectTimeout: NodeJS.Timeout | undefined
+  private lastActivity = Date.now()
 
   constructor(
     private readonly relay: RelayService,
@@ -27,16 +28,23 @@ export class ProxyConnectorService {
   ) {}
 
   async init() {
-    const configProxyEnabled = await this.configRepository.get(CONFIG_KEY.PROXY_ENABLED)
-
-    if (configProxyEnabled) {
-      await this.connectToProxy()
-    }
-
     ipcMain.handle('proxy:currentStatus', () => this.getProxyConnectionStatus())
     ipcMain.handle('proxy:connect', () => this.connectToProxy())
     ipcMain.handle('proxy:disconnect', () => this.disconnectFromProxy())
     ipcMain.handle('proxy:publicAddress', () => this.publicAddress)
+
+    const configProxyEnabled = await this.configRepository.get(CONFIG_KEY.PROXY_ENABLED)
+
+    if (configProxyEnabled === 'true') {
+      await this.connectToProxy()
+    }
+
+    setInterval(() => {
+      if (this.status !== PROXY_CONNECTION_STATUS.CONNECTED) return
+      if (Date.now() - this.lastActivity > 240_000) {
+        this.proxyWs?.close()
+      }
+    }, 240_000) // 4 minutes
   }
 
   private async connectToProxy(): Promise<
@@ -76,30 +84,20 @@ export class ProxyConnectorService {
         })
       }, 5_000)
 
-      let closeTimer: NodeJS.Timeout | null = null
-      const setCloseTimer = () => {
-        if (closeTimer) {
-          clearTimeout(closeTimer)
-        }
-        closeTimer = setTimeout(() => {
-          ws.close()
-        }, 180_000)
-      }
-
       const pingTimer = setInterval(() => {
         if (ws.readyState === 1) {
           ws.ping()
         }
-      }, 60_000)
+      }, 120_000) // 2 minutes
 
       let authEvent: VerifiedEvent | null = null
 
       ws.on('open', () => {
-        setCloseTimer()
+        this.lastActivity = Date.now()
       })
 
       ws.on('pong', () => {
-        setCloseTimer()
+        this.lastActivity = Date.now()
       })
 
       const client: NostrClient = {
@@ -116,7 +114,7 @@ export class ProxyConnectorService {
       })
 
       ws.on('message', async (data) => {
-        setCloseTimer()
+        this.lastActivity = Date.now()
         const message = JSON.parse(data.toString())
         if (!Array.isArray(message)) {
           return
@@ -144,6 +142,7 @@ export class ProxyConnectorService {
             if (eventId !== authEvent?.id) return
 
             if (!success) {
+              this.canReconnect = false
               ws.close()
               resolve({
                 success: false,
@@ -174,9 +173,6 @@ export class ProxyConnectorService {
         this.publicAddress = null
         clearInterval(pingTimer)
         clearTimeout(timeoutTimer)
-        if (closeTimer) {
-          clearTimeout(closeTimer)
-        }
 
         if (!this.canReconnect) {
           this.updateStatus(PROXY_CONNECTION_STATUS.DISCONNECTED)
@@ -189,9 +185,15 @@ export class ProxyConnectorService {
 
         this.updateStatus(PROXY_CONNECTION_STATUS.CONNECTING)
         this.reconnectCount++
+
+        // Exponential backoff logic:
+        const baseDelay = 1_000 // 1 seconds
+        const maxDelay = 600_000 // 600 seconds cap
+        const delay = Math.min(baseDelay * Math.pow(2, this.reconnectCount - 1), maxDelay)
+
         this.reconnectTimeout = setTimeout(async () => {
           await this.connectToProxy()
-        }, 10000)
+        }, delay)
       })
     })
   }
