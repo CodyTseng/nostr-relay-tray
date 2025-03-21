@@ -82,6 +82,22 @@ const api = {
     setHubUrl: (url: string) => ipcRenderer.invoke('hub:setHubUrl', url),
     getIsEnabled: () => ipcRenderer.invoke('hub:getIsEnabled')
   },
+  proxy: {
+    onStatusChange: (
+      cb: (event: Electron.IpcRendererEvent, status: THubConnectionStatus) => void
+    ) => {
+      ipcRenderer.on('proxy:statusChange', cb)
+    },
+    removeStatusChange: (
+      cb: (event: Electron.IpcRendererEvent, status: THubConnectionStatus) => void
+    ) => {
+      ipcRenderer.removeListener('proxy:statusChange', cb)
+    },
+    currentStatus: () => ipcRenderer.invoke('proxy:currentStatus'),
+    connect: () => ipcRenderer.invoke('proxy:connect'),
+    disconnect: () => ipcRenderer.invoke('proxy:disconnect'),
+    publicAddress: () => ipcRenderer.invoke('proxy:publicAddress')
+  },
   wot: {
     getEnabled: () => ipcRenderer.invoke('wot:getEnabled'),
     setEnabled: (enabled: boolean) => ipcRenderer.invoke('wot:setEnabled', enabled),

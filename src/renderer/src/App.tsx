@@ -24,6 +24,10 @@ const navItems = [
     href: '/logs'
   },
   {
+    title: 'Proxy',
+    href: '/proxy'
+  },
+  {
     title: 'Settings',
     href: '/settings'
   }
