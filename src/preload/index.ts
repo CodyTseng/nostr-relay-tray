@@ -1,6 +1,6 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
-import { TTheme, TTrayImageColor } from '../common/constants'
+import { TProxyConnectionStatus, TTheme, TTrayImageColor } from '../common/constants'
 import { TNewRule, TRuleFilter, TRuleUpdate } from '../common/rule'
 import { TLog } from '../common/types'
 
@@ -68,6 +68,22 @@ const api = {
     current: () => ipcRenderer.invoke('theme:current'),
     currentConfig: () => ipcRenderer.invoke('theme:currentConfig'),
     updateConfig: (theme: TTheme) => ipcRenderer.invoke('theme:updateConfig', theme)
+  },
+  proxy: {
+    onStatusChange: (
+      cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
+    ) => {
+      ipcRenderer.on('proxy:statusChange', cb)
+    },
+    removeStatusChange: (
+      cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
+    ) => {
+      ipcRenderer.removeListener('proxy:statusChange', cb)
+    },
+    currentStatus: () => ipcRenderer.invoke('proxy:currentStatus'),
+    connect: () => ipcRenderer.invoke('proxy:connect'),
+    disconnect: () => ipcRenderer.invoke('proxy:disconnect'),
+    publicAddress: () => ipcRenderer.invoke('proxy:publicAddress')
   },
   wot: {
     getEnabled: () => ipcRenderer.invoke('wot:getEnabled'),

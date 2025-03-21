@@ -1,4 +1,4 @@
-import { TTheme } from '@common/constants'
+import { TProxyConnectionStatus, TTheme } from '@common/constants'
 import { TNewRule, TRule, TRuleFilter, TRuleUpdate } from '@common/rule'
 import { ElectronAPI } from '@electron-toolkit/preload'
 
@@ -40,6 +40,27 @@ declare global {
         current: () => Promise<'dark' | 'light'>
         currentConfig: () => Promise<TTheme>
         updateConfig: (theme: TTheme) => Promise<void>
+      }
+      proxy: {
+        onStatusChange: (
+          cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
+        ) => void
+        removeStatusChange: (
+          cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
+        ) => void
+        currentStatus: () => Promise<TProxyConnectionStatus>
+        connect: () => Promise<
+          | {
+              success: false
+              errorMessage?: string
+            }
+          | {
+              success: true
+              publicAddress: string
+            }
+        >
+        disconnect: () => Promise<void>
+        publicAddress: () => Promise<string | null>
       }
       wot: {
         getEnabled: () => Promise<boolean>

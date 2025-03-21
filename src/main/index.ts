@@ -1,7 +1,17 @@
 import { electronApp, is } from '@electron-toolkit/utils'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
-import { BrowserWindow, Menu, Tray, app, clipboard, ipcMain, nativeImage, shell } from 'electron'
+import {
+  BrowserWindow,
+  Menu,
+  MenuItemConstructorOptions,
+  Tray,
+  app,
+  clipboard,
+  ipcMain,
+  nativeImage,
+  shell
+} from 'electron'
 import { join } from 'path'
 import icon from '../../build/icon.png?asset'
 import nostrTemplate from '../../resources/nostrTemplate.png?asset'
@@ -14,6 +24,7 @@ import { ConfigRepository } from './repositories/config.repository'
 import { AutoLaunchService } from './services/auto-launch.service'
 import { GuardService } from './services/guard.service'
 import { LogViewerService } from './services/log-viewer.service'
+import { ProxyConnectorService } from './services/proxy-connector.service'
 import { RelayService } from './services/relay.service'
 import { ThemeService } from './services/theme.service'
 import { TSendToRenderer } from './types'
@@ -25,6 +36,7 @@ let relay: RelayService
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
+let ready = false
 
 const singleInstanceLock = app.requestSingleInstanceLock()
 // Quit the app if another instance is already running
@@ -64,6 +76,12 @@ app.whenReady().then(async () => {
   const guardService = new GuardService(repositories.config, repositories.rule, eventRepository)
   await guardService.init()
   relay.register(guardService)
+
+  const proxyConnector = new ProxyConnectorService(relay, repositories.config, sendToRenderer)
+  await proxyConnector.init()
+
+  ready = true
+  tray?.setContextMenu(createMenu(getLocalIpAddress()))
 
   ipcMain.handle('tray:getImageColor', () => trayImageColor)
   ipcMain.handle('tray:setImageColor', async (_, color: TTrayImageColor) => {
@@ -173,10 +191,11 @@ function createTray({ trayImage }: { trayImage: Electron.NativeImage }) {
 }
 
 function createMenu(localIpAddress?: string) {
-  return Menu.buildFromTemplate([
+  const items: MenuItemConstructorOptions[] = [
     {
       label: 'Browse Local Events',
       type: 'normal',
+      enabled: ready,
       click: () => {
         shell.openExternal('https://jumble.social/?r=ws://localhost:4869')
       }
@@ -192,15 +211,20 @@ function createMenu(localIpAddress?: string) {
       type: 'normal',
       click: () => clipboard.writeText(`ws://localhost:4869`)
     },
-    {
-      label: `ws://${localIpAddress}:4869 - Copy`,
-      type: 'normal',
-      click: () => clipboard.writeText(`ws://${localIpAddress}:4869`)
-    },
     { type: 'separator' },
     {
       label: 'Quit',
       role: 'quit'
     }
-  ])
+  ]
+
+  if (localIpAddress) {
+    items.splice(3, 0, {
+      label: `ws://${localIpAddress}:4869`,
+      type: 'normal',
+      click: () => clipboard.writeText(`ws://${localIpAddress}:4869`)
+    })
+  }
+
+  return Menu.buildFromTemplate(items)
 }

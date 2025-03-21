@@ -17,3 +17,11 @@ export const DEFAULT_WSS_MAX_PAYLOAD = 256
 export const DEFAULT_FILTER_LIMIT = 100
 
 export const DEFAULT_POW_DIFFICULTY = 0
+
+export const PROXY_CONNECTION_STATUS = {
+  CONNECTING: 'connecting',
+  CONNECTED: 'connected',
+  DISCONNECTED: 'disconnected'
+} as const
+export type TProxyConnectionStatus =
+  (typeof PROXY_CONNECTION_STATUS)[keyof typeof PROXY_CONNECTION_STATUS]
