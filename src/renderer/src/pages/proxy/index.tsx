@@ -65,7 +65,7 @@ export default function Proxy(): JSX.Element {
               <div>Connect to proxy</div>
               <div
                 className={cn(
-                  'w-2 h-2 rounded-full',
+                  'w-2 h-2 rounded-full shrink-0',
                   status === PROXY_CONNECTION_STATUS.CONNECTED
                     ? 'bg-green-400'
                     : status === PROXY_CONNECTION_STATUS.CONNECTING

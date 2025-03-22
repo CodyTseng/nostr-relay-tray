@@ -200,7 +200,7 @@ function createMenu(localIpAddress?: string) {
       }
     },
     {
-      label: 'Dashboard',
+      label: ready ? 'Dashboard' : 'Dashboard (Initializing...)',
       type: 'normal',
       enabled: ready,
       click: createWindow

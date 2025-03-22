@@ -1,39 +1,72 @@
+import { PROXY_CONNECTION_STATUS, TProxyConnectionStatus } from '@common/constants'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { ThemeProvider } from './components/theme-provider'
 import { Toaster } from './components/ui/toaster'
-
-const navItems = [
-  {
-    title: 'Home',
-    href: '/'
-  },
-  {
-    title: 'Data',
-    href: '/data'
-  },
-  {
-    title: 'WoT & PoW',
-    href: '/wotandpow'
-  },
-  {
-    title: 'Rules',
-    href: '/rules'
-  },
-  {
-    title: 'Logs',
-    href: '/logs'
-  },
-  {
-    title: 'Proxy',
-    href: '/proxy'
-  },
-  {
-    title: 'Settings',
-    href: '/settings'
-  }
-]
+import { cn } from './lib/utils'
 
 function App(): JSX.Element {
+  const [proxyStatus, setProxyStatus] = useState<TProxyConnectionStatus>(
+    PROXY_CONNECTION_STATUS.DISCONNECTED
+  )
+
+  useEffect(() => {
+    window.api.proxy.currentStatus().then((status) => {
+      setProxyStatus(status)
+    })
+
+    const listener = (_, status: TProxyConnectionStatus) => {
+      setProxyStatus(status)
+    }
+    window.api.proxy.onStatusChange(listener)
+    return () => {
+      window.api.proxy.removeStatusChange(listener)
+    }
+  }, [])
+
+  const navItems = [
+    {
+      title: 'Home',
+      href: '/'
+    },
+    {
+      title: 'Data',
+      href: '/data'
+    },
+    {
+      title: 'WoT & PoW',
+      href: '/wotandpow'
+    },
+    {
+      title: 'Rules',
+      href: '/rules'
+    },
+    {
+      title: 'Logs',
+      href: '/logs'
+    },
+    {
+      title: (
+        <div className="flex gap-2 items-center">
+          Proxy
+          {proxyStatus !== PROXY_CONNECTION_STATUS.DISCONNECTED && (
+            <div
+              className={cn(
+                'w-2 h-2 rounded-full',
+                proxyStatus === PROXY_CONNECTION_STATUS.CONNECTED ? 'bg-green-400' : 'bg-orange-400'
+              )}
+            />
+          )}
+        </div>
+      ),
+      href: '/proxy'
+    },
+    {
+      title: 'Settings',
+      href: '/settings'
+    }
+  ]
+
   return (
     <>
       <ThemeProvider>
@@ -47,8 +80,8 @@ function App(): JSX.Element {
                     <NavLink
                       to={href}
                       className={({ isActive }) =>
-                        (isActive ? 'text-foreground font-bold' : 'text-muted-foreground') +
-                        ' hover:underline'
+                        (isActive ? 'text-foreground' : 'text-muted-foreground/60') +
+                        ' hover:underline font-semibold'
                       }
                     >
                       {title}
