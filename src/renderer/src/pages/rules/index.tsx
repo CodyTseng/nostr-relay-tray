@@ -17,7 +17,7 @@ export default function Rules() {
   }, [pagination])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pr-6">
       <div className="flex justify-between items-center">
         <Link to="/rules/create">
           <Button>Create rule</Button>

@@ -99,7 +99,7 @@ export default function EditRule(): JSX.Element {
   })
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pr-6">
       <Link to="/rules">
         <Button variant="link" className="p-0">
           <ArrowLeft size={16} className="mr-1" />

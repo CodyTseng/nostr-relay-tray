@@ -29,7 +29,7 @@ export default function Home(): JSX.Element {
   }, [])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pr-6">
       <Card className="flex flex-col flex-1 p-4 justify-center">
         <div className="flex justify-between">
           <p className="text-mute">Total Events</p>
