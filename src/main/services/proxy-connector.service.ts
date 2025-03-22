@@ -41,10 +41,10 @@ export class ProxyConnectorService {
 
     setInterval(() => {
       if (this.status !== PROXY_CONNECTION_STATUS.CONNECTED) return
-      if (Date.now() - this.lastActivity > 240_000) {
+      if (Date.now() - this.lastActivity > 120_000) {
         this.proxyWs?.close()
       }
-    }, 240_000) // 4 minutes
+    }, 120_000) // 2 minutes
   }
 
   private async connectToProxy(): Promise<
@@ -88,7 +88,7 @@ export class ProxyConnectorService {
         if (ws.readyState === 1) {
           ws.ping()
         }
-      }, 120_000) // 2 minutes
+      }, 30_000) // 30 seconds
 
       let authEvent: VerifiedEvent | null = null
 

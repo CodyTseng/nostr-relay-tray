@@ -34,12 +34,12 @@ function App(): JSX.Element {
       href: '/data'
     },
     {
-      title: 'WoT & PoW',
-      href: '/wotandpow'
-    },
-    {
       title: 'Rules',
       href: '/rules'
+    },
+    {
+      title: 'WoT & PoW',
+      href: '/wotandpow'
     },
     {
       title: 'Logs',
