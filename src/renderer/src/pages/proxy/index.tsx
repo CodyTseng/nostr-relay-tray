@@ -57,7 +57,7 @@ export default function Proxy(): JSX.Element {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pr-6">
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -65,7 +65,7 @@ export default function Proxy(): JSX.Element {
               <div>Connect to proxy</div>
               <div
                 className={cn(
-                  'w-2 h-2 rounded-full',
+                  'w-2 h-2 rounded-full shrink-0',
                   status === PROXY_CONNECTION_STATUS.CONNECTED
                     ? 'bg-green-400'
                     : status === PROXY_CONNECTION_STATUS.CONNECTING

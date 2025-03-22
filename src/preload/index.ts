@@ -1,6 +1,6 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
-import { THubConnectionStatus, TTheme, TTrayImageColor } from '../common/constants'
+import { TProxyConnectionStatus, TTheme, TTrayImageColor } from '../common/constants'
 import { TNewRule, TRuleFilter, TRuleUpdate } from '../common/rule'
 import { TLog } from '../common/types'
 
@@ -69,27 +69,14 @@ const api = {
     currentConfig: () => ipcRenderer.invoke('theme:currentConfig'),
     updateConfig: (theme: TTheme) => ipcRenderer.invoke('theme:updateConfig', theme)
   },
-  hub: {
-    onStatusChange: (cb: (status: THubConnectionStatus) => void) => {
-      ipcRenderer.on('hub:statusChange', (_, status) => {
-        cb(status)
-      })
-    },
-    currentStatus: () => ipcRenderer.invoke('hub:currentStatus'),
-    connect: (url: string) => ipcRenderer.invoke('hub:connect', url),
-    disconnect: () => ipcRenderer.invoke('hub:disconnect'),
-    getHubUrl: () => ipcRenderer.invoke('hub:getHubUrl'),
-    setHubUrl: (url: string) => ipcRenderer.invoke('hub:setHubUrl', url),
-    getIsEnabled: () => ipcRenderer.invoke('hub:getIsEnabled')
-  },
   proxy: {
     onStatusChange: (
-      cb: (event: Electron.IpcRendererEvent, status: THubConnectionStatus) => void
+      cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
     ) => {
       ipcRenderer.on('proxy:statusChange', cb)
     },
     removeStatusChange: (
-      cb: (event: Electron.IpcRendererEvent, status: THubConnectionStatus) => void
+      cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
     ) => {
       ipcRenderer.removeListener('proxy:statusChange', cb)
     },

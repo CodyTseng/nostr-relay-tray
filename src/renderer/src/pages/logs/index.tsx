@@ -57,23 +57,25 @@ export default function Logs() {
   }
 
   return (
-    <ScrollArea ref={scrollRef} className="h-[90vh] px-2 border-solid border rounded-md">
-      <div className="w-full">
-        <div ref={topRef} />
-        {logs.map((log, index) => (
-          <LogItem key={index} log={log} />
-        ))}
-        <div ref={bottomRef} />
-        <Button
-          disabled={isAtBottom}
-          variant="outline"
-          className="px-3 absolute bottom-4 right-4"
-          onClick={scrollToBottom}
-        >
-          <ArrowDown size={16} />
-        </Button>
-      </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
+    <div className="pr-6 pb-6 h-full">
+      <ScrollArea ref={scrollRef} className="h-full px-2 border-solid border rounded-md">
+        <div className="w-full">
+          <div ref={topRef} />
+          {logs.map((log, index) => (
+            <LogItem key={index} log={log} />
+          ))}
+          <div ref={bottomRef} />
+          <Button
+            disabled={isAtBottom}
+            variant="outline"
+            className="px-3 absolute bottom-4 right-4"
+            onClick={scrollToBottom}
+          >
+            <ArrowDown size={16} />
+          </Button>
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+    </div>
   )
 }

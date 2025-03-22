@@ -23,7 +23,6 @@ import { initRepositories } from './repositories'
 import { ConfigRepository } from './repositories/config.repository'
 import { AutoLaunchService } from './services/auto-launch.service'
 import { GuardService } from './services/guard.service'
-import { HubConnectorService } from './services/hub-connector.service'
 import { LogViewerService } from './services/log-viewer.service'
 import { ProxyConnectorService } from './services/proxy-connector.service'
 import { RelayService } from './services/relay.service'
@@ -34,7 +33,6 @@ import { getLocalIpAddress } from './utils'
 dayjs.extend(duration)
 
 let relay: RelayService
-let hubConnector: HubConnectorService
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
@@ -78,9 +76,6 @@ app.whenReady().then(async () => {
   const guardService = new GuardService(repositories.config, repositories.rule, eventRepository)
   await guardService.init()
   relay.register(guardService)
-
-  hubConnector = new HubConnectorService(relay, repositories.config, sendToRenderer)
-  await hubConnector.init()
 
   const proxyConnector = new ProxyConnectorService(relay, repositories.config, sendToRenderer)
   await proxyConnector.init()
@@ -200,14 +195,14 @@ function createMenu(localIpAddress?: string) {
     {
       label: 'Browse Local Events',
       type: 'normal',
-      enabled: ready,
       click: () => {
         shell.openExternal('https://jumble.social/?r=ws://localhost:4869')
       }
     },
     {
-      label: 'Dashboard',
+      label: ready ? 'Dashboard' : 'Dashboard (Initializing...)',
       type: 'normal',
+      enabled: ready,
       click: createWindow
     },
     { type: 'separator' },

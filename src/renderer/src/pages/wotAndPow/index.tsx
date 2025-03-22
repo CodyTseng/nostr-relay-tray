@@ -140,7 +140,7 @@ export default function Wot() {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 pr-6">
       <div className="font-bold text-xl">WoT</div>
       <div className="flex items-center justify-between">
         <div>Enable</div>

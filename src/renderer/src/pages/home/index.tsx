@@ -15,36 +15,21 @@ export default function Home(): JSX.Element {
   >([])
   const [totalEventCount, setTotalEventCount] = useState(0)
 
-  const init = async () => {
-    const cache = window.localStorage.getItem('home')
-    if (cache) {
-      const { eventStatistics, totalEventCount, expireTimestamp } = JSON.parse(cache)
+  useEffect(() => {
+    const init = async () => {
+      const [eventStatistics, totalEventCount] = await Promise.all([
+        window.api.relay.getEventStatistics(),
+        window.api.relay.getTotalEventCount()
+      ])
+
       setEventStatistics(eventStatistics)
       setTotalEventCount(totalEventCount)
-      if (!!expireTimestamp && expireTimestamp > Date.now()) {
-        return
-      }
     }
-    const [eventStatistics, totalEventCount] = await Promise.all([
-      window.api.relay.getEventStatistics(),
-      window.api.relay.getTotalEventCount()
-    ])
-
-    setEventStatistics(eventStatistics)
-    setTotalEventCount(totalEventCount)
-
-    window.localStorage.setItem(
-      'home',
-      JSON.stringify({ eventStatistics, totalEventCount, expireTimestamp: Date.now() + 1000 * 60 })
-    )
-  }
-
-  useEffect(() => {
     init()
   }, [])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pr-6">
       <Card className="flex flex-col flex-1 p-4 justify-center">
         <div className="flex justify-between">
           <p className="text-mute">Total Events</p>
