@@ -131,7 +131,7 @@ export class ProxyConnectorService {
                   ['challenge', challenge],
                   ['relay', PROXY_URL]
                 ],
-                content: '',
+                content: JSON.stringify(this.relay.getRelayInfo()),
                 created_at: Math.floor(Date.now() / 1_000)
               },
               sk

@@ -171,6 +171,16 @@ export class RelayService {
     }
   }
 
+  getRelayInfo() {
+    return {
+      description: 'a nostr relay for desktop',
+      name: 'nostr-relay-tray',
+      software: 'https://github.com/CodyTseng/nostr-relay-tray',
+      supported_nips: [1, 50],
+      version: app.getVersion()
+    }
+  }
+
   private async updateMaxPayload(maxPayload: number) {
     this.options.maxPayload = maxPayload
     await this.restartServer()
@@ -211,15 +221,7 @@ export class RelayService {
       reply.header('cache-control', 'max-age=604800').type('image/x-icon').send(faviconFile)
     })
 
-    this.server.get('/', function () {
-      return {
-        description: 'a nostr relay for desktop',
-        name: 'nostr-relay-tray',
-        software: 'https://github.com/CodyTseng/nostr-relay-tray',
-        supported_nips: [1, 50],
-        version: app.getVersion()
-      }
-    })
+    this.server.get('/', () => this.getRelayInfo())
 
     this.server.listen({ port: 4869, host: '0.0.0.0' }, function (err) {
       if (err) {
