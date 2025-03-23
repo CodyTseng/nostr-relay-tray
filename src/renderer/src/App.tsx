@@ -1,26 +1,32 @@
 import { PROXY_CONNECTION_STATUS, TProxyConnectionStatus } from '@common/constants'
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { ThemeProvider } from './components/theme-provider'
 import { Toaster } from './components/ui/toaster'
 import { cn } from './lib/utils'
 
 function App(): JSX.Element {
+  const navigate = useNavigate()
   const [proxyStatus, setProxyStatus] = useState<TProxyConnectionStatus>(
     PROXY_CONNECTION_STATUS.DISCONNECTED
   )
 
   useEffect(() => {
+    const navigateListener = (_, path: string) => {
+      navigate(path)
+    }
+    window.api.app.onNavigate(navigateListener)
+
     window.api.proxy.currentStatus().then((status) => {
       setProxyStatus(status)
     })
-
-    const listener = (_, status: TProxyConnectionStatus) => {
+    const proxyStatusChangeListener = (_, status: TProxyConnectionStatus) => {
       setProxyStatus(status)
     }
-    window.api.proxy.onStatusChange(listener)
+    window.api.proxy.onStatusChange(proxyStatusChangeListener)
     return () => {
-      window.api.proxy.removeStatusChange(listener)
+      window.api.app.removeNavigateListener(navigateListener)
+      window.api.proxy.removeStatusChangeListener(proxyStatusChangeListener)
     }
   }, [])
 
@@ -74,7 +80,7 @@ function App(): JSX.Element {
           <Titlebar />
           <div className="flex flex-1 h-0">
             <nav className="flex-shrink-0 w-44 pt-4 pl-6">
-              <ul className="space-y-1">
+              <ul className="space-y-2">
                 {navItems.map(({ title, href }) => (
                   <li key={href}>
                     <NavLink

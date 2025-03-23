@@ -216,7 +216,7 @@ export default function Wot() {
           <Input
             type="text"
             placeholder="npub1..."
-            className="w-80"
+            className="w-72"
             onChange={handlePubkeyToCheckChange}
           />
           <Button onClick={() => checkPubkeyInWot(pubkeyToCheck)} disabled={checkDisabled}>

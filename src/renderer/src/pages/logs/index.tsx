@@ -15,7 +15,7 @@ export default function Logs() {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    window.api.onLog((log) => {
+    const listener = (_, log: TLog) => {
       setLogs((prev) => {
         const updatedLogs = [...prev, log]
         if (updatedLogs.length > MAX_LOGS) {
@@ -23,7 +23,8 @@ export default function Logs() {
         }
         return updatedLogs
       })
-    })
+    }
+    window.api.app.onLog(listener)
 
     const handleScroll = (e) => {
       const { scrollTop, clientHeight, scrollHeight } = e.target
@@ -40,6 +41,7 @@ export default function Logs() {
     }
 
     return () => {
+      window.api.app.removeLogListener(listener)
       if (scrollArea) {
         scrollArea.removeEventListener('scroll', handleScroll)
       }

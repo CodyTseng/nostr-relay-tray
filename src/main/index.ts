@@ -28,12 +28,12 @@ import { ProxyConnectorService } from './services/proxy-connector.service'
 import { RelayService } from './services/relay.service'
 import { ThemeService } from './services/theme.service'
 import { TSendToRenderer } from './types'
-import { getLocalIpAddress } from './utils'
+import { getLocalAddress } from './utils'
 
 dayjs.extend(duration)
 
 let relay: RelayService
-
+let proxyConnector: ProxyConnectorService
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
 let ready = false
@@ -77,11 +77,14 @@ app.whenReady().then(async () => {
   await guardService.init()
   relay.register(guardService)
 
-  const proxyConnector = new ProxyConnectorService(relay, repositories.config, sendToRenderer)
+  proxyConnector = new ProxyConnectorService(relay, repositories.config, sendToRenderer)
   await proxyConnector.init()
+  proxyConnector.on('status', () => {
+    tray?.setContextMenu(createMenu())
+  })
 
   ready = true
-  tray?.setContextMenu(createMenu(getLocalIpAddress()))
+  tray?.setContextMenu(createMenu())
 
   ipcMain.handle('tray:getImageColor', () => trayImageColor)
   ipcMain.handle('tray:setImageColor', async (_, color: TTrayImageColor) => {
@@ -89,6 +92,8 @@ app.whenReady().then(async () => {
     tray?.setImage(getTrayImage(color))
     await repositories.config.set(CONFIG_KEY.TRAY_IMAGE_COLOR, color)
   })
+
+  createWindow()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -128,9 +133,12 @@ async function getTrayImageColor(configRepository: ConfigRepository) {
   return trayImageColor
 }
 
-function createWindow(): void {
+function createWindow(path?: string): void {
   if (BrowserWindow.getAllWindows().length > 0) {
     mainWindow?.focus()
+    if (path) {
+      mainWindow?.webContents.send('app:navigate', path)
+    }
     return
   }
 
@@ -159,6 +167,11 @@ function createWindow(): void {
   mainWindow.on('ready-to-show', () => {
     mainWindow!.setTitle('Nostr Relay Tray')
     mainWindow!.show()
+
+    // Navigate to specific path if provided
+    if (path) {
+      mainWindow?.webContents.send('app:navigate', path)
+    }
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -178,19 +191,13 @@ function createWindow(): void {
 function createTray({ trayImage }: { trayImage: Electron.NativeImage }) {
   tray = new Tray(trayImage)
 
-  let currentLocalIpAddress = getLocalIpAddress()
-  tray.setContextMenu(createMenu(currentLocalIpAddress))
-
+  tray.setContextMenu(createMenu())
   setInterval(() => {
-    const newLocalIpAddress = getLocalIpAddress()
-    if (newLocalIpAddress !== currentLocalIpAddress) {
-      currentLocalIpAddress = newLocalIpAddress
-      tray?.setContextMenu(createMenu(currentLocalIpAddress))
-    }
+    tray?.setContextMenu(createMenu())
   }, 10000)
 }
 
-function createMenu(localIpAddress?: string) {
+function createMenu() {
   const items: MenuItemConstructorOptions[] = [
     {
       label: 'Browse Local Events',
@@ -203,28 +210,39 @@ function createMenu(localIpAddress?: string) {
       label: ready ? 'Dashboard' : 'Dashboard (Initializing...)',
       type: 'normal',
       enabled: ready,
-      click: createWindow
+      click: () => createWindow()
     },
     { type: 'separator' },
     {
       label: `ws://localhost:4869 - Copy`,
       type: 'normal',
       click: () => clipboard.writeText(`ws://localhost:4869`)
+    }
+  ]
+
+  const localAddress = getLocalAddress()
+  if (localAddress) {
+    items.push({
+      label: `${localAddress} - Copy`,
+      type: 'normal',
+      click: () => clipboard.writeText(localAddress)
+    })
+  }
+
+  items.push(
+    { type: 'separator' },
+    {
+      label: 'Proxy - ' + (proxyConnector?.status ?? 'disconnected'),
+      type: 'normal',
+      enabled: ready,
+      click: () => createWindow('/proxy')
     },
     { type: 'separator' },
     {
       label: 'Quit',
       role: 'quit'
     }
-  ]
-
-  if (localIpAddress) {
-    items.splice(3, 0, {
-      label: `ws://${localIpAddress}:4869`,
-      type: 'normal',
-      click: () => clipboard.writeText(`ws://${localIpAddress}:4869`)
-    })
-  }
+  )
 
   return Menu.buildFromTemplate(items)
 }

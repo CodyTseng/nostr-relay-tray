@@ -6,10 +6,19 @@ import { TLog } from '../common/types'
 
 // Custom APIs for renderer
 const api = {
-  onLog: (cb: (log: TLog) => void) => {
-    ipcRenderer.on('log', (_, log) => {
-      cb(log)
-    })
+  app: {
+    onLog: (cb: (event: Electron.IpcRendererEvent, log: TLog) => void) => {
+      ipcRenderer.on('app:log', cb)
+    },
+    removeLogListener: (cb: (event: Electron.IpcRendererEvent, log: TLog) => void) => {
+      ipcRenderer.removeListener('app:log', cb)
+    },
+    onNavigate: (cb: (event: Electron.IpcRendererEvent, path: string) => void) => {
+      ipcRenderer.on('app:navigate', cb)
+    },
+    removeNavigateListener: (cb: (event: Electron.IpcRendererEvent, path: string) => void) => {
+      ipcRenderer.removeListener('app:navigate', cb)
+    }
   },
   autoLaunch: {
     isEnabled: () => ipcRenderer.invoke('autoLaunch:isEnabled'),
@@ -60,10 +69,13 @@ const api = {
     create: (rule: TNewRule) => ipcRenderer.invoke('rule:create', rule)
   },
   theme: {
-    onChange: (cb: (theme: 'dark' | 'light') => void) => {
-      ipcRenderer.on('theme:change', (_, theme) => {
-        cb(theme)
-      })
+    onChange: (cb: (event: Electron.IpcRendererEvent, theme: 'dark' | 'light') => void) => {
+      ipcRenderer.on('theme:change', cb)
+    },
+    removeChangeListener: (
+      cb: (event: Electron.IpcRendererEvent, theme: 'dark' | 'light') => void
+    ) => {
+      ipcRenderer.removeListener('theme:change', cb)
     },
     current: () => ipcRenderer.invoke('theme:current'),
     currentConfig: () => ipcRenderer.invoke('theme:currentConfig'),
@@ -75,7 +87,7 @@ const api = {
     ) => {
       ipcRenderer.on('proxy:statusChange', cb)
     },
-    removeStatusChange: (
+    removeStatusChangeListener: (
       cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
     ) => {
       ipcRenderer.removeListener('proxy:statusChange', cb)

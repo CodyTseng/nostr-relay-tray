@@ -1,6 +1,7 @@
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils'
 import { Client as NostrClient } from '@nostr-relay/common'
 import { ipcMain } from 'electron'
+import { EventEmitter } from 'node:stream'
 import { finalizeEvent, generateSecretKey, VerifiedEvent } from 'nostr-tools'
 import { WebSocket } from 'ws'
 import { CONFIG_KEY } from '../../common/config'
@@ -12,10 +13,10 @@ import { RelayService } from './relay.service'
 
 const PROXY_URL = 'wss://proxy.nostr-relay.app/register'
 
-export class ProxyConnectorService {
+export class ProxyConnectorService extends EventEmitter {
+  publicAddress: string | null = null
+  status: TProxyConnectionStatus = PROXY_CONNECTION_STATUS.DISCONNECTED
   private proxyWs: WebSocket | null = null
-  private publicAddress: string | null = null
-  private status: TProxyConnectionStatus = PROXY_CONNECTION_STATUS.DISCONNECTED
   private reconnectCount = 0
   private canReconnect = false
   private reconnectTimeout: NodeJS.Timeout | undefined
@@ -25,7 +26,9 @@ export class ProxyConnectorService {
     private readonly relay: RelayService,
     private readonly configRepository: ConfigRepository,
     private readonly sendToRenderer: TSendToRenderer
-  ) {}
+  ) {
+    super()
+  }
 
   async init() {
     ipcMain.handle('proxy:currentStatus', () => this.getProxyConnectionStatus())
@@ -219,6 +222,7 @@ export class ProxyConnectorService {
     if (this.status === status) return
     this.status = status
     this.sendToRenderer('proxy:statusChange', status)
+    this.emit('status', status)
   }
 
   private async updateEnabled(enabled: boolean) {

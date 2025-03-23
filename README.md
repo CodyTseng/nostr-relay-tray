@@ -7,16 +7,18 @@
   <br>
 </h1>
 
-<h4 align="center">A simple nostr relay tray. For Mac, Windows, and Linux. </h4>
+<h4 align="center">A nostr relay for desktop, available on macOS, Windows, and Linux.</h4>
 
 <p align="center">powered by <a href="https://github.com/CodyTseng/nostr-relay">nostr-relay</a></p>
-
+ 
 ## Features
 
-- **Comprehensive**: A fully featured Nostr relay.
-- **User-Friendly**: Start the relay with a single click.
-- **Granular Control**: Manage which events to accept or reject with precision.
-- **Cross-Platform**: Available for macOS, Windows, and Linux.
+- **Fully Featured** – A complete Nostr relay with all essential functionalities.
+- **Zero-Config Start** – Instantly launch your own relay.
+- **Granular Control** – Precisely manage which events to accept or reject.
+- **Instant Public Access** – Open your relay to the world with a single click.
+- **Full-Text Search** – Quickly find events with powerful search capabilities.
+- **Cross-Platform** – Available on macOS, Windows, and Linux.
 
 ## Flexible event filtering
 
@@ -27,13 +29,12 @@ nostr-relay-tray provides a flexible event filtering mechanism, allowing you to 
                         │
                         ▼
                 ┌───────────────┐
-                │  Block Rules  │  ✖ If blocked, event is rejected.
+                │  Block Rules  │  ❌ If blocked, event is rejected.
                 └───────────────┘
                         │ (not blocked)
                         ▼
    ┌─────────────────────────────────────────┐
-   │         Second Layer Filtering          │
-   │        (Only one needs to pass)         │
+   │         Only one needs to pass          │
    ├─────────────┬─────────────┬─────────────┤
    │ Allow Rules │     WoT     │     PoW     │
    └─────────────┴─────────────┴─────────────┘
@@ -62,13 +63,23 @@ Filtering logic:
 
 ## Download
 
-You can download the latest version from the [release page](https://github.com/CodyTseng/nostr-relay-tray/releases). If you want to use Apple Silicon version, you need to build it from the source code.
+Download the latest release from the [Releases page](https://github.com/CodyTseng/nostr-relay-tray/releases).
 
-Because the app is not signed, you may need to allow it to run in the system settings.
+> **Note:** Since the app is unsigned, you may need to manually allow it to run in your system settings.
+
+### Running on Apple Silicon
+
+If you encounter the error: "Coop is damaged and can't be opened. You should move it to the Bin.", run the following command in your terminal:
+
+```bash
+sudo xattr -rd com.apple.quarantine /Applications/nostr-relay-tray.app
+```
+
+Then, try launching the app again.
 
 ## Build from source
 
-You can also build the app from the source code.
+You can also compile the app from source.
 
 > Note: Node.js >= 20 is required.
 

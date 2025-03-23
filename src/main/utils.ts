@@ -3,7 +3,7 @@ import { HttpsProxyAgent } from 'https-proxy-agent'
 import { SocksProxyAgent } from 'socks-proxy-agent'
 import { networkInterfaces } from 'os'
 
-export function getLocalIpAddress() {
+export function getLocalAddress() {
   const interfaces = networkInterfaces()
 
   for (const key in interfaces) {
@@ -13,7 +13,7 @@ export function getLocalIpAddress() {
     for (let i = 0; i < iface.length; i++) {
       const alias = iface[i]
       if (alias.family === 'IPv4' && !alias.internal) {
-        return alias.address
+        return `ws://${alias.address}:4869`
       }
     }
   }

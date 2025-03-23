@@ -14,14 +14,12 @@ asarUnpack:
 win:
   executableName: nostr-relay-tray
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
   notarize: false
 dmg:
-  artifactName: ${name}-${version}.${ext}
 linux:
   target:
     - AppImage
@@ -29,8 +27,6 @@ linux:
     - deb
   maintainer: codytseng
   category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

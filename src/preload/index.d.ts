@@ -6,7 +6,14 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
-      onLog: (cb: (log: TLog) => void) => void
+      app: {
+        onLog: (cb: (event: Electron.IpcRendererEvent, log: TLog) => void) => void
+        removeLogListener: (cb: (event: Electron.IpcRendererEvent, log: TLog) => void) => void
+        onNavigate: (cb: (event: Electron.IpcRendererEvent, path: string) => void) => void
+        removeNavigateListener: (
+          cb: (event: Electron.IpcRendererEvent, path: string) => void
+        ) => void
+      }
       autoLaunch: {
         isEnabled: () => Promise<boolean>
         set: (enabled: boolean) => Promise<boolean>
@@ -36,7 +43,10 @@ declare global {
         create: (rule: TNewRule) => Promise<void>
       }
       theme: {
-        onChange: (cb: (theme: 'dark' | 'light') => void) => void
+        onChange: (cb: (event: Electron.IpcRendererEvent, theme: 'dark' | 'light') => void) => void
+        removeChangeListener: (
+          cb: (event: Electron.IpcRendererEvent, theme: 'dark' | 'light') => void
+        ) => void
         current: () => Promise<'dark' | 'light'>
         currentConfig: () => Promise<TTheme>
         updateConfig: (theme: TTheme) => Promise<void>
@@ -45,7 +55,7 @@ declare global {
         onStatusChange: (
           cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
         ) => void
-        removeStatusChange: (
+        removeStatusChangeListener: (
           cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
         ) => void
         currentStatus: () => Promise<TProxyConnectionStatus>

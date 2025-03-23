@@ -24,19 +24,22 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     (localStorage.getItem('theme') as Theme) ?? 'light'
   )
 
-  const init = async () => {
-    const theme = await window.api.theme.current()
-    localStorage.setItem('theme', theme)
-    setTheme(theme)
-
-    window.api.theme.onChange((theme) => {
+  useEffect(() => {
+    const init = async () => {
+      const theme = await window.api.theme.current()
       localStorage.setItem('theme', theme)
       setTheme(theme)
-    })
-  }
-
-  useEffect(() => {
+    }
     init()
+
+    const listener = (_, theme: 'light' | 'dark') => {
+      localStorage.setItem('theme', theme)
+      setTheme(theme)
+    }
+    window.api.theme.onChange(listener)
+    return () => {
+      window.api.theme.removeChangeListener(listener)
+    }
   }, [])
 
   useEffect(() => {

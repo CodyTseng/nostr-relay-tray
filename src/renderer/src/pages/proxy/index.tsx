@@ -26,7 +26,7 @@ export default function Proxy(): JSX.Element {
     }
     window.api.proxy.onStatusChange(listener)
     return () => {
-      window.api.proxy.removeStatusChange(listener)
+      window.api.proxy.removeStatusChangeListener(listener)
     }
   }, [])
 
