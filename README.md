@@ -20,6 +20,46 @@
 - **Full-Text Search** – Quickly find events with powerful search capabilities.
 - **Cross-Platform** – Available on macOS, Windows, and Linux.
 
+## Download
+
+Download the latest release from the [Releases page](https://github.com/CodyTseng/nostr-relay-tray/releases).
+
+> **Note:** Since the app is unsigned, you may need to manually allow it to run in your system settings.
+
+### Running on Apple Silicon
+
+If you encounter the error: "nostr-relay-tray is damaged and can't be opened. You should move it to the Bin.", run the following command in your terminal:
+
+```bash
+sudo xattr -rd com.apple.quarantine /Applications/nostr-relay-tray.app
+```
+
+Then, try launching the app again.
+
+## Build from source
+
+You can also compile the app from source.
+
+> Note: Node.js >= 20 is required.
+
+```bash
+# Clone this repository
+git clone https://github.com/CodyTseng/nostr-relay-tray.git
+
+# Go into the repository
+cd nostr-relay-tray
+
+# Install dependencies
+npm install
+
+# Build the app
+npm run build:mac
+# or npm run build:win
+# or npm run build:linux
+```
+
+The executable file will be in the `dist` folder.
+
 ## Flexible event filtering
 
 nostr-relay-tray provides a flexible event filtering mechanism, allowing you to precisely control which events are accepted. The mechanism works in two layers:
@@ -61,46 +101,6 @@ Filtering logic:
 - If at least one filter is enabled, the event must pass at least one.
 - If all filters are disabled, the event is automatically accepted.
 
-## Download
-
-Download the latest release from the [Releases page](https://github.com/CodyTseng/nostr-relay-tray/releases).
-
-> **Note:** Since the app is unsigned, you may need to manually allow it to run in your system settings.
-
-### Running on Apple Silicon
-
-If you encounter the error: "Coop is damaged and can't be opened. You should move it to the Bin.", run the following command in your terminal:
-
-```bash
-sudo xattr -rd com.apple.quarantine /Applications/nostr-relay-tray.app
-```
-
-Then, try launching the app again.
-
-## Build from source
-
-You can also compile the app from source.
-
-> Note: Node.js >= 20 is required.
-
-```bash
-# Clone this repository
-git clone https://github.com/CodyTseng/nostr-relay-tray.git
-
-# Go into the repository
-cd nostr-relay-tray
-
-# Install dependencies
-npm install
-
-# Build the app
-npm run build:mac
-# or npm run build:win
-# or npm run build:linux
-```
-
-The executable file will be in the `dist` folder.
-
 ## Screenshot
 
 ![screenshot](./screenshots/screenshot-1.png)
@@ -113,7 +113,11 @@ The executable file will be in the `dist` folder.
 
 ## Donate
 
-If you like this project, you can buy me a coffee :) ⚡️ codytseng@getalby.com ⚡️
+If you like this project, you can buy me a coffee :)
+
+lightning: ⚡️ codytseng@getalby.com ⚡️
+
+bitcoin: bc1qx8kvutghdhejx7vuvatmvw2ghypdungu0qm7ds
 
 ## Icon Attribution
 
