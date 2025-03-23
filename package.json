@@ -1,6 +1,6 @@
 {
   "name": "nostr-relay-tray",
-  "version": "1.9.1",
+  "version": "2.0.0",
   "description": "A nostr relay for desktop, available on macOS, Windows, and Linux.",
   "main": "./out/main/index.js",
   "author": "codytseng",
