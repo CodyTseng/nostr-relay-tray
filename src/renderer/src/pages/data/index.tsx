@@ -5,7 +5,7 @@ import ImportEvents from './ImportEvents'
 
 export default function Data(): JSX.Element {
   return (
-    <div className="space-y-4 pr-6">
+    <div className="space-y-4">
       <ExportEvents />
       <ImportEvents />
       <DeleteEventsByFilter />

@@ -94,6 +94,8 @@ export function conditionsToFilter(conditions: TRuleCondition[]) {
       } else {
         filter.contents = (condition.values as string[]).map((content) => new RegExp(content))
       }
+    } else if (condition.fieldName === RULE_CONDITION_FIELD_NAME.ID) {
+      filter.ids = condition.values as string[]
     }
   })
   return filter

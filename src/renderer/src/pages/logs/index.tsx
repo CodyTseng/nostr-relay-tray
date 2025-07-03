@@ -59,7 +59,7 @@ export default function Logs() {
   }
 
   return (
-    <div className="pr-6 pb-6 h-full">
+    <div className="pb-6 h-full">
       <ScrollArea ref={scrollRef} className="h-full px-2 border-solid border rounded-md">
         <div className="w-full">
           <div ref={topRef} />

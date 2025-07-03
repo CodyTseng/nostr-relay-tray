@@ -96,7 +96,7 @@ function App(): JSX.Element {
                 ))}
               </ul>
             </nav>
-            <div className="flex-1 w-0">
+            <div className="flex-1 w-0 pr-6">
               <Outlet />
             </div>
           </div>
