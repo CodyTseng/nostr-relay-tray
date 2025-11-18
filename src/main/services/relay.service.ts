@@ -33,7 +33,8 @@ type RelayOptions = {
 
 export class RelayService {
   private readonly validator = new Validator({
-    maxFilterGenericTagsLength: 512
+    maxFilterGenericTagsLength: 512,
+    enableNipNd: true
   })
   private readonly db: BetterSqlite3.Database
   private readonly kysely: Kysely<Database>
