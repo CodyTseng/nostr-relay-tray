@@ -77,7 +77,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "electron": "^28.2.0",
-    "electron-builder": "^24.9.1",
+    "electron-builder": "^26.6.0",
     "electron-vite": "^2.0.0",
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
