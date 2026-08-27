@@ -1,4 +1,4 @@
-import { PROXY_CONNECTION_STATUS, TProxyConnectionStatus } from '@common/constants'
+import { TFipsState } from '@common/types'
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { ThemeProvider } from './components/theme-provider'
@@ -7,9 +7,7 @@ import { cn } from './lib/utils'
 
 function App(): JSX.Element {
   const navigate = useNavigate()
-  const [proxyStatus, setProxyStatus] = useState<TProxyConnectionStatus>(
-    PROXY_CONNECTION_STATUS.DISCONNECTED
-  )
+  const [fipsState, setFipsState] = useState<TFipsState | null>(null)
 
   useEffect(() => {
     const navigateListener = (_, path: string) => {
@@ -17,16 +15,14 @@ function App(): JSX.Element {
     }
     window.api.app.onNavigate(navigateListener)
 
-    window.api.proxy.currentStatus().then((status) => {
-      setProxyStatus(status)
-    })
-    const proxyStatusChangeListener = (_, status: TProxyConnectionStatus) => {
-      setProxyStatus(status)
+    window.api.fips.getState().then(setFipsState)
+    const fipsStateChangeListener = (_, state: TFipsState) => {
+      setFipsState(state)
     }
-    window.api.proxy.onStatusChange(proxyStatusChangeListener)
+    window.api.fips.onStateChange(fipsStateChangeListener)
     return () => {
       window.api.app.removeNavigateListener(navigateListener)
-      window.api.proxy.removeStatusChangeListener(proxyStatusChangeListener)
+      window.api.fips.removeStateChangeListener(fipsStateChangeListener)
     }
   }, [])
 
@@ -54,18 +50,18 @@ function App(): JSX.Element {
     {
       title: (
         <div className="flex gap-2 items-center">
-          Proxy
-          {proxyStatus !== PROXY_CONNECTION_STATUS.DISCONNECTED && (
+          FIPS
+          {fipsState?.enabled && (
             <div
               className={cn(
                 'w-2 h-2 rounded-full',
-                proxyStatus === PROXY_CONNECTION_STATUS.CONNECTED ? 'bg-green-400' : 'bg-orange-400'
+                fipsState.bound ? 'bg-green-400' : 'bg-orange-400'
               )}
             />
           )}
         </div>
       ),
-      href: '/proxy'
+      href: '/fips'
     },
     {
       title: 'Settings',

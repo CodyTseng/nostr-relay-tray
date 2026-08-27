@@ -18,13 +18,20 @@ import nostrTemplate from '../../resources/nostrTemplate.png?asset'
 import nostrTemplateDark from '../../resources/nostrTemplateDark.png?asset'
 import nostrTemplatePurple from '../../resources/nostrTemplatePurple.png?asset'
 import { CONFIG_KEY } from '../common/config'
-import { TRAY_IMAGE_COLOR, TTrayImageColor } from '../common/constants'
+import {
+  FIPS_ACCESS_MODE,
+  getMeshRelayUrl,
+  getMeshRelayUrlLabel,
+  TRAY_IMAGE_COLOR,
+  TTrayImageColor
+} from '../common/constants'
+import { TFipsState } from '../common/types'
 import { initRepositories } from './repositories'
 import { ConfigRepository } from './repositories/config.repository'
 import { AutoLaunchService } from './services/auto-launch.service'
 import { GuardService } from './services/guard.service'
 import { LogViewerService } from './services/log-viewer.service'
-import { ProxyConnectorService } from './services/proxy-connector.service'
+import { FipsService } from './services/fips.service'
 import { RelayService } from './services/relay.service'
 import { ThemeService } from './services/theme.service'
 import { TSendToRenderer } from './types'
@@ -33,7 +40,7 @@ import { getLocalAddress } from './utils'
 dayjs.extend(duration)
 
 let relay: RelayService
-let proxyConnector: ProxyConnectorService
+let fipsService: FipsService
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
 let ready = false
@@ -77,9 +84,9 @@ app.whenReady().then(async () => {
   await guardService.init()
   relay.register(guardService)
 
-  proxyConnector = new ProxyConnectorService(relay, repositories.config, sendToRenderer)
-  await proxyConnector.init()
-  proxyConnector.on('status', () => {
+  fipsService = new FipsService(relay, repositories.config, sendToRenderer)
+  await fipsService.init()
+  fipsService.on('status', () => {
     tray?.setContextMenu(createMenu())
   })
 
@@ -229,13 +236,25 @@ function createMenu() {
     })
   }
 
+  const fipsState = fipsService?.getState()
+  const meshUrl = fipsState?.bound && fipsState.npub ? getMeshRelayUrl(fipsState.npub) : null
+  if (meshUrl && fipsState?.npub) {
+    const label = getMeshRelayUrlLabel(fipsState.npub)
+    items.push({
+      label: `${label} - Copy`,
+      type: 'normal',
+      // The shortened label is display-only; the full URL is what gets copied.
+      click: () => clipboard.writeText(meshUrl)
+    })
+  }
+
   items.push(
     { type: 'separator' },
     {
-      label: 'Proxy - ' + (proxyConnector?.status ?? 'disconnected'),
+      label: `FIPS - ${describeFipsState(fipsState)}`,
       type: 'normal',
       enabled: ready,
-      click: () => createWindow('/proxy')
+      click: () => createWindow('/fips')
     },
     { type: 'separator' },
     {
@@ -245,4 +264,14 @@ function createMenu() {
   )
 
   return Menu.buildFromTemplate(items)
+}
+
+function describeFipsState(state: TFipsState | undefined) {
+  if (!state) return 'initializing'
+  if (!state.daemonReachable) return 'daemon not running'
+  if (!state.enabled) return 'disabled'
+  if (!state.bound) return 'enabled (not bound)'
+  return state.accessMode === FIPS_ACCESS_MODE.WHITELIST
+    ? `whitelist (${state.allowedNpubs.length})`
+    : 'open to mesh'
 }
