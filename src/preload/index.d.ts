@@ -1,4 +1,5 @@
-import { TProxyConnectionStatus, TTheme } from '@common/constants'
+import { TFipsAccessMode, TTheme, TTrayImageColor } from '@common/constants'
+import { TFipsState, TLog } from '@common/types'
 import { TNewRule, TRule, TRuleFilter, TRuleUpdate } from '@common/rule'
 import { ElectronAPI } from '@electron-toolkit/preload'
 
@@ -51,26 +52,16 @@ declare global {
         currentConfig: () => Promise<TTheme>
         updateConfig: (theme: TTheme) => Promise<void>
       }
-      proxy: {
-        onStatusChange: (
-          cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
+      fips: {
+        onStateChange: (cb: (event: Electron.IpcRendererEvent, state: TFipsState) => void) => void
+        removeStateChangeListener: (
+          cb: (event: Electron.IpcRendererEvent, state: TFipsState) => void
         ) => void
-        removeStatusChangeListener: (
-          cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
-        ) => void
-        currentStatus: () => Promise<TProxyConnectionStatus>
-        connect: () => Promise<
-          | {
-              success: false
-              errorMessage?: string
-            }
-          | {
-              success: true
-              publicAddress: string
-            }
-        >
-        disconnect: () => Promise<void>
-        publicAddress: () => Promise<string | null>
+        getState: () => Promise<TFipsState>
+        setEnabled: (enabled: boolean) => Promise<void>
+        setAccessMode: (mode: TFipsAccessMode) => Promise<void>
+        addAllowedNpub: (npub: string) => Promise<void>
+        removeAllowedNpub: (npub: string) => Promise<void>
       }
       wot: {
         getEnabled: () => Promise<boolean>

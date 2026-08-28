@@ -1,8 +1,8 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
-import { TProxyConnectionStatus, TTheme, TTrayImageColor } from '../common/constants'
+import { TFipsAccessMode, TTheme, TTrayImageColor } from '../common/constants'
 import { TNewRule, TRuleFilter, TRuleUpdate } from '../common/rule'
-import { TLog } from '../common/types'
+import { TFipsState, TLog } from '../common/types'
 
 // Custom APIs for renderer
 const api = {
@@ -81,21 +81,20 @@ const api = {
     currentConfig: () => ipcRenderer.invoke('theme:currentConfig'),
     updateConfig: (theme: TTheme) => ipcRenderer.invoke('theme:updateConfig', theme)
   },
-  proxy: {
-    onStatusChange: (
-      cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
-    ) => {
-      ipcRenderer.on('proxy:statusChange', cb)
+  fips: {
+    onStateChange: (cb: (event: Electron.IpcRendererEvent, state: TFipsState) => void) => {
+      ipcRenderer.on('fips:stateChange', cb)
     },
-    removeStatusChangeListener: (
-      cb: (event: Electron.IpcRendererEvent, status: TProxyConnectionStatus) => void
+    removeStateChangeListener: (
+      cb: (event: Electron.IpcRendererEvent, state: TFipsState) => void
     ) => {
-      ipcRenderer.removeListener('proxy:statusChange', cb)
+      ipcRenderer.removeListener('fips:stateChange', cb)
     },
-    currentStatus: () => ipcRenderer.invoke('proxy:currentStatus'),
-    connect: () => ipcRenderer.invoke('proxy:connect'),
-    disconnect: () => ipcRenderer.invoke('proxy:disconnect'),
-    publicAddress: () => ipcRenderer.invoke('proxy:publicAddress')
+    getState: () => ipcRenderer.invoke('fips:getState'),
+    setEnabled: (enabled: boolean) => ipcRenderer.invoke('fips:setEnabled', enabled),
+    setAccessMode: (mode: TFipsAccessMode) => ipcRenderer.invoke('fips:setAccessMode', mode),
+    addAllowedNpub: (npub: string) => ipcRenderer.invoke('fips:addAllowedNpub', npub),
+    removeAllowedNpub: (npub: string) => ipcRenderer.invoke('fips:removeAllowedNpub', npub)
   },
   wot: {
     getEnabled: () => ipcRenderer.invoke('wot:getEnabled'),

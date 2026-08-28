@@ -13,15 +13,18 @@ import fastify, { FastifyInstance } from 'fastify'
 import { createReadStream, createWriteStream, readFileSync, statSync } from 'fs'
 import { Kysely, SqliteDialect } from 'kysely'
 import path from 'path'
+import { Socket } from 'net'
 import { createInterface } from 'readline'
 import { WebSocketServer } from 'ws'
 import favicon from '../../../resources/favicon.ico?asset'
 import { CONFIG_KEY } from '../../common/config'
-import { DEFAULT_FILTER_LIMIT, DEFAULT_WSS_MAX_PAYLOAD } from '../../common/constants'
+import { DEFAULT_FILTER_LIMIT, DEFAULT_WSS_MAX_PAYLOAD, RELAY_PORT } from '../../common/constants'
 import { TRuleFilter } from '../../common/rule'
 import { KIND_DESCRIPTION_MAP } from '../constants'
 import { ConfigRepository } from '../repositories/config.repository'
 import { TSendToRenderer } from '../types'
+
+const DEFAULT_HOST = '0.0.0.0'
 
 type RelayOptions = {
   /**
@@ -44,8 +47,16 @@ export class RelayService {
     maxPayload: DEFAULT_WSS_MAX_PAYLOAD,
     defaultFilterLimit: DEFAULT_FILTER_LIMIT
   }
-  private wss: WebSocketServer | null = null
-  private server: FastifyInstance | null = null
+  private listeners: { host: string; server: FastifyInstance; wss: WebSocketServer }[] = []
+  /** Mesh address the fips listener is bound to, when the feature is enabled. */
+  private meshHost: string | null = null
+  /**
+   * Consulted for every connection arriving on the mesh listener. Null means
+   * the listener is open to the whole mesh.
+   */
+  private meshAccessGuard: ((remoteAddress: string) => boolean) | null = null
+  /** Live TCP sockets accepted on the mesh listener, so the guard can be re-applied. */
+  private readonly meshSockets = new Set<Socket>()
   private relay: NostrRelay | null = null
 
   private totalEventCountCache: { data: number; updatedAt: number } | null = null
@@ -82,7 +93,13 @@ export class RelayService {
         : DEFAULT_FILTER_LIMIT
     }
 
-    await this.startServer()
+    try {
+      await this.startServer()
+    } catch (error) {
+      dialog.showErrorBox('Failed to start server.', (error as Error).message)
+      app.quit()
+      return
+    }
 
     ipcMain.handle('relay:getTotalEventCount', () => this.getTotalEventCount())
     ipcMain.handle('relay:getEventStatistics', () => this.getEventStatistics())
@@ -143,6 +160,11 @@ export class RelayService {
   }
 
   register(plugin: NostrRelayPlugin) {
+    // Kept so the plugin is re-registered when the server restarts and a fresh
+    // NostrRelay is built.
+    if (!this.plugins.includes(plugin)) {
+      this.plugins.push(plugin)
+    }
     if (this.relay) {
       this.relay.register(plugin)
     }
@@ -184,8 +206,11 @@ export class RelayService {
 
   private async updateMaxPayload(maxPayload: number) {
     this.options.maxPayload = maxPayload
-    await this.restartServer()
+    // Stored before the restart that applies it. Restarting rebinds the mesh listener too,
+    // so it can fail for reasons that have nothing to do with this setting - and losing the
+    // user's choice because the fips daemon happened to be down is its own bug.
     await this.configRepository.set(CONFIG_KEY.WSS_MAX_PAYLOAD, maxPayload.toString())
+    await this.restartServer()
   }
 
   private async setDefaultFilterLimit(defaultFilterLimit: number) {
@@ -195,19 +220,6 @@ export class RelayService {
   }
 
   private async startServer() {
-    this.server = fastify()
-    await this.server.register(cors, {
-      origin: '*'
-    })
-
-    if (!this.server) {
-      throw new Error('Server is not initialized.')
-    }
-    this.wss = new WebSocketServer({
-      server: this.server.server,
-      maxPayload: this.options.maxPayload * 1024
-    })
-
     this.eventRepository.setDefaultLimit(this.options.defaultFilterLimit)
     this.relay = new NostrRelay(this.eventRepository)
 
@@ -215,32 +227,144 @@ export class RelayService {
       this.relay.register(plugin)
     }
 
-    this.handleWssEvent(this.wss, this.relay)
+    for (const host of [DEFAULT_HOST, ...(this.meshHost ? [this.meshHost] : [])]) {
+      await this.createListener(host)
+    }
+  }
+
+  /**
+   * Each bind target gets its own fastify + WebSocketServer pair, but they all
+   * feed the one NostrRelay instance.
+   */
+  private async createListener(host: string) {
+    if (!this.relay) {
+      throw new Error('Relay is not initialized.')
+    }
+    if (this.listeners.some((listener) => listener.host === host)) {
+      return
+    }
+
+    const server = fastify()
+    await server.register(cors, { origin: '*' })
+
+    const wss = new WebSocketServer({
+      server: server.server,
+      maxPayload: this.options.maxPayload * 1024
+    })
+    this.handleWssEvent(wss, this.relay)
+
+    if (host === this.meshHost) {
+      // Reject disallowed mesh peers before any HTTP or WebSocket parsing, so
+      // the guard covers the relay info route as well as the socket.
+      server.server.on('connection', (socket) => {
+        if (!this.isMeshPeerAllowed(socket.remoteAddress)) {
+          socket.destroy()
+          return
+        }
+        this.meshSockets.add(socket)
+        socket.on('close', () => this.meshSockets.delete(socket))
+      })
+    }
 
     const faviconFile = readFileSync(favicon)
-    this.server.get('/favicon.ico', function (_, reply) {
+    server.get('/favicon.ico', function (_, reply) {
       reply.header('cache-control', 'max-age=604800').type('image/x-icon').send(faviconFile)
     })
+    server.get('/', () => this.getRelayInfo())
 
-    this.server.get('/', () => this.getRelayInfo())
+    try {
+      await new Promise<void>((resolve, reject) => {
+        server.listen({ port: RELAY_PORT, host }, (err) => {
+          if (err) return reject(err)
+          resolve()
+        })
+      })
+    } catch (error) {
+      wss.close()
+      await server.close()
+      throw error
+    }
 
-    this.server.listen({ port: 4869, host: '0.0.0.0' }, function (err) {
-      if (err) {
-        dialog.showErrorBox('Failed to start server.', err.message)
-        app.quit()
+    this.listeners.push({ host, server, wss })
+  }
+
+  private async destroyListener(host: string) {
+    const index = this.listeners.findIndex((listener) => listener.host === host)
+    if (index < 0) return
+
+    const [listener] = this.listeners.splice(index, 1)
+    listener.wss.clients.forEach((client) => client.terminate())
+    listener.wss.close()
+    await listener.server.close()
+  }
+
+  /**
+   * Bind an extra listener on the fips mesh address. Rebinds when the address
+   * changes, which happens if the daemon restarts under a new identity.
+   */
+  async bindMeshHost(host: string) {
+    if (this.meshHost === host && this.listeners.some((listener) => listener.host === host)) {
+      return
+    }
+    await this.unbindMeshHost()
+    this.meshHost = host
+    try {
+      await this.createListener(host)
+    } catch (error) {
+      this.meshHost = null
+      throw error
+    }
+  }
+
+  async unbindMeshHost() {
+    if (!this.meshHost) return
+    const host = this.meshHost
+    this.meshHost = null
+    await this.destroyListener(host)
+    this.meshSockets.clear()
+  }
+
+  /**
+   * Replace the mesh access predicate. Takes effect on the next connection --
+   * no rebind needed -- and existing peers are re-checked immediately.
+   */
+  setMeshAccessGuard(guard: ((remoteAddress: string) => boolean) | null) {
+    this.meshAccessGuard = guard
+    this.pruneMeshConnections()
+  }
+
+  private isMeshPeerAllowed(remoteAddress: string | undefined) {
+    if (!this.meshAccessGuard) return true
+    if (!remoteAddress) return false
+    return this.meshAccessGuard(remoteAddress)
+  }
+
+  /** Drop peers that the current guard no longer allows. */
+  private pruneMeshConnections() {
+    for (const socket of this.meshSockets) {
+      if (!this.isMeshPeerAllowed(socket.remoteAddress)) {
+        socket.destroy()
       }
-    })
+    }
+  }
+
+  isMeshHostBound() {
+    return !!this.meshHost && this.listeners.some((listener) => listener.host === this.meshHost)
   }
 
   private async stopServer() {
-    if (this.server) {
-      await this.server.close()
-    }
-    if (this.wss) {
-      this.wss.close()
-    }
+    await Promise.all(
+      this.listeners.map(async ({ server, wss }) => {
+        wss.clients.forEach((client) => client.terminate())
+        wss.close()
+        await server.close()
+      })
+    )
+    this.listeners = []
+
     if (this.relay) {
       await this.relay.destroy()
+      this.relay = null
     }
   }
 

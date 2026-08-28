@@ -5,7 +5,7 @@ import Data from '@renderer/pages/data'
 import DeleteEvents from '@renderer/pages/data/DeleteEvents'
 import Home from '@renderer/pages/home'
 import Logs from '@renderer/pages/logs'
-import Proxy from '@renderer/pages/proxy'
+import Fips from '@renderer/pages/fips'
 import Rules from '@renderer/pages/rules'
 import EditRule from '@renderer/pages/rules/edit'
 import Settings from '@renderer/pages/settings'
@@ -27,7 +27,7 @@ export const router = createHashRouter([
       { path: '/rules/create', element: <EditRule /> },
       { path: '/rules/:id/edit', element: <EditRule /> },
       { path: '/logs', element: <Logs /> },
-      { path: '/proxy', element: <Proxy /> },
+      { path: '/fips', element: <Fips /> },
       { path: '/settings', element: <Settings /> }
     ]
   }
