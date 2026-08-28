@@ -181,8 +181,15 @@ export class FipsService extends EventEmitter {
     await this.refreshNodeStatus()
     const currentAddress = this.nodeStatus?.meshAddress ?? null
 
-    if (this.enabled && previousAddress !== currentAddress) {
-      // Daemon restarted, went away, or came back under a new identity.
+    // An unchanged address does not mean there is nothing to do. A bind that failed has
+    // nothing else to retry it, and failing once is normal: at login the daemon reports
+    // its address before fips0 has been assigned it, so the listener gets EADDRNOTAVAIL
+    // and the relay would stay off the mesh until the user toggled the switch by hand.
+    const bindPending = !!currentAddress && !this.relay.isMeshHostBound()
+
+    if (this.enabled && (previousAddress !== currentAddress || bindPending)) {
+      // Daemon restarted, went away, came back under a new identity, or the interface
+      // has only now come up.
       try {
         await this.apply()
       } catch {

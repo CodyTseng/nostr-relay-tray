@@ -206,8 +206,11 @@ export class RelayService {
 
   private async updateMaxPayload(maxPayload: number) {
     this.options.maxPayload = maxPayload
-    await this.restartServer()
+    // Stored before the restart that applies it. Restarting rebinds the mesh listener too,
+    // so it can fail for reasons that have nothing to do with this setting - and losing the
+    // user's choice because the fips daemon happened to be down is its own bug.
     await this.configRepository.set(CONFIG_KEY.WSS_MAX_PAYLOAD, maxPayload.toString())
+    await this.restartServer()
   }
 
   private async setDefaultFilterLimit(defaultFilterLimit: number) {

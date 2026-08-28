@@ -44,6 +44,11 @@ export default function Fips(): JSX.Element {
   }
 
   const canEnable = state.daemonReachable && state.tunActive
+  // Turning the feature on needs a reachable daemon, but turning it off has to stay
+  // possible whatever the daemon is doing: a daemon that stops while the feature is on
+  // would otherwise leave the switch checked and disabled, with no way to opt out and the
+  // relay rebinding to the mesh as soon as it came back.
+  const canToggle = state.enabled || canEnable
 
   return (
     <div className="space-y-4">
@@ -63,7 +68,7 @@ export default function Fips(): JSX.Element {
         </div>
         <Switch
           checked={state.enabled}
-          disabled={loading || !canEnable}
+          disabled={loading || !canToggle}
           onCheckedChange={(checked) => run(() => window.api.fips.setEnabled(checked))}
         />
       </div>
