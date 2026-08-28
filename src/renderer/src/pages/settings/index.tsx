@@ -1,5 +1,6 @@
 import AppearanceOption from './components/AppearanceOption'
 import AutoLaunchOption from './components/AutoLaunchOption'
+import DataLocationOption from './components/DataLocationOption'
 import DefaultFilterLimitOption from './components/DefaultFilterLimitOption'
 import MaxPayloadOption from './components/MaxPayloadOption'
 import TrayIconColorOption from './components/TrayIconColorOption'
@@ -12,6 +13,7 @@ export default function Settings() {
       <TrayIconColorOption />
       <MaxPayloadOption />
       <DefaultFilterLimitOption />
+      <DataLocationOption />
     </div>
   )
 }

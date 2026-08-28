@@ -13,6 +13,8 @@ declare global {
         removeNavigateListener: (
           cb: (event: Electron.IpcRendererEvent, path: string) => void
         ) => void
+        getDataPath: () => Promise<string>
+        openDataPath: () => Promise<string>
       }
       autoLaunch: {
         isEnabled: () => Promise<boolean>

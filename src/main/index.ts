@@ -19,6 +19,7 @@ import nostrTemplateDark from '../../resources/nostrTemplateDark.png?asset'
 import nostrTemplatePurple from '../../resources/nostrTemplatePurple.png?asset'
 import { CONFIG_KEY } from '../common/config'
 import { TRAY_IMAGE_COLOR, TTrayImageColor } from '../common/constants'
+import { initAppPaths } from './paths'
 import { initRepositories } from './repositories'
 import { ConfigRepository } from './repositories/config.repository'
 import { AutoLaunchService } from './services/auto-launch.service'
@@ -38,10 +39,17 @@ let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
 let ready = false
 
+// The lock is taken before the paths are overridden on purpose, so that it lands in the
+// legacy userData directory. That is what makes an older release and this one contend for
+// the same lock, which guarantees nobody has the databases open while they are moved.
 const singleInstanceLock = app.requestSingleInstanceLock()
 // Quit the app if another instance is already running
 if (!singleInstanceLock) {
   app.quit()
+} else {
+  // Must run before app.whenReady: sessionData can only be overridden before the ready
+  // event, and both databases are opened inside it.
+  initAppPaths()
 }
 
 // This method will be called when Electron has finished
@@ -85,6 +93,9 @@ app.whenReady().then(async () => {
 
   ready = true
   tray?.setContextMenu(createMenu())
+
+  ipcMain.handle('app:getDataPath', () => app.getPath('userData'))
+  ipcMain.handle('app:openDataPath', () => shell.openPath(app.getPath('userData')))
 
   ipcMain.handle('tray:getImageColor', () => trayImageColor)
   ipcMain.handle('tray:setImageColor', async (_, color: TTrayImageColor) => {

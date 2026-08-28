@@ -18,7 +18,9 @@ const api = {
     },
     removeNavigateListener: (cb: (event: Electron.IpcRendererEvent, path: string) => void) => {
       ipcRenderer.removeListener('app:navigate', cb)
-    }
+    },
+    getDataPath: () => ipcRenderer.invoke('app:getDataPath'),
+    openDataPath: () => ipcRenderer.invoke('app:openDataPath')
   },
   autoLaunch: {
     isEnabled: () => ipcRenderer.invoke('autoLaunch:isEnabled'),

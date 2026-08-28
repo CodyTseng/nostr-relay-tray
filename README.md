@@ -60,6 +60,31 @@ npm run build:mac
 
 The executable file will be in the `dist` folder.
 
+## Data location
+
+Your events and settings are stored in two SQLite databases, `nostr.db` and `app.db`:
+
+| Platform | Location |
+| --- | --- |
+| Linux | `$XDG_DATA_HOME/nostr-relay-tray` (usually `~/.local/share/nostr-relay-tray`) |
+| macOS | `~/Library/Application Support/nostr-relay-tray` |
+| Windows | `%LOCALAPPDATA%\nostr-relay-tray` |
+
+You can find the exact path, and open it, under Settings → Data location.
+
+Versions before 2.1 kept these files alongside the browser cache, in `~/.config/nostr-relay-tray`
+on Linux and in the roaming `%APPDATA%` on Windows. They are moved automatically the first time
+you launch a newer version; the old folder is left behind with a `DATA-MOVED.txt` note and can be
+deleted once you are happy everything came across. If the new location happens to be on a
+different disk the move is skipped and the app keeps using the old folder, so nothing is ever
+copied across filesystems at startup.
+
+Caches, cookies and other regenerable browser state live separately, in
+`$XDG_CACHE_HOME/nostr-relay-tray` (usually `~/.cache/nostr-relay-tray`) on Linux.
+
+> **Note:** `npm run dev` uses a separate `nostr-relay-tray-dev` directory and starts empty, so
+> development never touches your real database.
+
 ## Flexible event filtering
 
 nostr-relay-tray provides a flexible event filtering mechanism, allowing you to precisely control which events are accepted. The mechanism works in two layers:
