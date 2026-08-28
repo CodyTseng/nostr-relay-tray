@@ -29,6 +29,13 @@ const DATA_FILES = [
   'app.db-journal'
 ]
 
+/**
+ * The databases themselves. Their `-wal`/`-shm`/`-journal` sidecars are worthless on their
+ * own, so it is the presence of these two that decides whether a directory holds a usable
+ * copy of the user's data.
+ */
+const PRIMARY_DATA_FILES = ['nostr.db', 'app.db']
+
 type TAppPaths = {
   userData: string
   /** `null` leaves Electron's default, which nests it inside `userData`. */
@@ -133,12 +140,15 @@ function absoluteEnv(name: string): string | null {
 
 /**
  * Moves the databases out of the legacy directory. Returns whether the app can safely use
- * `to` from now on; when it returns false the databases are all still in `from` and the
- * app carries on from there exactly as it did before.
+ * `to` from now on; when it returns false every database is still in `from` and the app
+ * carries on from there exactly as it did before.
  *
- * The files are staged in a sibling of the destination and only then published with a
- * single directory rename, so a crash can never leave the two databases split across two
- * directories - which is the one outcome that would look to the user like data loss.
+ * The files are staged in a sibling of the destination and only then published, so the one
+ * outcome that would look to the user like data loss - a directory that holds one database
+ * but not the other - is either impossible or, where the filesystem forces the set to be
+ * published file by file, undone before this returns. Nothing here ever deletes or
+ * overwrites a database: where two copies of one exist and there is no way to tell which
+ * the user has been using, both are left where they are.
  */
 function migrateLegacyData(from: string, to: string): boolean {
   if (path.resolve(from) === path.resolve(to) || !existsSync(from)) return true
@@ -147,12 +157,13 @@ function migrateLegacyData(from: string, to: string): boolean {
   const inStaging = dataFilesIn(staging)
   const inLegacy = dataFilesIn(from)
 
-  if (!inStaging.length) {
-    // A previous run already published, or a fresh install got here first. Whatever is at
-    // the destination is the newer copy, so it must not be overwritten.
-    if (dataFilesIn(to).length) return true
-    if (!inLegacy.length) return true
-  }
+  // Checked first and unconditionally. Anything at the destination is what the app has
+  // been opening - a finished migration, or a fresh install that got here first - so a
+  // `.migrating` directory left behind by an interrupted run must never be published
+  // over it.
+  if (dataFilesIn(to).length) return keepDestination(staging, to, inStaging)
+
+  if (!inStaging.length && !inLegacy.length) return true
 
   // Every move below is a rename within one filesystem, which needs no free space and
   // cannot half-write a file. If the destination lives somewhere else, copying tens of
@@ -164,51 +175,113 @@ function migrateLegacyData(from: string, to: string): boolean {
     return false
   }
 
+  // One name in both directories means an earlier attempt was interrupted and the file
+  // came back afterwards - an empty database the app recreated on a later start, or a
+  // copy a restore put back. Nothing here can tell which of the two holds the user's
+  // events, so the migration gives up instead of picking one, and both copies stay
+  // exactly where they are.
+  const duplicates = inStaging.filter((file) => inLegacy.includes(file))
+  if (duplicates.length) {
+    console.error(
+      `cannot move app data to ${to}: ${duplicates.join(', ')} exist in both ${from} and ` +
+        `${staging}. Continuing to use ${from}, leaving the staged copies untouched`
+    )
+    return continueFromLegacy(from, staging)
+  }
+
   const moved: string[] = []
   try {
     mkdirSync(staging, { recursive: true })
     for (const file of inLegacy) {
-      // Present in both places means an earlier run was interrupted; the legacy file is
-      // the one the app was last using, so it wins.
-      if (existsSync(path.join(staging, file))) continue
       renameSync(path.join(from, file), path.join(staging, file))
       moved.push(file)
     }
   } catch (error) {
-    // Nothing has been published yet, so putting these back restores the exact state the
-    // app started in.
-    restore(staging, from, moved)
     console.error(`failed to move app data to ${to}, continuing to use ${from}`, error)
-    return false
+    // Nothing has been published yet, so putting these back restores the exact state the
+    // app started in - provided they all make it back, which is what the check below is
+    // for.
+    moveBack(staging, from, moved)
+    return continueFromLegacy(from, staging)
   }
 
   try {
     publish(staging, to)
   } catch (error) {
-    if (!restore(staging, from, dataFilesIn(staging))) {
-      // The databases are intact but neither directory holds a complete set. Starting
-      // anyway would open empty ones and convince the user their events are gone.
-      dialog.showErrorBox(
-        'nostr-relay-tray could not finish moving its data',
-        [
-          'Your databases are safe, but they could not be moved into place.',
-          '',
-          `They are in: ${staging}`,
-          `They belong in: ${to}`,
-          '',
-          'Restarting will retry. If it keeps failing, move the files from the first',
-          'folder into the second one manually.'
-        ].join('\n')
-      )
-      app.exit(1)
-    }
     console.error(`failed to move app data to ${to}, continuing to use ${from}`, error)
-    return false
+    moveBack(staging, from, dataFilesIn(staging))
+    return continueFromLegacy(from, staging)
   }
 
   leaveBreadcrumb(from, to)
   console.log(`moved app data from ${from} to ${to}`)
   return true
+}
+
+/**
+ * The destination already holds data, so that is what the app opens. A staging directory
+ * beside it is either a leftover from a run that was killed after publishing, or the other
+ * half of a publish that was killed part way through - and in that second case what it
+ * still holds is precisely what the destination is missing.
+ */
+function keepDestination(staging: string, to: string, inStaging: string[]): boolean {
+  const missing = inStaging.filter((file) => !existsSync(path.join(to, file)))
+
+  try {
+    for (const file of missing) {
+      renameSync(path.join(staging, file), path.join(to, file))
+    }
+    removeIfEmpty(staging)
+    return true
+  } catch (error) {
+    console.error(`failed to move the rest of the app data into ${to}`, error)
+  }
+
+  // Whatever is still in staging duplicates a file at the destination, so it is safe to
+  // leave lying around - unless a database the app is about to open is one of the files
+  // that did not make it.
+  if (!missing.some(isPrimaryDataFile)) {
+    console.warn(`leftover staged data in ${staging} could not be moved into ${to}`)
+    return true
+  }
+  reportSplit(staging, to)
+}
+
+/**
+ * Called once a migration has given up. Carrying on from the legacy directory is only safe
+ * if the databases are all actually there; one still sitting in staging would be reopened
+ * as an empty database, which to the user is indistinguishable from losing their events.
+ */
+function continueFromLegacy(from: string, staging: string): boolean {
+  const stranded = PRIMARY_DATA_FILES.filter(
+    (file) => existsSync(path.join(staging, file)) && !existsSync(path.join(from, file))
+  )
+  if (!stranded.length) return false
+
+  reportSplit(staging, from)
+}
+
+/**
+ * The databases are intact, but the directory the app is about to open is missing one of
+ * them. Starting anyway would create an empty one and convince the user their events are
+ * gone, so the app stops and says where everything is instead.
+ */
+function reportSplit(staging: string, using: string): never {
+  dialog.showErrorBox(
+    'nostr-relay-tray could not finish moving its data',
+    [
+      'Your databases are safe, but they could not all be moved into place.',
+      '',
+      `Some of them are in: ${staging}`,
+      `The app needs them in: ${using}`,
+      '',
+      'Restarting will retry. If it keeps failing, move the files from the first',
+      'folder into the second one manually.'
+    ].join('\n')
+  )
+  app.exit(1)
+  // `app.exit` never returns, but its signature cannot say so.
+  throw new Error(`app data is split between ${staging} and ${using}`)
 }
 
 /** Publishes the staged set, atomically where the destination does not already exist. */
@@ -224,25 +297,41 @@ function publish(staging: string, to: string) {
     return
   }
 
-  for (const file of dataFilesIn(staging)) {
-    renameSync(path.join(staging, file), path.join(to, file))
-  }
-  rmdirSync(staging)
-}
-
-/** Moves files back out of the staging directory. Returns whether all of them made it. */
-function restore(staging: string, to: string, files: string[]) {
-  let restored = true
-  for (const file of files) {
-    try {
+  // The destination is already there - Electron creates it for its own state before any
+  // of this runs - so the set has to go in a file at a time. Failing part way through is
+  // what would split the databases across two directories, so anything already moved is
+  // pulled back out before the failure is reported.
+  const published: string[] = []
+  try {
+    for (const file of dataFilesIn(staging)) {
       renameSync(path.join(staging, file), path.join(to, file))
-    } catch (error) {
-      restored = false
-      console.error(`failed to restore ${file} to ${to}`, error)
+      published.push(file)
     }
+  } catch (error) {
+    moveBack(to, staging, published)
+    throw error
   }
   removeIfEmpty(staging)
-  return restored
+}
+
+/**
+ * Moves files back out of `from`. Never overwrites: a name that is already taken in `to`
+ * is a second copy this code cannot choose between, and destroying one of them is the
+ * whole failure it is here to avoid.
+ */
+function moveBack(from: string, to: string, files: string[]) {
+  for (const file of files) {
+    try {
+      if (existsSync(path.join(to, file))) {
+        console.error(`not moving ${file} back to ${to}: a file of that name is already there`)
+        continue
+      }
+      renameSync(path.join(from, file), path.join(to, file))
+    } catch (error) {
+      console.error(`failed to move ${file} back to ${to}`, error)
+    }
+  }
+  removeIfEmpty(from)
 }
 
 /**
@@ -268,6 +357,10 @@ function leaveBreadcrumb(from: string, to: string) {
   } catch (error) {
     console.warn(`failed to write the breadcrumb file in ${from}`, error)
   }
+}
+
+function isPrimaryDataFile(file: string) {
+  return PRIMARY_DATA_FILES.includes(file)
 }
 
 function dataFilesIn(dir: string) {
